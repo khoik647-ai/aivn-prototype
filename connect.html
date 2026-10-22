@@ -1,5 +1,5 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AIVN AGENT · Kết nối ứng dụng v4.7 (bản nháp)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
+<title>AIVN AGENT · Kết nối ứng dụng v4.8 (bản nháp)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
 <style>
 /* Màu & hình theo F-PLUGINS mục 3.5 (accent #D7263D, nút bo 10, thẻ bo 14, hộp thoại bo 16 + cạnh trên 4px accent) */
 :root{--acc:#D7263D;--acc2:#b51d31;--accbg:rgba(215,38,61,.13);--card:#1a1e29}
@@ -195,6 +195,9 @@
 .lvls{display:flex;flex-wrap:wrap;gap:8px}.lvc{font-size:12.5px;padding:5px 11px;border-radius:20px;background:var(--panel2);color:var(--tx2)}.lvc b{color:var(--tx);font-weight:600}
 .kv{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;font-size:13px}.kv dt{color:var(--tx3)}.kv dd{margin:0}
 .ptech{margin-top:6px}
+.selftag{font-size:10.5px;font-weight:600;padding:0 7px;border-radius:20px;border:1px solid var(--line2);color:var(--tx3);margin-left:6px;vertical-align:1px;white-space:nowrap}
+.ph h3 .selftag{font-size:11.5px;padding:1px 8px;vertical-align:3px}
+.addkey{font-size:12.5px;color:var(--tx2);text-decoration:underline;text-underline-offset:2px}.addkey:hover{color:var(--tx)}
 .opt{font-size:11px;font-weight:600;padding:1px 8px;border-radius:20px;background:var(--panel);border:1px solid var(--line2);color:var(--tx2);margin-left:4px}
 .emptybox{text-align:center;padding:40px 16px;color:var(--tx2)}.emptybox .ei{font-size:30px}.emptybox .eh{font-weight:600;margin-top:8px}.emptybox .es{font-size:12.5px;color:var(--tx3);margin-top:4px}
 .pempty{color:var(--tx3);padding:60px 0;text-align:center}
@@ -203,7 +206,7 @@
 </style></head><body>
 <div class="app"><nav class="rail"></nav>
 <div class="main">
-  <div class="draft" style="position:relative"><span id="o_draft"></span><a href="connect-v4.6.html" id="o_v46" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.5.html" id="o_v45" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.4.html" id="o_v44" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.3.html" id="o_v43" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.2.html" id="o_v42" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.1.html" id="o_v41" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><span style="flex:1"></span>
+  <div class="draft" style="position:relative"><span id="o_draft"></span><a href="connect-v4.7.html" id="o_v47" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.6.html" id="o_v46" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.5.html" id="o_v45" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.4.html" id="o_v44" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.3.html" id="o_v43" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.2.html" id="o_v42" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.1.html" id="o_v41" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><span style="flex:1"></span>
     <span style="font-weight:400;color:var(--tx3)">Ctrl+K</span><button class="btn sm ghost" id="o_restart" data-testid="sim-restart"></button><button class="btn sm ghost" id="o_set" data-testid="mock-settings-btn"></button><button class="btn sm ghost" id="o_reset"></button>
     <div id="setPop" data-testid="mock-settings"></div></div>
   <div class="body">

@@ -1280,3 +1280,23 @@ Object.assign(STR,{
 'Lịch công ty (mẫu lỗi)':['Company calendar (error example)','公司日历（错误示例）'],
 });
 Object.assign(STR,{'Suy nghĩ từng bước (qua mạng).':['Step-by-step thinking (over the network).','逐步思考（通过网络）。']});
+// v4.8 (lượt 6)
+Object.assign(STR,{
+'Bản nháp 4.8 theo F-PLUGINS bản 2 + quyết định ngày 22/10 (lượt 6)':['Draft 4.8 per F-PLUGINS v2 + decisions of 22/10 (round 6)','草案 4.8，依据 F-PLUGINS 第 2 版 + 10 月 22 日决定（第 6 轮）'],
+'Bản 4.7':['Version 4.7','4.7 版'],
+'Đang chạy thử / đang cài':['Testing / installing','正在测试 / 正在安装'],
+'Thêm khoá (nếu cần)':['Add a key (if needed)','添加密钥（如需要）'],
+'Tự thêm':['Added by you','自行添加'],
+'Chưa có mô tả. Mở Chi tiết để xem lệnh.':['No description yet. Open Details to see the command.','暂无描述。打开“详细信息”查看命令。'],
+'Xem và quản lý kho mã trên GitHub.':['View and manage code repositories on GitHub.','查看和管理 GitHub 上的代码仓库。'],
+'Đọc và ghi trang Notion.':['Read and write Notion pages.','读取和编辑 Notion 页面。'],
+'Đọc và gửi tin trong Slack.':['Read and send Slack messages.','读取和发送 Slack 消息。'],
+'Tìm mô hình và bộ dữ liệu trên Hugging Face.':['Find models and datasets on Hugging Face.','在 Hugging Face 上查找模型和数据集。'],
+'Xem và tìm tệp trên ổ mạng trong nhà.':['Browse and search files on your home network drive.','浏览和搜索家中网络硬盘上的文件。'],
+'Xem thời tiết theo thành phố.':['Check the weather by city.','按城市查看天气。'],
+'Dùng các chức năng trên một máy ngoài mạng nội bộ.':['Use features on a machine outside your local network.','使用本地网络之外一台机器上的功能。'],
+'Xem tệp trên ổ mạng (gọi theo tên máy).':['Browse files on a network drive (by machine name).','浏览网络硬盘上的文件（按机器名访问）。'],
+'Tìm kiếm trên mạng (cần khoá).':['Search the web (needs a key).','网络搜索（需要密钥）。'],
+'Tạo báo cáo (mẫu chạy quá giờ).':['Create reports (timeout example).','生成报告（超时示例）。'],
+'Xem lịch công ty (mẫu lỗi).':['View the company calendar (error example).','查看公司日历（错误示例）。'],
+});

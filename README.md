@@ -36,6 +36,15 @@ Dữ liệu mẫu lưu trong localStorage (aivn.downloaded, aivn.biz). Nút "Đ�
 - §17.5: so khớp URL sau khi chuẩn hoá (bỏ '/' cuối, host không phân biệt hoa thường, path phân biệt). Gói so khớp bỏ qua phiên bản. Chỉ trùng tên → Của tôi.
 - Ảnh: `shots/8*.png`, chạy lại bằng `tools/shots8.py` (in kiểm tra chữ kỹ thuật trên màn hình chính, thanh agent và bảng bên).
 
+## connect.html v4.8 (quyết định ngày 22/10, lượt 6)
+- Bản 4.7 giữ nguyên ở `connect-v4.7.html` (+ `assets/connect-v47.js`, `assets/connect-i18n-v47.js`, khoá lưu v47). Bản 4.8 dùng khoá `aivn.plugins.v48` / `aivn.secrets.v48`.
+- Dòng lỗi trong danh sách bên trái chỉ còn chấm đỏ + “Lỗi” (Error / 错误); “(mẫu lỗi)” chỉ ở bảng bên phải của lich-cong-ty.
+- Chú thích màu thêm xanh dương = đang chạy thử / đang cài.
+- Ứng dụng tự thêm / nhập không khai báo khoá: không có ô khoá lớn, chỉ liên kết nhỏ “＋ Thêm khoá (nếu cần)” để mở ô. Ô khoá tô sáng chỉ hiện qua Nhập khoá khi chạy thử báo thiếu/sai khoá. Ứng dụng đã khai báo khoá (brave-search, tim-kiem) vẫn hiện dòng khoá.
+- Ứng dụng tự thêm có nhãn “Tự thêm” (Added by you / 自行添加) và mô tả nói rõ việc làm (vd thoi-tiet: “Xem thời tiết theo thành phố.”); không đoán được thì “Chưa có mô tả. Mở Chi tiết để xem lệnh.”
+- “N đã kết nối” đếm mọi mục đã kết nối, gồm cả mục Nâng cao (đã kiểm: 7 = 7 dòng xanh trong Của tôi).
+- Ảnh: `tools/shots12.py` → `shots/12*.png`; so sánh cạnh nhau `tools/compare48.py` → `shots/cmp48/`.
+
 ## connect.html v4.7 (quyết định ngày 22/10, lượt 5)
 Phản hồi bản 4.6: “chưa trực quan, chưa tốt như LM Studio”. Bản 4.6 giữ nguyên để so sánh: `connect-v4.6.html` (+ `assets/connect-v46.js`, `assets/connect-i18n-v46.js`, khoá `aivn.plugins.v46`/`aivn.secrets.v46`). Bản 4.7 dùng khoá `aivn.plugins.v47`/`aivn.secrets.v47`.
 - Hai cột: trái là danh sách gọn (logo lớn, tên, một dòng mô tả, chấm trạng thái), phải là chi tiết với một nút chính lớn theo trạng thái; nút phụ nhỏ hơn. Chữ kỹ thuật trong Chi tiết.
