@@ -1,0 +1,190 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trò chuyện · AIVN (bản mẫu)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
+<style>
+.wrap{flex:1;display:flex;min-height:0}
+.convs{width:240px;flex:none;border-right:1px solid var(--line);background:var(--bg2);display:flex;flex-direction:column}
+.convs .hd{padding:12px}
+.cv{padding:9px 12px;margin:0 8px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cv:hover{background:var(--panel)}.cv.on{background:var(--panel2);color:var(--tx)}
+.grp{font-size:11px;color:var(--tx3);padding:12px 20px 4px;text-transform:uppercase;letter-spacing:.5px}
+.chatcol{flex:1;display:flex;flex-direction:column;min-width:0}
+.mbar{padding:10px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.mpick{flex:1;max-width:560px;margin:0 auto;display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line2);padding:8px 14px;border-radius:10px;cursor:pointer}
+.mpick:hover{border-color:var(--acc)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--tx3);flex:none}.dot.on{background:var(--ok);box-shadow:0 0 0 3px var(--okbg)}
+.msgs{flex:1;padding:22px 0}
+.msg{max-width:780px;margin:0 auto 20px;padding:0 24px;display:flex;gap:12px}
+.msg .who{width:30px;height:30px;border-radius:8px;flex:none;display:grid;place-items:center;font-size:12px;font-weight:700}
+.msg.u .who{background:var(--panel2)}.msg.a .who{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
+.msg .bd{flex:1;min-width:0}
+.msg .nm{font-size:12.5px;font-weight:600;margin-bottom:3px}.msg .nm span{color:var(--tx3);font-weight:400;margin-left:6px}
+.msg .tx{white-space:pre-wrap;color:var(--tx)}
+.msg.u .tx{background:var(--panel);border:1px solid var(--line);padding:9px 13px;border-radius:10px;display:inline-block}
+.cursor{display:inline-block;width:7px;height:15px;background:var(--acc);vertical-align:-2px;animation:bl 1s steps(2) infinite}
+@keyframes bl{50%{opacity:0}}
+.stats{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.st{font-size:11.5px;color:var(--tx2);background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-variant-numeric:tabular-nums}
+.st b{color:var(--tx);font-weight:600}
+.composer{padding:12px 24px 18px}
+.cbox{max-width:780px;margin:0 auto;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:10px 12px}
+.cbox textarea{width:100%;background:none;border:none;outline:none;resize:none;height:44px}
+.hint{max-width:780px;margin:6px auto 0;font-size:11.5px;color:var(--tx3);text-align:center}
+.welcome{max-width:640px;margin:60px auto;text-align:center}
+.welcome h2{font-size:22px;margin:0 0 8px}
+.sugg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px;text-align:left}
+.sugg .card{padding:12px 14px;cursor:pointer;font-size:13px;color:var(--tx2)}.sugg .card:hover{border-color:var(--acc);color:var(--tx)}
+/* load dialog */
+.sec{margin-bottom:14px}.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.sl{display:flex;justify-content:space-between;align-items:baseline}
+.sl .v{font-weight:600;font-variant-numeric:tabular-nums}
+.ticks{display:flex;justify-content:space-between;font-size:10.5px;color:var(--tx3)}
+.gpus{display:grid;gap:8px}
+.gpu{display:flex;align-items:center;gap:12px;padding:8px 12px;border:1px solid var(--line2);border-radius:10px;cursor:pointer}
+.gpu:hover{border-color:var(--tx3)}.gpu.sel{border-color:var(--acc);background:var(--accbg)}
+.gpu .ic{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:700;flex:none}
+.gpu .rad{width:15px;height:15px;border-radius:50%;border:2px solid var(--line2);flex:none}.gpu.sel .rad{border-color:var(--acc);background:radial-gradient(var(--acc) 40%,transparent 45%)}
+.rec{font-size:10.5px;font-weight:600;color:var(--ok);background:var(--okbg);padding:1px 7px;border-radius:10px;margin-left:6px}
+.warnbox{font-size:12px;padding:8px 11px;border-radius:8px;margin-top:8px}
+.mem{display:flex;height:12px;border-radius:7px;overflow:hidden;background:var(--line);margin:8px 0 6px}
+.mem i{display:block;height:100%}
+.legend{display:flex;gap:14px;font-size:11.5px;color:var(--tx2);flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;background:var(--c)}
+.adv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.loadbar{display:none;margin-top:10px}
+</style></head><body>
+<div class="app"><nav class="rail"></nav>
+<div class="main">
+  <div class="topbar"><h1>Trò chuyện</h1><span class="sub">Chạy hoàn toàn trên máy · không gửi dữ liệu ra ngoài</span><span class="grow"></span><span class="sample">Dữ liệu mẫu · phản hồi mô phỏng</span></div>
+  <div class="wrap">
+    <aside class="convs"><div class="hd"><button class="btn pri" style="width:100%;justify-content:center" onclick="newChat()">＋ Cuộc trò chuyện mới</button></div>
+      <div class="scroll" style="flex:1"><div class="grp">Hôm nay</div><div class="cv on" id="cvCur">Cuộc trò chuyện mới</div>
+      <div class="grp">Tuần này</div><div class="cv">Tóm tắt báo cáo doanh thu Q3</div><div class="cv">Đọc hoá đơn từ ảnh chụp</div><div class="cv">Viết email chào hàng</div>
+      <div class="grp">Trước đó</div><div class="cv">Giải thích lượng tử hoá GGUF</div><div class="cv">Lịch học tuần sau</div></div></aside>
+    <section class="chatcol">
+      <div class="mbar"><div class="mpick" id="mpick"><span class="dot" id="mdot"></span><span id="mname" style="flex:1">Chọn mô hình để nạp…</span><span class="small muted" id="mmem"></span><span class="muted">▾</span></div>
+        <button class="btn sm ghost" id="eject" style="display:none">⏏ Đẩy ra</button></div>
+      <div class="msgs scroll" id="msgs"></div>
+      <div class="composer"><div class="cbox"><textarea id="inp" placeholder="Hãy nạp một mô hình trước khi trò chuyện" disabled></textarea>
+        <div class="row"><button class="btn sm ghost" title="Đính kèm ảnh (mô hình thị giác)">📎 Ảnh</button><span class="grow" style="flex:1"></span><span class="small muted" id="ctxinfo"></span><button class="btn pri sm" id="send" disabled>Gửi ↵</button></div></div>
+        <div class="hint">Enter để gửi · Shift+Enter xuống dòng · số liệu tok/s là mô phỏng theo cấu hình đã chọn</div></div>
+    </section>
+  </div>
+</div></div>
+
+<div class="modal-bg" id="dlg"><div class="modal" style="width:720px">
+  <header><h2>Nạp mô hình</h2><button class="x" onclick="closeDlg()">×</button></header>
+  <div class="body scroll">
+    <div class="sec"><label class="f">Mô hình đã tải về</label><select class="inp" id="selM"></select>
+      <div class="small muted" style="margin-top:5px">Thiếu mô hình? <a href="models.html">Mở Khám phá mô hình →</a></div></div>
+    <div class="sec"><label class="f">Thiết bị chạy (GPU)</label><div class="gpus" id="gpus"></div><div id="gpuNote"></div></div>
+    <div class="two"><div class="sec"><div class="sl"><label class="f">Độ dài ngữ cảnh (context)</label><span class="v" id="ctxV"></span></div>
+      <input type="range" id="ctx" min="0" max="5" step="1"><div class="ticks"><span>2K</span><span>4K</span><span>8K</span><span>16K</span><span>32K</span><span id="ctxMaxT">64K</span></div></div>
+    <div class="sec"><div class="sl"><label class="f">Số lớp đưa lên GPU (GPU offload)</label><span class="v" id="layV"></span></div>
+      <input type="range" id="lay" min="0" step="1"><div class="ticks"><span>0 · chỉ CPU</span><span id="layMax"></span></div></div></div>
+    <div class="sec adv"><label class="row small" style="gap:6px"><input type="checkbox" id="fa" checked> Flash Attention (giảm bộ nhớ ngữ cảnh)</label><label class="row small" style="gap:6px"><input type="checkbox" checked> Giữ mô hình trong bộ nhớ (mmap)</label></div>
+    <div class="card" style="padding:12px 14px;background:var(--bg2)">
+      <div class="row small"><b>Ước tính bộ nhớ</b><span class="grow" style="flex:1"></span><span id="memTxt"></span></div>
+      <div class="mem" id="memBar"></div>
+      <div class="legend"><span style="--c:var(--acc)">Trọng số trên GPU</span><span style="--c:var(--acc2)">Bộ nhớ ngữ cảnh (KV)</span><span style="--c:#64748b">Phần chạy bằng RAM/CPU</span></div>
+      <div id="memNote" class="small" style="margin-top:8px"></div>
+    </div>
+    <div class="loadbar" id="loadbar"><div class="row small"><span id="loadTxt">Đang nạp…</span></div><div class="bar" style="margin-top:6px"><i id="loadI" style="width:0"></i></div></div>
+  </div>
+  <footer><span class="small muted" style="margin-right:auto" id="estSpd"></span><button class="btn" onclick="closeDlg()">Huỷ</button><button class="btn pri" id="doLoad">Nạp mô hình</button></footer>
+</div></div>
+<script src="assets/shell.js"></script>
+<script>
+renderRail('chat');
+const GPUS=[
+ {id:'nv',name:'NVIDIA GeForce RTX 3050 Ti Laptop GPU',kind:'Card rời',vram:4,api:'CUDA 12',ic:['#76b900','#0b1a00'],perf:1},
+ {id:'amd',name:'AMD Radeon(TM) Graphics',kind:'Card tích hợp',vram:0.5,shared:true,api:'Vulkan',ic:['#ed1c24','#2a0607'],perf:.22},
+ {id:'cpu',name:'Chỉ dùng CPU',kind:'AMD Ryzen 7 4800H · 16 GB RAM',vram:0,api:'CPU',ic:['#94a3b8','#1e293b'],perf:.12},
+];
+const CTX=[2048,4096,8192,16384,32768,65536];
+let owned=LS.get('aivn.downloaded',[]);
+// mặc định: coi như đã có sẵn 2 mô hình Qwen3-VL để thử ngay
+[['qwen3-vl-4b','Q4_K_M'],['qwen3-vl-2b','Q4_K_M']].forEach(([id,q])=>{if(!owned.some(x=>x.id===id&&x.q===q))owned.push({id,q,size:qsize(MODELS.find(m=>m.id===id),q)})});
+const P=new URLSearchParams(location.search);
+let cfg={key:(P.get('model')&&P.get('q'))?P.get('model')+'@'+P.get('q'):'qwen3-vl-4b@Q4_K_M',gpu:'nv',ctx:1,lay:null,fa:true};
+let loaded=null,msgs=[],busy=false;
+const own=()=>owned.find(x=>x.id+'@'+x.q===cfg.key)||owned[0];
+const mdl=()=>MODELS.find(m=>m.id===own().id);
+function est(){const o=own(),m=mdl(),g=GPUS.find(x=>x.id===cfg.gpu);const L=m.layers,lay=g.id==='cpu'?0:cfg.lay;
+  const w=o.size,wg=w*lay/L,kv=CTX[cfg.ctx]*m.params*0.0000135*(cfg.fa?0.75:1),kvg=kv*lay/L,over=0.35;
+  const gpuNeed=wg+kvg+(lay?over:0);const cap=g.shared?2:g.vram;
+  const gS=g.id==='nv'?120:g.id==='amd'?40:30, cS=30; const frac=g.id==='cpu'?0:lay/L;
+  let spt=(frac/gS+(1-frac)/cS)*(w+0.3); let tps=1/spt;
+  if(gpuNeed>cap)tps*=0.35; tps=Math.max(1.5,tps);
+  const ttft=0.12+ (CTX[cfg.ctx]>8192?0.1:0)+ (g.id==='nv'?0.08:g.id==='amd'?0.6:1.1);
+  return {w,wg,kv,kvg,gpuNeed,cap,ram:(w-wg)+(kv-kvg),tps,ttft,g,m,o,lay,L};}
+function renderDlg(){
+  const sel=document.getElementById('selM');sel.innerHTML=owned.map(o=>{const m=MODELS.find(x=>x.id===o.id);return `<option value="${o.id}@${o.q}" ${o.id+'@'+o.q===cfg.key?'selected':''}>${m.name} · ${o.q} · ${fmtGB(o.size)}</option>`}).join('');
+  const m=mdl();if(cfg.lay==null||cfg.lay>m.layers)cfg.lay=m.layers;
+  const lay=document.getElementById('lay');lay.max=m.layers;lay.value=cfg.gpu==='cpu'?0:cfg.lay;lay.disabled=cfg.gpu==='cpu';
+  document.getElementById('layMax').textContent=m.layers+' · toàn bộ';
+  const c=document.getElementById('ctx');c.max=CTX.findIndex(x=>x>=m.ctx)<0?5:Math.min(5,CTX.findIndex(x=>x>=m.ctx));c.value=cfg.ctx;
+  document.getElementById('ctxV').textContent=CTX[cfg.ctx].toLocaleString('vi-VN')+' token';
+  const e=est();
+  document.getElementById('layV').textContent=(cfg.gpu==='cpu'?0:cfg.lay)+' / '+m.layers+' lớp';
+  document.getElementById('gpus').innerHTML=GPUS.map(g=>`<div class="gpu ${g.id===cfg.gpu?'sel':''}" data-g="${g.id}"><span class="rad"></span>
+    <span class="ic" style="background:${g.ic[1]};color:${g.ic[0]}">${g.id==='nv'?'NV':g.id==='amd'?'AMD':'CPU'}</span>
+    <div style="flex:1;min-width:0"><div style="font-weight:600">${g.name}${g.id==='nv'?'<span class="rec">Đề xuất</span>':''}</div>
+    <div class="small muted">${g.kind} · ${g.id==='cpu'?'chậm, chỉ dùng khi không có GPU':g.shared?'VRAM 512 MB + dùng chung RAM hệ thống':'VRAM '+g.vram+' GB GDDR6'} · ${g.api}</div></div>
+    ${g.id!=='cpu'?`<span class="small" style="text-align:right;min-width:70px"><b>${g.shared?'0,5':g.vram} GB</b><br><span class="muted">${g.id==='nv'?'trống 3,6 GB':'dùng chung'}</span></span>`:''}</div>`).join('');
+  document.querySelectorAll('.gpu').forEach(x=>x.onclick=()=>{cfg.gpu=x.dataset.g;renderDlg()});
+  const note=document.getElementById('gpuNote');
+  note.innerHTML=cfg.gpu==='amd'?'<div class="warnbox" style="background:var(--warnbg);color:var(--warn)">⚠ Card tích hợp AMD dùng chung RAM, chậm hơn nhiều. Máy có card rời NVIDIA RTX 3050 Ti — nên chọn card đó.</div>'
+   :cfg.gpu==='cpu'?'<div class="warnbox" style="background:var(--warnbg);color:var(--warn)">⚠ Chạy bằng CPU sẽ rất chậm. Nên chọn card rời NVIDIA.</div>'
+   :'<div class="warnbox" style="background:var(--okbg);color:var(--ok)">✓ Đang dùng card rời NVIDIA (CUDA) — lựa chọn nhanh nhất trên máy này.</div>';
+  const tot=Math.max(e.cap,e.gpuNeed)+e.ram||1,pc=v=>v/tot*100;
+  document.getElementById('memBar').innerHTML=`<i style="width:${pc(e.wg)}%;background:var(--acc)"></i><i style="width:${pc(e.kvg+(e.lay?0.35:0))}%;background:var(--acc2)"></i><i style="width:${pc(e.ram)}%;background:#64748b"></i>`;
+  document.getElementById('memTxt').innerHTML=cfg.gpu==='cpu'?`RAM ≈ <b>${fmtGB(e.w+e.kv)}</b>`:`GPU <b>${fmtGB(e.gpuNeed)}</b> / ${fmtGB(e.cap)} · RAM <b>${fmtGB(e.ram)}</b>`;
+  const ok=e.gpuNeed<=e.cap*0.92,warn=e.gpuNeed<=e.cap;
+  document.getElementById('memNote').innerHTML=cfg.gpu==='cpu'?'<span class="muted">Toàn bộ mô hình nằm trong RAM hệ thống.</span>':ok?'<span style="color:var(--ok)">✓ Vừa bộ nhớ GPU.</span>':warn?'<span style="color:var(--warn)">⚠ Sát giới hạn VRAM — có thể giảm ngữ cảnh.</span>':'<span style="color:var(--bad)">✕ Vượt VRAM — hãy giảm số lớp GPU hoặc độ dài ngữ cảnh.</span>';
+  document.getElementById('estSpd').textContent=`Tốc độ ước tính ~${e.tps.toFixed(0)} tok/s`;
+}
+function openDlg(){document.getElementById('dlg').classList.add('open');document.getElementById('loadbar').style.display='none';renderDlg()}
+function closeDlg(){document.getElementById('dlg').classList.remove('open')}
+document.getElementById('mpick').onclick=openDlg;
+document.getElementById('selM').onchange=e=>{cfg.key=e.target.value;cfg.lay=null;renderDlg()};
+document.getElementById('ctx').oninput=e=>{cfg.ctx=+e.target.value;renderDlg()};
+document.getElementById('lay').oninput=e=>{cfg.lay=+e.target.value;renderDlg()};
+document.getElementById('fa').onchange=e=>{cfg.fa=e.target.checked;renderDlg()};
+document.getElementById('doLoad').onclick=()=>{const e=est();const lb=document.getElementById('loadbar');lb.style.display='block';let p=0;
+  const t=setInterval(()=>{p+=7+Math.random()*9;document.getElementById('loadI').style.width=Math.min(100,p)+'%';
+   document.getElementById('loadTxt').textContent=p<40?'Đang đọc tệp GGUF…':p<80?`Đang đưa ${e.lay} lớp lên ${e.g.id==='cpu'?'CPU':e.g.name.split(' ').slice(0,2).join(' ')}…`:'Đang khởi tạo ngữ cảnh…';
+   if(p>=100){clearInterval(t);loaded={...e,ctx:CTX[cfg.ctx]};closeDlg();updBar();toast('✓ Đã nạp '+e.m.name);}},90*(window.FAST?0.2:1));};
+function updBar(){const on=!!loaded;document.getElementById('mdot').classList.toggle('on',on);
+  document.getElementById('mname').innerHTML=on?`<b>${loaded.m.name}</b> <span class="tag">${loaded.o.q}</span>`:'Chọn mô hình để nạp…';
+  document.getElementById('mmem').textContent=on?(loaded.g.id==='cpu'?'CPU':`${loaded.g.id==='nv'?'RTX 3050 Ti':'Radeon'} · ${fmtGB(loaded.gpuNeed)} VRAM`):'';
+  document.getElementById('eject').style.display=on?'':'none';
+  const inp=document.getElementById('inp');inp.disabled=!on;document.getElementById('send').disabled=!on;
+  inp.placeholder=on?'Nhắn cho '+loaded.m.name+'…':'Hãy nạp một mô hình trước khi trò chuyện';
+  document.getElementById('ctxinfo').textContent=on?`Ngữ cảnh: ${msgs.reduce((a,x)=>a+(x.tok||Math.ceil(x.t.length/3.2)),0)} / ${loaded.ctx.toLocaleString('vi-VN')} token`:'';renderMsgs();}
+document.getElementById('eject').onclick=()=>{loaded=null;updBar();toast('Đã giải phóng bộ nhớ GPU')};
+const REPLIES=[
+ 'Chào bạn! Mình đang chạy ngay trên máy của bạn, nên dữ liệu không rời khỏi máy.\n\nMột vài việc mình có thể giúp:\n• Tóm tắt tài liệu, viết email, dịch Anh – Việt\n• Đọc chữ và mô tả nội dung trong ảnh chụp màn hình\n• Giải thích code hoặc gợi ý cách sửa lỗi\n\nBạn muốn bắt đầu với việc gì?',
+ 'Lượng tử hoá (quantization) là cách nén trọng số mô hình từ 16 bit xuống còn khoảng 4–8 bit.\n\n• Q4_K_M: nhỏ gọn, chất lượng giữ được ~95%, hợp card 4 GB.\n• Q8_0: gần như bản gốc nhưng nặng gấp đôi.\n\nVới RTX 3050 Ti 4 GB, bạn nên dùng Qwen3-VL 4B bản Q4_K_M và để ngữ cảnh 8K.',
+ 'Được thôi. Đây là bản nháp ngắn:\n\n"Kính gửi anh/chị,\nAIVN xin giới thiệu giải pháp AI chạy trên máy cho doanh nghiệp nhỏ: quản lý sản phẩm, kho, bán hàng và hoá đơn trong một ứng dụng, có trợ lý AI riêng tư.\nRất mong được trao đổi thêm.\nTrân trọng."\n\nBạn muốn mình chỉnh giọng văn trang trọng hơn hay thân thiện hơn?'];
+function renderMsgs(){const el=document.getElementById('msgs');
+  if(!msgs.length){el.innerHTML=`<div class="welcome"><div style="font-size:40px">✨</div><h2>${loaded?'Sẵn sàng trò chuyện':'Bắt đầu bằng việc nạp một mô hình'}</h2>
+   <div class="muted">${loaded?loaded.m.name+' đã nạp vào '+(loaded.g.id==='cpu'?'CPU':loaded.g.name):'Bấm vào thanh chọn mô hình phía trên, chọn GPU và ngữ cảnh rồi nạp.'}</div>
+   ${loaded?`<div class="sugg">${['Giới thiệu bạn có thể làm gì','Giải thích lượng tử hoá Q4_K_M','Viết email chào hàng cho AIVN','Mô tả ảnh chụp màn hình này'].map(s=>`<div class="card" onclick="send('${s}')">${s}</div>`).join('')}</div>`:`<button class="btn pri" style="margin-top:18px" onclick="openDlg()">Nạp mô hình</button>`}</div>`;return}
+  el.innerHTML=msgs.map(x=>x.r==='u'?`<div class="msg u"><div class="who">K</div><div class="bd"><div class="nm">Bạn</div><div class="tx">${x.t}</div></div></div>`
+   :`<div class="msg a"><div class="who">AI</div><div class="bd"><div class="nm">${x.model}<span>${x.q}</span></div><div class="tx">${x.t}${x.stream?'<span class="cursor"></span>':''}</div>
+    ${x.waiting?'<div class="small muted">Đang xử lý lời nhắc…</div>':''}
+    ${x.tps?`<div class="stats"><span class="st">⚡ <b>${x.tps.toFixed(1).replace('.',',')}</b> tok/s</span><span class="st">⏱ Token đầu: <b>${x.ttft.toFixed(2).replace('.',',')}</b> giây</span><span class="st"><b>${x.tok}</b> token</span>${x.stream?'':`<span class="st">Tổng <b>${x.total.toFixed(1).replace('.',',')}</b> giây</span><span class="st">${x.dev}</span>`}</div>`:''}</div></div>`).join('');
+  el.scrollTop=el.scrollHeight;}
+function send(text){text=(text??document.getElementById('inp').value).trim();if(!text||!loaded||busy)return;busy=true;document.getElementById('inp').value='';
+  msgs.push({r:'u',t:text});const full=REPLIES[(msgs.length/2|0)%REPLIES.length]||REPLIES[0];
+  const a={r:'a',t:'',model:loaded.m.name,q:loaded.o.q,stream:true,waiting:true,tok:0,dev:loaded.g.id==='nv'?'RTX 3050 Ti · CUDA':loaded.g.id==='amd'?'Radeon · Vulkan':'CPU'};msgs.push(a);renderMsgs();
+  const t0=performance.now(),ttft=loaded.ttft*(0.85+Math.random()*.3),words=full.split(/(\s+)/);let i=0;
+  setTimeout(()=>{a.waiting=false;a.ttft=ttft;const base=loaded.tps*(0.92+Math.random()*.12);
+    const step=()=>{if(i>=words.length){a.stream=false;a.total=a.ttft+a.tok/a.tps;busy=false;renderMsgs();updBar();return}
+      a.t+=words[i++];if(words[i-1].trim())a.tok+=Math.max(1,Math.round(words[i-1].length/3.5));
+      a.tps=base*(0.97+Math.random()*.06);renderMsgs();setTimeout(step,1000/base*1.4*(window.FAST?0.15:1));};step();},ttft*1000);}
+document.getElementById('send').onclick=()=>send();
+document.getElementById('inp').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}};
+function newChat(){msgs=[];updBar()}
+updBar();if(P.get('model'))openDlg();
+</script></body></html>

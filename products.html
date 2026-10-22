@@ -1,0 +1,208 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kinh doanh · Sản phẩm · AIVN (bản mẫu)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
+<style>
+.tabs{display:flex;gap:2px;padding:0 14px;border-bottom:1px solid var(--line);background:var(--bg2);overflow-x:auto}
+.tab{padding:11px 13px;cursor:pointer;color:var(--tx2);border-bottom:2px solid transparent;white-space:nowrap;font-weight:500;font-size:13.5px;position:relative}
+.tab:hover{color:var(--tx)}.tab.on{color:var(--tx);border-bottom-color:var(--acc)}
+.tab .new{font-size:9.5px;font-weight:700;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;padding:1px 5px;border-radius:4px;margin-left:5px;vertical-align:2px}
+.tab.prod:not(.on){color:#86efac}
+.view{flex:1;overflow:auto;padding:18px 22px}
+.tb{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.tb h2{margin:0;font-size:18px;margin-right:6px}
+.seg{display:flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.seg button{background:none;border:none;padding:6px 11px;cursor:pointer;color:var(--tx3)}.seg button.on{background:var(--panel2);color:var(--tx)}
+.kan{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.pc{display:flex;gap:11px;padding:11px;cursor:pointer;transition:.15s}
+.pc:hover{border-color:var(--acc);transform:translateY(-1px)}
+.pimg{width:64px;height:64px;border-radius:9px;object-fit:cover;flex:none;background:var(--panel2)}
+.pc .nm{font-weight:600;line-height:1.3}
+.pc .sku{font-size:11.5px;color:var(--tx3);font-family:ui-monospace,monospace}
+.pc .pr{font-weight:600;margin-top:4px}
+.stk{font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px}
+.stk.ok{color:var(--ok);background:var(--okbg)}.stk.low{color:var(--warn);background:var(--warnbg)}.stk.out{color:var(--bad);background:var(--badbg)}.stk.svc{color:var(--tx2);background:var(--panel2)}
+table.t{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.t th{text-align:left;font-size:12px;color:var(--tx3);font-weight:600;padding:9px 12px;border-bottom:1px solid var(--line);background:var(--bg2)}
+.t td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.t tr:last-child td{border-bottom:none}.t tbody tr:hover{background:var(--panel2)}.t tbody tr.click{cursor:pointer}
+.num{text-align:right!important;font-variant-numeric:tabular-nums}
+.st{font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--panel2);color:var(--tx2)}
+.st.blue{background:var(--accbg);color:var(--acc)}.st.green{background:var(--okbg);color:var(--ok)}.st.yel{background:var(--warnbg);color:var(--warn)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form{max-width:980px}
+.fhead{display:flex;gap:20px;align-items:flex-start}
+.fhead .namein{font-size:22px;font-weight:600;background:none;border:none;border-bottom:1px dashed var(--line2);outline:none;width:100%;padding:4px 0}
+.fhead .namein:focus{border-bottom-color:var(--acc)}
+.imgbox{width:132px;height:132px;border:2px dashed var(--line2);border-radius:12px;display:grid;place-items:center;cursor:pointer;overflow:hidden;flex:none;text-align:center;color:var(--tx3);font-size:12px;position:relative}
+.imgbox:hover{border-color:var(--acc)}.imgbox img{width:100%;height:100%;object-fit:cover}
+.smart{display:flex;gap:8px;margin:14px 0}
+.sb{display:flex;align-items:center;gap:9px;padding:8px 14px;border:1px solid var(--line2);border-radius:9px;cursor:pointer;background:var(--panel)}
+.sb:hover{border-color:var(--acc)}.sb b{display:block;font-size:15px}.sb span{font-size:11.5px;color:var(--tx3)}
+.fld{margin-bottom:12px}.req::after{content:" *";color:var(--bad)}
+.hint{font-size:11.5px;color:var(--tx3);margin-top:4px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{padding:14px 16px}.kpi .v{font-size:22px;font-weight:700;margin-top:4px}.kpi .l{font-size:12px;color:var(--tx3)}
+.flow{display:flex;align-items:center;gap:10px;padding:16px;flex-wrap:wrap}
+.fs{flex:1;min-width:150px;padding:12px 14px;border-radius:10px;background:var(--bg2);border:1px solid var(--line);cursor:pointer}
+.fs:hover{border-color:var(--acc)}.fs b{display:block}.fs span{font-size:12px;color:var(--tx3)}
+.arrow{color:var(--tx3);font-size:18px}
+.banner{display:flex;gap:12px;align-items:center;padding:12px 16px;border-radius:10px;background:linear-gradient(90deg,rgba(34,197,94,.14),rgba(108,140,255,.1));border:1px solid rgba(34,197,94,.35);margin-bottom:16px}
+.lines td .inp{padding:5px 8px}
+.pipe{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.pcol{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px}
+.pcol h4{margin:2px 4px 10px;font-size:13px;display:flex;justify-content:space-between}
+.lead{padding:10px;margin-bottom:8px;font-size:13px}
+.bars .b{display:grid;grid-template-columns:180px 1fr 110px;gap:10px;align-items:center;margin-bottom:9px;font-size:13px}
+.bars .b .bar{height:12px}
+.next{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+</style></head><body>
+<div class="app"><nav class="rail"></nav>
+<div class="main">
+  <div class="topbar"><h1>Kinh doanh</h1><span class="sub">Công ty TNHH Mẫu AIVN</span><span class="grow"></span><span class="sample">Dữ liệu mẫu · lưu trong trình duyệt</span><button class="btn sm ghost" onclick="resetData()">↺ Đặt lại dữ liệu mẫu</button></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="view scroll" id="view"></div>
+</div></div>
+<div class="modal-bg" id="dlg"><div class="modal" style="width:760px" id="dlgBox"></div></div>
+<input type="file" id="file" accept="image/*" style="display:none">
+<script src="assets/shell.js"></script>
+<script>
+renderRail('biz');
+const TABS=[['overview','Tổng quan'],['contacts','Liên hệ'],['crm','CRM'],['todo','Việc cần làm'],['products','Sản phẩm'],['sales','Bán hàng'],['stock','Kho'],['invoices','Hoá đơn'],['reports','Báo cáo']];
+const UNITS=['Cái','Chiếc','Hộp','Bộ','Kg','Lít','Gói','Giờ','Tháng'];
+const CATS=['Thiết bị','Phụ kiện','Phần mềm','Dịch vụ','Đồ uống','Văn phòng phẩm'];
+function ph(emoji,c1,c2){return 'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs><rect width="128" height="128" fill="url(#g)"/><text x="64" y="82" font-size="54" text-anchor="middle">${emoji}</text></svg>`)}
+function seed(){return{
+ products:[
+  {id:1,name:'Laptop AIVN Pro 14',sku:'LAP-AIVN-14',cat:'Thiết bị',price:24990000,cost:19800000,unit:'Chiếc',type:'goods',img:ph('💻','#4f46e5','#0ea5e9'),desc:'RTX 4060, 32 GB RAM'},
+  {id:2,name:'Bàn phím cơ không dây',sku:'PK-KB-01',cat:'Phụ kiện',price:1290000,cost:820000,unit:'Cái',type:'goods',img:ph('⌨️','#0f766e','#22c55e'),desc:''},
+  {id:3,name:'Chuột công thái học',sku:'PK-MS-02',cat:'Phụ kiện',price:690000,cost:410000,unit:'Cái',type:'goods',img:ph('🖱️','#9333ea','#ec4899'),desc:''},
+  {id:4,name:'Gói AIVN Doanh nghiệp (12 tháng)',sku:'SW-AIVN-BIZ',cat:'Phần mềm',price:4800000,cost:0,unit:'Tháng',type:'service',img:ph('🧩','#f59e0b','#ef4444'),desc:'Bản quyền theo năm'},
+  {id:5,name:'Cà phê rang xay Cầu Đất 500g',sku:'DU-CF-500',cat:'Đồ uống',price:185000,cost:112000,unit:'Gói',type:'goods',img:ph('☕','#78350f','#d97706'),desc:''},
+  {id:6,name:'Cài đặt & đào tạo tại chỗ',sku:'DV-SETUP',cat:'Dịch vụ',price:650000,cost:300000,unit:'Giờ',type:'service',img:ph('🛠️','#334155','#64748b'),desc:''},
+ ],
+ moves:[[1,12,'Nhập kho ban đầu'],[2,40,'Nhập kho ban đầu'],[3,3,'Nhập kho ban đầu'],[5,85,'Nhập kho ban đầu'],[1,-2,'Giao hàng SO0001']].map(([p,q,r],i)=>({id:i+1,pid:p,qty:q,ref:r,date:'2026-10-'+(10+i)})),
+ contacts:[{id:1,name:'Công ty CP Sao Mai',email:'muahang@saomai.vn',phone:'028 3812 4455',city:'TP. Hồ Chí Minh'},{id:2,name:'Trường THPT Lê Quý Đôn',email:'vanphong@lqd.edu.vn',phone:'0236 3821 777',city:'Đà Nẵng'},{id:3,name:'Nguyễn Thị Lan',email:'lan.nt@gmail.com',phone:'0912 345 678',city:'Hà Nội'},{id:4,name:'Cửa hàng Minh Phát',email:'minhphat@shop.vn',phone:'0903 888 112',city:'Cần Thơ'}],
+ orders:[{id:1,no:'SO0001',cid:1,date:'2026-10-14',state:'done',lines:[{pid:1,qty:2,price:24990000}],inv:1},{id:2,no:'SO0002',cid:3,date:'2026-10-20',state:'quote',lines:[{pid:2,qty:1,price:1290000},{pid:3,qty:1,price:690000}]}],
+ invoices:[{id:1,no:'HD/2026/0001',oid:1,cid:1,date:'2026-10-14',state:'paid',total:2*24990000*1.1}],
+ todos:[{t:'Gọi lại Công ty Sao Mai về báo giá laptop',d:false},{t:'Nhập thêm chuột công thái học (sắp hết)',d:false},{t:'Gửi hoá đơn tháng 10',d:true}],
+ seq:{p:7,m:6,o:3,i:2}
+}}
+let D=LS.get('aivn.biz',null)||seed();const save=()=>LS.set('aivn.biz',D);save();
+let tab=location.hash.slice(1)||'products',pv={view:'kanban',q:'',cat:'',edit:null};
+const P=id=>D.products.find(p=>p.id===id),C=id=>D.contacts.find(c=>c.id===id);
+const onhand=pid=>D.moves.filter(m=>m.pid===pid).reduce((a,m)=>a+m.qty,0);
+const sold=pid=>D.orders.filter(o=>o.state!=='quote').flatMap(o=>o.lines).filter(l=>l.pid===pid).reduce((a,l)=>a+l.qty,0);
+const otot=o=>o.lines.reduce((a,l)=>a+l.qty*l.price,0);
+function stkBadge(p){if(p.type==='service')return'<span class="stk svc">Dịch vụ</span>';const n=onhand(p.id);return n<=0?`<span class="stk out">Hết hàng</span>`:n<5?`<span class="stk low">Còn ${n} ${p.unit.toLowerCase()}</span>`:`<span class="stk ok">Tồn ${n} ${p.unit.toLowerCase()}</span>`}
+function go(t){tab=t;pv.edit=null;history.replaceState(null,'','#'+t);render()}
+function render(){
+  document.getElementById('tabs').innerHTML=TABS.map(([k,l])=>`<div class="tab ${k===tab?'on':''} ${k==='products'?'prod':''}" onclick="go('${k}')">${k==='products'?'📦 ':''}${l}${k==='products'?'<span class="new">MỚI</span>':''}</div>`).join('');
+  document.getElementById('view').innerHTML=(V[tab]||(()=>''))();
+  (AFTER[tab]||(()=>{}))();
+}
+const V={},AFTER={};
+/* ---------- SẢN PHẨM ---------- */
+V.products=()=>{
+  if(pv.edit)return productForm();
+  const list=D.products.filter(p=>(!pv.cat||p.cat===pv.cat)&&(p.name+' '+p.sku).toLowerCase().includes(pv.q.toLowerCase()));
+  return `<div class="banner"><span style="font-size:22px">📦</span><div style="flex:1"><b>Sản phẩm là nơi bắt đầu.</b> <span class="muted">Tạo sản phẩm ở đây → tự xuất hiện trong <a href="#" onclick="go('stock');return false">Kho</a>, chọn được khi lập <a href="#" onclick="go('sales');return false">Đơn bán hàng</a>, và đơn hàng tạo ra <a href="#" onclick="go('invoices');return false">Hoá đơn</a>.</span></div></div>
+  <div class="tb"><h2>Sản phẩm</h2><button class="btn pri" onclick="newProduct()">＋ Tạo sản phẩm</button>
+   <div class="search" style="width:280px">${ICONS.search}<input class="inp" id="pq" placeholder="Tìm theo tên hoặc mã SKU…" value="${pv.q}"></div>
+   <select class="inp" style="width:170px" id="pcat"><option value="">Tất cả danh mục</option>${CATS.map(c=>`<option ${c===pv.cat?'selected':''}>${c}</option>`).join('')}</select>
+   <span style="flex:1"></span><span class="muted small">${list.length} sản phẩm</span>
+   <div class="seg"><button class="${pv.view==='kanban'?'on':''}" onclick="pv.view='kanban';render()" title="Dạng thẻ">▦ Thẻ</button><button class="${pv.view==='list'?'on':''}" onclick="pv.view='list';render()" title="Dạng danh sách">☰ Danh sách</button></div></div>
+  ${!list.length?'<div class="empty">Không tìm thấy sản phẩm. <a href="#" onclick="newProduct();return false">Tạo sản phẩm mới</a></div>':pv.view==='kanban'?`<div class="kan">${list.map(p=>`<div class="card pc" onclick="editProduct(${p.id})"><img class="pimg" src="${p.img}"><div style="min-width:0;flex:1"><div class="nm">${p.name}</div><div class="sku">${p.sku}</div><div class="pr">${vnd(p.price)}<span class="muted small" style="font-weight:400"> / ${p.unit.toLowerCase()}</span></div><div style="margin-top:5px">${stkBadge(p)}</div></div></div>`).join('')}</div>`
+  :`<table class="t"><thead><tr><th></th><th>Tên sản phẩm</th><th>SKU</th><th>Danh mục</th><th class="num">Giá bán</th><th class="num">Giá vốn</th><th>ĐVT</th><th class="num">Tồn kho</th></tr></thead><tbody>${list.map(p=>`<tr class="click" onclick="editProduct(${p.id})"><td style="width:44px"><img src="${p.img}" style="width:32px;height:32px;border-radius:6px;object-fit:cover"></td><td><b>${p.name}</b></td><td class="sku" style="font-family:monospace;font-size:12px">${p.sku}</td><td>${p.cat}</td><td class="num">${vnd(p.price)}</td><td class="num muted">${vnd(p.cost)}</td><td>${p.unit}</td><td class="num">${p.type==='service'?'—':onhand(p.id)}</td></tr>`).join('')}</tbody></table>`}`;
+};
+AFTER.products=()=>{const q=document.getElementById('pq');if(q){q.oninput=e=>{pv.q=e.target.value;const pos=e.target.selectionStart;render();const n=document.getElementById('pq');n.focus();n.setSelectionRange(pos,pos)};document.getElementById('pcat').onchange=e=>{pv.cat=e.target.value;render()}}
+  const f=document.getElementById('pform');if(f){f.querySelectorAll('input,select,textarea').forEach(i=>i.oninput=readForm);document.getElementById('imgbox').onclick=()=>document.getElementById('file').click();readForm(true)}};
+function newProduct(){tab='products';pv.edit={id:null,name:'',sku:'',cat:'Thiết bị',price:'',cost:'',unit:'Cái',type:'goods',qty:'',img:'',desc:''};history.replaceState(null,'','#products');render();setTimeout(()=>document.querySelector('.namein')?.focus(),0)}
+function editProduct(id){pv.edit={...P(id),qty:onhand(id)};render()}
+function productForm(){const e=pv.edit,isNew=!e.id;
+  return `<div class="form"><div class="tb"><a href="#" onclick="pv.edit=null;render();return false" class="muted">Sản phẩm</a><span class="muted">/</span><b>${isNew?'Mới':e.name}</b><span style="flex:1"></span>
+   <button class="btn" onclick="pv.edit=null;render()">Huỷ bỏ</button><button class="btn pri" onclick="saveProduct()">💾 Lưu sản phẩm</button></div>
+  <div class="card" style="padding:22px" id="pform">
+   ${isNew?'':`<div class="smart"><div class="sb" onclick="go('stock')">📦<div><b>${e.type==='service'?'—':onhand(e.id)}</b><span>Tồn kho</span></div></div><div class="sb" onclick="go('sales')">🛒<div><b>${sold(e.id)}</b><span>Đã bán</span></div></div><div class="sb" onclick="go('invoices')">🧾<div><b>${D.invoices.filter(i=>D.orders.find(o=>o.id===i.oid)?.lines.some(l=>l.pid===e.id)).length}</b><span>Hoá đơn</span></div></div><div class="sb" onclick="quickOrder(${e.id})">＋<div><b>Bán ngay</b><span>Tạo đơn hàng</span></div></div></div>`}
+   <div class="fhead"><div style="flex:1"><label class="f req">Tên sản phẩm</label><input class="namein" id="f_name" placeholder="VD: Tai nghe chống ồn AIVN" value="${e.name}">
+     <div class="row" style="gap:18px;margin-top:12px"><label class="row small"><input type="radio" name="f_type" value="goods" ${e.type==='goods'?'checked':''}> Hàng hoá lưu kho</label><label class="row small"><input type="radio" name="f_type" value="service" ${e.type==='service'?'checked':''}> Dịch vụ (không tồn kho)</label></div></div>
+     <div><div class="imgbox" id="imgbox">${e.img?`<img src="${e.img}">`:'<div>🖼️<br>Bấm để tải ảnh<br><span style="font-size:10.5px">PNG, JPG</span></div>'}</div>${e.img?'<div class="small" style="text-align:center;margin-top:4px"><a href="#" onclick="pv.edit.img=\'\';render();return false">Xoá ảnh</a></div>':''}</div></div>
+   <div class="grid2" style="margin-top:18px">
+    <div><div class="fld"><label class="f req">Mã sản phẩm (SKU)</label><input class="inp" id="f_sku" value="${e.sku}" placeholder="VD: PK-TN-01"><div class="hint">Mã duy nhất, dùng khi quét mã vạch</div></div>
+     <div class="fld"><label class="f">Danh mục</label><select class="inp" id="f_cat">${CATS.map(c=>`<option ${c===e.cat?'selected':''}>${c}</option>`).join('')}</select></div>
+     <div class="fld"><label class="f">Đơn vị tính</label><select class="inp" id="f_unit">${UNITS.map(c=>`<option ${c===e.unit?'selected':''}>${c}</option>`).join('')}</select></div></div>
+    <div><div class="fld"><label class="f req">Giá bán (₫)</label><input class="inp" id="f_price" type="number" min="0" value="${e.price}" placeholder="0"><div class="hint" id="pricefmt">&nbsp;</div></div>
+     <div class="fld"><label class="f">Giá vốn (₫)</label><input class="inp" id="f_cost" type="number" min="0" value="${e.cost}" placeholder="0"><div class="hint" id="margin">&nbsp;</div></div>
+     <div class="fld" id="qtyFld"><label class="f">${isNew?'Tồn kho ban đầu':'Tồn kho hiện tại'}</label><input class="inp" id="f_qty" type="number" min="0" value="${e.qty}" placeholder="0"><div class="hint">${isNew?'Sẽ tạo phiếu "Nhập kho ban đầu" trong Kho':'Đổi số này sẽ tạo phiếu điều chỉnh tồn kho'}</div></div></div>
+   </div>
+   <div class="fld"><label class="f">Mô tả</label><textarea class="inp" id="f_desc" rows="2" placeholder="Mô tả ngắn hiển thị trên báo giá và hoá đơn">${e.desc||''}</textarea></div>
+  </div></div>`}
+function readForm(init){const e=pv.edit,g=id=>document.getElementById(id);if(init!==true){e.name=g('f_name').value;e.sku=g('f_sku').value;e.cat=g('f_cat').value;e.unit=g('f_unit').value;e.price=g('f_price').value;e.cost=g('f_cost').value;e.qty=g('f_qty').value;e.desc=g('f_desc').value;e.type=document.querySelector('[name=f_type]:checked').value}
+  const pr=+e.price,co=+e.cost;g('pricefmt').innerHTML=pr?'= '+vnd(pr)+' / '+e.unit.toLowerCase():'&nbsp;';g('margin').innerHTML=pr&&co?`Lợi nhuận gộp: <b style="color:${pr>co?'var(--ok)':'var(--bad)'}">${vnd(pr-co)} (${((pr-co)/pr*100).toFixed(0)}%)</b>`:'&nbsp;';g('qtyFld').style.opacity=e.type==='service'?.4:1;g('f_qty').disabled=e.type==='service';}
+document.getElementById('file').onchange=ev=>{const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d'),s=Math.min(im.width,im.height);x.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,256,256);pv.edit.img=c.toDataURL('image/jpeg',.85);render()};im.src=r.result};r.readAsDataURL(f);ev.target.value=''};
+function saveProduct(){const e=pv.edit;if(!e.name.trim())return toast('Vui lòng nhập tên sản phẩm');if(!e.sku.trim())return toast('Vui lòng nhập mã SKU');if(!(+e.price>=0)||e.price==='')return toast('Vui lòng nhập giá bán');
+  if(D.products.some(p=>p.sku.toLowerCase()===e.sku.trim().toLowerCase()&&p.id!==e.id))return toast('Mã SKU đã tồn tại');
+  const isNew=!e.id;const p={id:e.id||D.seq.p++,name:e.name.trim(),sku:e.sku.trim().toUpperCase(),cat:e.cat,price:+e.price,cost:+e.cost||0,unit:e.unit,type:e.type,img:e.img||ph('📦','#475569','#1e293b'),desc:e.desc};
+  if(isNew)D.products.push(p);else Object.assign(P(p.id),p);
+  if(p.type==='goods'){const cur=isNew?0:onhand(p.id),want=+e.qty||0;if(want!==cur)D.moves.push({id:D.seq.m++,pid:p.id,qty:want-cur,ref:isNew?'Nhập kho ban đầu':'Điều chỉnh tồn kho',date:today()})}
+  save();pv.edit={...p,qty:onhand(p.id)};render();
+  showNext(`✓ Đã lưu "${p.name}"`,p.type==='goods'?`Đã cập nhật tồn kho: ${onhand(p.id)} ${p.unit.toLowerCase()}.`:'Sản phẩm dịch vụ sẵn sàng để bán.',p.id)}
+function showNext(title,sub,pid){openModal(`<header><h2>${title}</h2><button class="x" onclick="closeModal()">×</button></header><div class="body"><p style="margin-top:0">${sub} Sản phẩm này giờ đã xuất hiện ở các phần liên quan:</p>
+  <div class="flow" style="padding:0"><div class="fs" onclick="closeModal();go('stock')"><b>📦 Kho</b><span>Xem tồn kho & phiếu nhập</span></div><span class="arrow">→</span><div class="fs" onclick="closeModal();quickOrder(${pid})"><b>🛒 Bán hàng</b><span>Tạo đơn với sản phẩm này</span></div><span class="arrow">→</span><div class="fs" onclick="closeModal();go('invoices')"><b>🧾 Hoá đơn</b><span>Đơn xác nhận → hoá đơn</span></div></div></div>
+  <footer><button class="btn" onclick="closeModal();pv.edit=null;render()">Về danh sách sản phẩm</button><button class="btn pri" onclick="closeModal();quickOrder(${pid})">🛒 Tạo đơn bán ngay</button></footer>`)}
+const today=()=>new Date().toISOString().slice(0,10),vdate=d=>d.split('-').reverse().join('/');
+function openModal(h){document.getElementById('dlgBox').innerHTML=h;document.getElementById('dlg').classList.add('open')}
+function closeModal(){document.getElementById('dlg').classList.remove('open')}
+/* ---------- KHO ---------- */
+V.stock=()=>{const goods=D.products.filter(p=>p.type==='goods');const val=goods.reduce((a,p)=>a+onhand(p.id)*p.cost,0);
+ return `<div class="tb"><h2>Kho</h2><span class="muted small">Tồn kho tự cập nhật từ Sản phẩm và Đơn bán hàng</span><span style="flex:1"></span><span>Giá trị tồn kho: <b>${vnd(val)}</b></span><button class="btn" onclick="newProduct()">＋ Sản phẩm mới</button></div>
+ <table class="t"><thead><tr><th></th><th>Sản phẩm</th><th>SKU</th><th class="num">Tồn kho</th><th>ĐVT</th><th class="num">Giá vốn</th><th class="num">Giá trị</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+ ${goods.map(p=>`<tr><td style="width:44px"><img src="${p.img}" style="width:30px;height:30px;border-radius:6px;object-fit:cover"></td><td><a href="#" onclick="tab='products';editProduct(${p.id});return false"><b style="color:var(--tx)">${p.name}</b></a></td><td style="font-family:monospace;font-size:12px">${p.sku}</td><td class="num"><b>${onhand(p.id)}</b></td><td>${p.unit}</td><td class="num">${vnd(p.cost)}</td><td class="num">${vnd(onhand(p.id)*p.cost)}</td><td>${stkBadge(p)}</td><td class="num"><button class="btn sm" onclick="adjust(${p.id},10)">＋10 nhập</button></td></tr>`).join('')}</tbody></table>
+ <h3 style="font-size:14px;margin:22px 0 10px">Lịch sử dịch chuyển kho</h3>
+ <table class="t"><thead><tr><th>Ngày</th><th>Sản phẩm</th><th>Chứng từ</th><th class="num">Số lượng</th></tr></thead><tbody>${D.moves.slice().reverse().slice(0,12).map(m=>`<tr><td>${vdate(m.date)}</td><td>${P(m.pid)?.name||'—'}</td><td>${m.ref}</td><td class="num" style="color:${m.qty>0?'var(--ok)':'var(--bad)'}">${m.qty>0?'+':''}${m.qty}</td></tr>`).join('')}</tbody></table>`};
+function adjust(pid,q){D.moves.push({id:D.seq.m++,pid,qty:q,ref:'Phiếu nhập kho',date:today()});save();render();toast(`Đã nhập thêm ${q} ${P(pid).unit.toLowerCase()}`)}
+/* ---------- BÁN HÀNG ---------- */
+const OST={quote:['Báo giá','yel'],sale:['Đơn bán hàng','blue'],done:['Đã xuất hoá đơn','green']};
+V.sales=()=>`<div class="tb"><h2>Bán hàng</h2><button class="btn pri" onclick="orderDlg()">＋ Tạo đơn hàng</button><span style="flex:1"></span><span class="muted small">Báo giá → Xác nhận (trừ kho) → Tạo hoá đơn</span></div>
+ <table class="t"><thead><tr><th>Số đơn</th><th>Ngày</th><th>Khách hàng</th><th>Sản phẩm</th><th class="num">Tổng (gồm VAT)</th><th>Trạng thái</th><th class="num">Thao tác</th></tr></thead><tbody>
+ ${D.orders.slice().reverse().map(o=>`<tr><td><b>${o.no}</b></td><td>${vdate(o.date)}</td><td>${C(o.cid).name}</td><td class="small">${o.lines.map(l=>`${l.qty} × ${P(l.pid)?.name}`).join('<br>')}</td><td class="num"><b>${vnd(otot(o)*1.1)}</b></td><td><span class="st ${OST[o.state][1]}">${OST[o.state][0]}</span></td>
+ <td class="num">${o.state==='quote'?`<button class="btn sm pri" onclick="confirmO(${o.id})">✓ Xác nhận</button>`:o.state==='sale'?`<button class="btn sm pri" onclick="invoiceO(${o.id})">🧾 Tạo hoá đơn</button>`:`<button class="btn sm" onclick="go('invoices')">Xem hoá đơn</button>`}</td></tr>`).join('')}</tbody></table>`;
+let draft=null;
+function quickOrder(pid){go('sales');orderDlg(pid)}
+function orderDlg(pid){draft={cid:D.contacts[0].id,lines:[{pid:pid||D.products[D.products.length-1].id,qty:1}]};draft.lines.forEach(l=>l.price=P(l.pid).price);renderOrder()}
+function renderOrder(){const sub=draft.lines.reduce((a,l)=>a+l.qty*l.price,0);
+ openModal(`<header><h2>Đơn hàng mới</h2><span class="st yel">Báo giá</span><button class="x" onclick="closeModal()">×</button></header><div class="body scroll">
+  <div class="grid2"><div class="fld"><label class="f">Khách hàng</label><select class="inp" onchange="draft.cid=+this.value">${D.contacts.map(c=>`<option value="${c.id}" ${c.id===draft.cid?'selected':''}>${c.name}</option>`).join('')}</select></div><div class="fld"><label class="f">Ngày đặt</label><input class="inp" value="${vdate(today())}" disabled></div></div>
+  <table class="t lines"><thead><tr><th>Sản phẩm</th><th style="width:80px">SL</th><th class="num" style="width:140px">Đơn giá</th><th class="num" style="width:130px">Thành tiền</th><th style="width:30px"></th></tr></thead><tbody>
+  ${draft.lines.map((l,i)=>{const p=P(l.pid);const warn=p.type==='goods'&&l.qty>onhand(p.id);return `<tr><td><select class="inp" onchange="draft.lines[${i}].pid=+this.value;draft.lines[${i}].price=P(+this.value).price;renderOrder()">${D.products.map(x=>`<option value="${x.id}" ${x.id===l.pid?'selected':''}>${x.name} (${x.sku})</option>`).join('')}</select>
+   <div class="small" style="margin-top:3px;color:${warn?'var(--bad)':'var(--tx3)'}">${p.type==='service'?'Dịch vụ':`Có sẵn: ${onhand(p.id)} ${p.unit.toLowerCase()}${warn?' — không đủ hàng':''}`}</div></td>
+   <td><input class="inp" type="number" min="1" value="${l.qty}" onchange="draft.lines[${i}].qty=Math.max(1,+this.value);renderOrder()"></td><td class="num">${vnd(l.price)}</td><td class="num"><b>${vnd(l.qty*l.price)}</b></td><td><button class="x" style="font-size:16px" onclick="draft.lines.splice(${i},1);if(!draft.lines.length)closeModal();else renderOrder()">🗑</button></td></tr>`}).join('')}
+  </tbody></table><button class="btn sm ghost" style="margin-top:8px" onclick="draft.lines.push({pid:D.products[0].id,qty:1,price:D.products[0].price});renderOrder()">＋ Thêm dòng</button>
+  <div style="margin-left:auto;width:260px;margin-top:10px" class="small"><div class="row"><span>Tạm tính</span><span style="flex:1"></span>${vnd(sub)}</div><div class="row"><span>VAT 10%</span><span style="flex:1"></span>${vnd(sub*.1)}</div><div class="row" style="font-size:15px;margin-top:4px"><b>Tổng cộng</b><span style="flex:1"></span><b>${vnd(sub*1.1)}</b></div></div></div>
+  <footer><button class="btn" onclick="closeModal()">Huỷ</button><button class="btn" onclick="saveOrder(false)">Lưu báo giá</button><button class="btn pri" onclick="saveOrder(true)">✓ Xác nhận đơn</button></footer>`)}
+function saveOrder(conf){const o={id:D.seq.o++,no:'SO'+String(D.seq.o-1).padStart(4,'0'),cid:draft.cid,date:today(),state:'quote',lines:draft.lines.map(l=>({...l}))};D.orders.push(o);save();closeModal();if(conf)confirmO(o.id);else{render();toast('Đã lưu báo giá '+o.no)}}
+function confirmO(id){const o=D.orders.find(x=>x.id===id);o.state='sale';o.lines.forEach(l=>{if(P(l.pid).type==='goods')D.moves.push({id:D.seq.m++,pid:l.pid,qty:-l.qty,ref:'Giao hàng '+o.no,date:today()})});save();render();toast(`Đã xác nhận ${o.no} · đã trừ tồn kho`)}
+function invoiceO(id){const o=D.orders.find(x=>x.id===id);const inv={id:D.seq.i++,no:'HD/2026/'+String(D.seq.i-1).padStart(4,'0'),oid:o.id,cid:o.cid,date:today(),state:'posted',total:otot(o)*1.1};D.invoices.push(inv);o.state='done';o.inv=inv.id;save();go('invoices');toast('Đã tạo hoá đơn '+inv.no)}
+/* ---------- HOÁ ĐƠN ---------- */
+const IST={posted:['Chờ thanh toán','yel'],paid:['Đã thanh toán','green']};
+V.invoices=()=>`<div class="tb"><h2>Hoá đơn</h2><span class="muted small">Tạo từ đơn bán hàng đã xác nhận</span></div>
+ <table class="t"><thead><tr><th>Số hoá đơn</th><th>Ngày</th><th>Khách hàng</th><th>Đơn gốc</th><th>Nội dung</th><th class="num">Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+ ${D.invoices.slice().reverse().map(i=>{const o=D.orders.find(x=>x.id===i.oid);return `<tr><td><b>${i.no}</b></td><td>${vdate(i.date)}</td><td>${C(i.cid).name}</td><td><a href="#" onclick="go('sales');return false">${o?.no}</a></td><td class="small">${o?.lines.map(l=>`${l.qty} × ${P(l.pid)?.name}`).join('<br>')}</td><td class="num"><b>${vnd(i.total)}</b></td><td><span class="st ${IST[i.state][1]}">${IST[i.state][0]}</span></td><td class="num">${i.state==='posted'?`<button class="btn sm" onclick="pay(${i.id})">💳 Ghi nhận thanh toán</button>`:''}</td></tr>`}).join('')}</tbody></table>`;
+function pay(id){D.invoices.find(x=>x.id===id).state='paid';save();render();toast('Đã ghi nhận thanh toán')}
+/* ---------- TỔNG QUAN ---------- */
+V.overview=()=>{const rev=D.invoices.reduce((a,i)=>a+i.total,0),due=D.invoices.filter(i=>i.state==='posted').reduce((a,i)=>a+i.total,0);
+ return `<div class="kpis"><div class="card kpi"><div class="l">Doanh thu đã xuất hoá đơn</div><div class="v">${vnd(rev)}</div></div><div class="card kpi"><div class="l">Chờ thu</div><div class="v" style="color:var(--warn)">${vnd(due)}</div></div><div class="card kpi"><div class="l">Sản phẩm</div><div class="v">${D.products.length}</div></div><div class="card kpi"><div class="l">Báo giá đang mở</div><div class="v">${D.orders.filter(o=>o.state==='quote').length}</div></div></div>
+ <div class="card"><div style="padding:14px 16px 0"><b>Quy trình bán hàng</b> <span class="muted small">— bấm từng bước để mở</span></div>
+ <div class="flow"><div class="fs" onclick="newProduct()"><b>📦 1. Tạo sản phẩm</b><span>Tên, SKU, giá, ĐVT, ảnh</span></div><span class="arrow">→</span><div class="fs" onclick="go('stock')"><b>🏬 2. Kho</b><span>Nhập & theo dõi tồn</span></div><span class="arrow">→</span><div class="fs" onclick="go('sales')"><b>🛒 3. Bán hàng</b><span>Báo giá → đơn hàng</span></div><span class="arrow">→</span><div class="fs" onclick="go('invoices')"><b>🧾 4. Hoá đơn</b><span>Xuất & thu tiền</span></div></div></div>
+ <div class="grid2" style="margin-top:14px"><div class="card" style="padding:14px 16px"><b>Sắp hết hàng</b>${D.products.filter(p=>p.type==='goods'&&onhand(p.id)<5).map(p=>`<div class="row" style="margin-top:9px"><img src="${p.img}" style="width:26px;height:26px;border-radius:5px">${p.name}<span style="flex:1"></span>${stkBadge(p)}</div>`).join('')||'<div class="muted small" style="margin-top:8px">Không có</div>'}</div>
+ <div class="card" style="padding:14px 16px"><b>Việc cần làm</b>${D.todos.filter(t=>!t.d).map(t=>`<div class="small" style="margin-top:9px">☐ ${t.t}</div>`).join('')}</div></div>`};
+/* ---------- NHẸ ---------- */
+V.contacts=()=>`<div class="tb"><h2>Liên hệ</h2><button class="btn pri" onclick="toast('Bản mẫu: chưa làm form liên hệ')">＋ Tạo liên hệ</button></div><table class="t"><thead><tr><th>Tên</th><th>Email</th><th>Điện thoại</th><th>Thành phố</th><th class="num">Đơn hàng</th></tr></thead><tbody>${D.contacts.map(c=>`<tr><td><b>${c.name}</b></td><td>${c.email}</td><td>${c.phone}</td><td>${c.city}</td><td class="num">${D.orders.filter(o=>o.cid===c.id).length}</td></tr>`).join('')}</tbody></table>`;
+V.crm=()=>{const S=[['Mới',[['Trường Lê Quý Đôn','20 máy tính phòng lab',499800000]]],['Đã liên hệ',[['Cửa hàng Minh Phát','Phần mềm AIVN 3 máy',14400000]]],['Báo giá',[['Nguyễn Thị Lan','Bàn phím + chuột',1980000]]],['Thắng',[['Công ty CP Sao Mai','2 laptop AIVN Pro',49980000]]]];
+ return `<div class="tb"><h2>CRM · Cơ hội bán hàng</h2></div><div class="pipe">${S.map(([n,ls])=>`<div class="pcol"><h4>${n}<span class="muted">${ls.length}</span></h4>${ls.map(l=>`<div class="card lead"><b>${l[1]}</b><div class="muted small">${l[0]}</div><div style="margin-top:4px">${vnd(l[2])}</div></div>`).join('')}</div>`).join('')}</div>`};
+V.todo=()=>`<div class="tb"><h2>Việc cần làm</h2></div><div class="card" style="padding:6px 16px;max-width:640px">${D.todos.map((t,i)=>`<label class="row" style="padding:10px 0;border-bottom:1px solid var(--line);${t.d?'opacity:.5;text-decoration:line-through':''}"><input type="checkbox" ${t.d?'checked':''} onchange="D.todos[${i}].d=this.checked;save();render()"> ${t.t}</label>`).join('')}</div>`;
+V.reports=()=>{const rows=D.products.map(p=>({p,v:D.orders.filter(o=>o.state!=='quote').flatMap(o=>o.lines).filter(l=>l.pid===p.id).reduce((a,l)=>a+l.qty*l.price,0)})).sort((a,b)=>b.v-a.v);const mx=Math.max(1,...rows.map(r=>r.v));
+ return `<div class="tb"><h2>Báo cáo · Doanh số theo sản phẩm</h2></div><div class="card bars" style="padding:18px">${rows.map(r=>`<div class="b"><span>${r.p.name}</span><div class="bar"><i style="width:${r.v/mx*100}%"></i></div><span class="num">${vnd(r.v)}</span></div>`).join('')}</div>`};
+function resetData(){if(!confirm('Đặt lại toàn bộ dữ liệu mẫu?'))return;D=seed();save();pv.edit=null;render();toast('Đã đặt lại dữ liệu mẫu')}
+window.addEventListener('hashchange',()=>{const t=location.hash.slice(1);if(t&&t!==tab){tab=t;pv.edit=null;render()}});
+document.getElementById('dlg').onclick=e=>{if(e.target.id==='dlg')closeModal()};
+render();
+</script></body></html>

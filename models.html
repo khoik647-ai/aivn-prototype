@@ -1,0 +1,165 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Khám phá mô hình · AIVN (bản mẫu)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
+<style>
+.wrap{flex:1;display:flex;min-height:0}
+.left{flex:1;display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line)}
+.filters{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:11px}
+.vram{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vram .lbl{font-size:12.5px;color:var(--tx2);font-weight:600;margin-right:2px}
+.switch{position:relative;width:34px;height:19px;border-radius:12px;background:var(--line2);cursor:pointer;flex:none;transition:.2s}
+.switch::after{content:"";position:absolute;left:2px;top:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:.2s}
+.switch.on{background:var(--acc)}.switch.on::after{left:17px}
+.custom{display:flex;align-items:center;gap:4px}.custom .inp{width:64px;padding:4px 8px}
+.list{flex:1;padding:10px 12px}
+.m{display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:10px;cursor:pointer;border:1px solid transparent}
+.m:hover{background:var(--panel)}
+.m.sel{background:var(--panel);border-color:var(--acc)}
+.av{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.m .nm{font-weight:600}
+.m .meta{font-size:12px;color:var(--tx3);display:flex;gap:10px;margin-top:2px}
+.m .right{margin-left:auto;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.hot{font-size:10.5px;color:var(--acc2);background:rgba(139,92,246,.15);padding:1px 6px;border-radius:5px;margin-left:6px;font-weight:600}
+.detail{width:420px;flex:none;display:flex;flex-direction:column}
+.dh{padding:18px 20px 12px}
+.dh h2{margin:6px 0 4px;font-size:19px}
+.qtable{margin:0 20px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.q{display:grid;grid-template-columns:20px 80px 1fr auto;gap:8px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+.q:last-child{border-bottom:none}
+.q:hover{background:var(--panel)}
+.q.sel{background:var(--accbg)}
+.q .rad{width:14px;height:14px;border-radius:50%;border:2px solid var(--line2)}
+.q.sel .rad{border-color:var(--acc);background:radial-gradient(var(--acc) 40%,transparent 45%)}
+.q .qn{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;font-weight:600}
+.rec{font-size:10.5px;color:var(--ok);margin-left:6px}
+.dfoot{margin-top:auto;padding:14px 20px;border-top:1px solid var(--line);background:var(--bg2)}
+.memviz{height:10px;border-radius:6px;background:var(--line);position:relative;overflow:hidden;margin:8px 0 4px}
+.memviz i{position:absolute;left:0;top:0;bottom:0;border-radius:6px}
+.dlp{position:fixed;right:438px;bottom:18px;width:400px;z-index:40;box-shadow:0 20px 50px rgba(0,0,0,.5);display:none}
+.dlp.open{display:block}
+.dlp header{padding:11px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;font-weight:600}
+.dli{padding:11px 14px;border-bottom:1px solid var(--line)}
+.dli:last-child{border-bottom:none}
+.dli .t{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.dli .s{display:flex;justify-content:space-between;font-size:11.5px;color:var(--tx3);margin-top:5px}
+.dlbtn{position:relative}
+.dlbtn .n{background:var(--acc);color:#fff;border-radius:9px;font-size:10.5px;padding:0 6px;margin-left:2px}
+</style></head><body>
+<div class="app"><nav class="rail"></nav>
+<div class="main">
+  <div class="topbar"><h1>Khám phá mô hình</h1><span class="sub">Tìm, so sánh và tải mô hình GGUF chạy trên máy</span><span class="grow"></span><span class="sample">Dữ liệu mẫu</span>
+    <button class="btn dlbtn" id="dlToggle">⬇ Tải về <span class="n" id="dlCount">0</span></button></div>
+  <div class="wrap">
+    <section class="left">
+      <div class="filters">
+        <div class="search"><span id="sic"></span><input class="inp" id="q" placeholder="Tìm mô hình… ví dụ: qwen3-vl, llama, gemma, tiếng Việt"></div>
+        <div class="vram">
+          <div class="switch on" id="fitSw" title="Bật/tắt lọc"></div><span class="lbl">Vừa VRAM máy:</span>
+          <button class="chip" data-v="4">4 GB · RTX 3050 Ti Laptop</button>
+          <button class="chip" data-v="8">8 GB</button>
+          <button class="chip" data-v="12">12 GB · RTX 4070 SUPER</button>
+          <span class="custom"><span class="muted small">Tuỳ chỉnh</span><input class="inp" id="vc" type="number" min="1" max="96" step="1"><span class="muted small">GB</span></span>
+        </div>
+        <div class="row" style="gap:6px;flex-wrap:wrap" id="caps">
+          <button class="chip on" data-c="">Tất cả</button><button class="chip" data-c="Thị giác">👁 Thị giác</button><button class="chip" data-c="Suy luận">🧠 Suy luận</button><button class="chip" data-c="Công cụ">🛠 Gọi công cụ</button>
+          <span class="grow" style="flex:1"></span><span class="muted small" id="cnt"></span>
+        </div>
+      </div>
+      <div class="list scroll" id="list"></div>
+    </section>
+    <aside class="detail" id="detail"></aside>
+  </div>
+</div></div>
+<div class="card dlp" id="dlp"><header>Đang tải về <span class="grow" style="flex:1"></span><button class="x" id="dlClose">×</button></header><div id="dll" class="scroll" style="max-height:340px"></div></div>
+<script src="assets/shell.js"></script>
+<script>
+renderRail('models');document.getElementById('sic').outerHTML=ICONS.search;
+const COLORS={Qwen:['#6c4cf5','#ece9ff'],Meta:['#1d4ed8','#dbeafe'],Google:['#0f766e','#ccfbf1'],'Mistral AI':['#c2410c','#ffedd5'],Microsoft:['#15803d','#dcfce7']};
+let st={q:'',vram:4,fitOn:true,cap:'',sel:'qwen3-vl-4b',quant:{}};
+let dls=[]; // {key,id,q,size,done,speed,state}
+const done=()=>LS.get('aivn.downloaded',[]);
+function recQuant(m,v){ // bản lượng tử cao nhất vẫn "vừa"
+  let best=null;for(const [q] of QUANTS){if(q==='F16')continue;if(fitOf(qsize(m,q),v)[0]==='ok')best=q}
+  if(!best){for(const [q] of QUANTS){if(fitOf(qsize(m,q),v)[0]==='warn'){best=q;break}}}
+  return best||'Q4_K_M';
+}
+function visible(){
+  return MODELS.filter(m=>{
+    const s=(m.name+' '+m.org+' '+m.arch+' '+m.caps.join(' ')).toLowerCase();
+    if(st.q&&!st.q.toLowerCase().split(/\s+/).every(w=>s.includes(w)))return false;
+    if(st.cap&&!m.caps.includes(st.cap))return false;
+    if(st.fitOn&&fitOf(qsize(m,'Q3_K_M'),st.vram)[0]==='bad')return false;
+    return true;});
+}
+function renderList(){
+  const v=visible();
+  document.getElementById('cnt').textContent=`${v.length} / ${MODELS.length} mô hình`+(st.fitOn?` · vừa ${st.vram} GB`:'');
+  document.querySelectorAll('.vram .chip').forEach(c=>c.classList.toggle('on',+c.dataset.v===st.vram));
+  document.getElementById('vc').value=[4,8,12].includes(st.vram)?'':st.vram;
+  const d=done();
+  document.getElementById('list').innerHTML=v.length?v.map(m=>{
+    const q=recQuant(m,st.vram),sz=qsize(m,q),[f,ft]=fitOf(sz,st.vram),[c1,c2]=COLORS[m.org];
+    const have=d.some(x=>x.id===m.id),ing=dls.find(x=>x.id===m.id&&x.state!=='done');
+    return `<div class="m ${m.id===st.sel?'sel':''}" data-id="${m.id}">
+      <div class="av" style="background:${c2};color:${c1}">${m.org.slice(0,2)}</div>
+      <div style="min-width:0"><div class="nm">${m.name}${m.hot?'<span class="hot">MỚI</span>':''}</div>
+        <div class="meta"><span>${m.org}</span><span>${String(m.params).replace('.',',')}B tham số</span><span>⬇ ${m.dl}</span><span>${m.upd}</span></div>
+        <div class="row" style="gap:5px;margin-top:6px">${m.caps.map(c=>`<span class="tag">${c}</span>`).join('')}<span class="tag">GGUF</span></div></div>
+      <div class="right"><span class="fit ${f}">${ft}</span><span class="small muted">${q} · ${fmtGB(sz)}</span>
+        ${have?'<span class="small" style="color:var(--ok)">✓ Đã tải</span>':ing?`<span class="small" style="color:var(--acc)">Đang tải ${Math.floor(ing.done/ing.size*100)}%</span>`:''}</div></div>`}).join('')
+    :`<div class="empty">Không có mô hình nào vừa ${st.vram} GB VRAM với bộ lọc này.<br><button class="btn sm" style="margin-top:10px" onclick="st.fitOn=false;sync()">Bỏ lọc VRAM</button></div>`;
+  document.querySelectorAll('.m').forEach(e=>e.onclick=()=>{st.sel=e.dataset.id;sync()});
+}
+function renderDetail(){
+  const m=MODELS.find(x=>x.id===st.sel);const el=document.getElementById('detail');
+  if(!m){el.innerHTML='<div class="empty">Chọn một mô hình để xem chi tiết</div>';return}
+  const q=st.quant[m.id]||recQuant(m,st.vram),rq=recQuant(m,st.vram),sz=qsize(m,q),[f,ft]=fitOf(sz,st.vram);
+  const d=done(),have=d.find(x=>x.id===m.id&&x.q===q),ing=dls.find(x=>x.id===m.id&&x.q===q&&x.state!=='done');
+  const need=sz+0.6,pct=Math.min(100,need/st.vram*100),col=f==='ok'?'var(--ok)':f==='warn'?'var(--warn)':'var(--bad)';
+  el.innerHTML=`<div class="dh"><div class="row"><span class="tag">${m.org}</span><span class="tag">${m.arch}</span><span class="tag">Ngữ cảnh ${(m.ctx/1024)|0}K</span></div>
+    <h2>${m.name}</h2><div class="muted small">${m.org.toLowerCase().replace(' ','')}/${m.id}-GGUF</div>
+    <p style="color:var(--tx2);margin:10px 0 0">${m.desc}</p></div>
+    <div style="padding:6px 20px 8px" class="row"><b style="font-size:13px">Chọn bản lượng tử hoá</b><span class="grow" style="flex:1"></span><span class="small muted">so với ${st.vram} GB VRAM</span></div>
+    <div class="qtable">${QUANTS.map(([qq])=>{const s=qsize(m,qq),[ff,fft]=fitOf(s,st.vram);const h=d.some(x=>x.id===m.id&&x.q===qq);
+      return `<div class="q ${qq===q?'sel':''}" data-q="${qq}"><span class="rad"></span><span class="qn">${qq}</span>
+      <span class="small">${fmtGB(s)}${qq===rq?'<span class="rec">★ Đề xuất</span>':''}${h?'<span class="rec">✓ Đã tải</span>':''}</span><span class="fit ${ff}">${fft}</span></div>`}).join('')}</div>
+    <div class="small muted" style="padding:8px 20px">Q4_K_M cân bằng chất lượng/kích thước; Q8_0 gần như nguyên bản; F16 là bản gốc, rất nặng.</div>
+    <div class="dfoot">
+      <div class="row small"><span>Ước tính bộ nhớ khi chạy (tệp + ngữ cảnh 4K)</span><span class="grow" style="flex:1"></span><b>${fmtGB(need)}</b><span class="muted">/ ${st.vram} GB</span></div>
+      <div class="memviz"><i style="width:${pct}%;background:${col}"></i></div>
+      <div class="small" style="color:${col};margin-bottom:12px">${f==='ok'?'Chạy toàn bộ trên GPU, tốc độ tốt.':f==='warn'?'Gần đầy VRAM — nên giảm ngữ cảnh hoặc chọn bản nhỏ hơn.':'Không vừa VRAM — sẽ phải chia sang RAM/CPU, chậm hơn nhiều.'}</div>
+      ${have?`<div class="row"><button class="btn" style="flex:1;justify-content:center" disabled>✓ Đã tải về</button><a class="btn pri" href="chat.html?model=${m.id}&q=${q}">Nạp & trò chuyện →</a></div>`
+       :ing?`<div class="row small"><span>Đang tải ${q}…</span><span class="grow" style="flex:1"></span><span>${Math.floor(ing.done/ing.size*100)}%</span></div><div class="bar ${ing.state==='paused'?'paused':''}" style="margin:6px 0 10px"><i style="width:${ing.done/ing.size*100}%"></i></div>
+         <div class="row"><button class="btn" onclick="togglePause('${ing.key}')">${ing.state==='paused'?'▶ Tiếp tục':'⏸ Tạm dừng'}</button><button class="btn danger" onclick="cancelDl('${ing.key}')">✕ Huỷ</button></div>`
+       :`<button class="btn pri" style="width:100%;justify-content:center;padding:10px" onclick="startDl('${m.id}','${q}')">⬇ Tải về ${q} · ${fmtGB(sz)}</button>`}
+    </div>`;
+  el.querySelectorAll('.q').forEach(e=>e.onclick=()=>{st.quant[m.id]=e.dataset.q;renderDetail()});
+}
+function renderDl(){
+  const act=dls.filter(x=>x.state!=='done');
+  document.getElementById('dlCount').textContent=act.length;
+  document.getElementById('dll').innerHTML=dls.length?dls.map(x=>{const m=MODELS.find(y=>y.id===x.id),p=x.done/x.size*100,left=(x.size-x.done)*1024/x.speed;
+    return `<div class="dli"><div class="t"><b>${m.name}</b><span class="tag">${x.q}</span></div>
+    <div class="bar ${x.state==='paused'?'paused':''}" style="margin-top:7px"><i style="width:${p}%"></i></div>
+    <div class="s"><span>${fmtGB(x.done)} / ${fmtGB(x.size)} · ${p.toFixed(0)}%</span>
+    <span>${x.state==='done'?'<span style="color:var(--ok)">✓ Hoàn tất</span>':x.state==='paused'?'Đã tạm dừng':`${x.speed.toFixed(1).replace('.',',')} MB/s · còn ${left>60?Math.ceil(left/60)+' phút':Math.ceil(left)+' giây'}`}</span></div>
+    ${x.state!=='done'?`<div class="row" style="margin-top:7px;gap:6px"><button class="btn sm" onclick="togglePause('${x.key}')">${x.state==='paused'?'▶ Tiếp tục':'⏸ Tạm dừng'}</button><button class="btn sm danger" onclick="cancelDl('${x.key}')">✕ Huỷ</button></div>`:''}</div>`}).join('')
+    :'<div class="empty small">Chưa có tệp nào đang tải.</div>';
+}
+function startDl(id,q){const m=MODELS.find(x=>x.id===id);const key=id+'@'+q;if(dls.some(x=>x.key===key&&x.state!=='done'))return;
+  dls.unshift({key,id,q,size:qsize(m,q),done:0,speed:24,state:'run'});document.getElementById('dlp').classList.add('open');toast('Bắt đầu tải '+m.name+' '+q);sync();}
+function togglePause(k){const x=dls.find(y=>y.key===k);x.state=x.state==='paused'?'run':'paused';sync()}
+function cancelDl(k){dls=dls.filter(y=>y.key!==k);toast('Đã huỷ tải');sync()}
+setInterval(()=>{let ch=false;for(const x of dls){if(x.state!=='run')continue;x.speed=Math.max(8,Math.min(48,x.speed+(Math.random()-.5)*6));
+  x.done=Math.min(x.size,x.done+x.speed/1024*0.5*(window.SPEEDUP||1));ch=true;
+  if(x.done>=x.size){x.state='done';const d=done();d.push({id:x.id,q:x.q,size:x.size});LS.set('aivn.downloaded',d);toast('✓ Đã tải xong '+MODELS.find(y=>y.id===x.id).name)}}
+  if(ch){renderDl();renderDetail();renderList()}},500);
+function sync(){renderList();renderDetail();renderDl();document.getElementById('fitSw').classList.toggle('on',st.fitOn)}
+document.getElementById('q').oninput=e=>{st.q=e.target.value;renderList()};
+document.querySelectorAll('.vram .chip').forEach(c=>c.onclick=()=>{st.vram=+c.dataset.v;st.fitOn=true;st.quant={};sync()});
+document.getElementById('vc').onchange=e=>{const v=+e.target.value;if(v>0){st.vram=v;st.fitOn=true;st.quant={};sync()}};
+document.getElementById('fitSw').onclick=()=>{st.fitOn=!st.fitOn;sync()};
+document.querySelectorAll('#caps .chip').forEach(c=>c.onclick=()=>{st.cap=c.dataset.c;document.querySelectorAll('#caps .chip').forEach(x=>x.classList.toggle('on',x===c));renderList()});
+document.getElementById('dlToggle').onclick=()=>document.getElementById('dlp').classList.toggle('open');
+document.getElementById('dlClose').onclick=()=>document.getElementById('dlp').classList.remove('open');
+sync();
+</script></body></html>
