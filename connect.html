@@ -1,0 +1,285 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AIVN AGENT · Kết nối ứng dụng (bản nháp)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
+<style>
+.draft{display:flex;align-items:center;gap:10px;padding:8px 18px;background:repeating-linear-gradient(135deg,rgba(251,191,36,.12) 0 12px,rgba(251,191,36,.06) 12px 24px);border-bottom:1px solid rgba(251,191,36,.35);color:var(--warn);font-size:13px;font-weight:600}
+.wrap{flex:1;display:flex;min-height:0}
+.agents{width:240px;border-right:1px solid var(--line);background:var(--bg2);padding:12px;display:flex;flex-direction:column;gap:4px}
+.ag{padding:9px 11px;border-radius:8px;font-size:13px;color:var(--tx2);cursor:pointer}.ag.on{background:var(--panel2);color:var(--tx)}
+.ag small{display:block;color:var(--tx3);font-size:11.5px}
+.center{flex:1;display:flex;flex-direction:column;min-width:0}
+.atb{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line)}
+.conn-btn{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:9px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;font-weight:600;font-size:13px}
+.conn-btn:hover{border-color:var(--acc)}
+.stack{display:flex}.stack i{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-size:10px;font-style:normal;font-weight:700;color:#fff;border:2px solid var(--panel);margin-left:-6px}.stack i:first-child{margin-left:0}
+.hero{flex:1;display:grid;place-items:center;text-align:center;color:var(--tx2);padding:30px}
+/* dialog */
+.cd{width:960px;height:640px;max-height:94vh}
+.cd header{gap:12px}
+.lang{display:flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;margin-left:auto}
+.lang button{background:none;border:none;padding:4px 9px;font-size:12px;cursor:pointer;color:var(--tx3)}.lang button.on{background:var(--accbg);color:var(--acc);font-weight:600}
+.cbar{display:flex;align-items:center;gap:10px;padding:12px 20px 0}
+.ctabs{display:flex;gap:4px;padding:12px 20px 0;border-bottom:1px solid var(--line);overflow-x:auto}
+.ctab{padding:8px 10px;cursor:pointer;color:var(--tx2);border-bottom:2px solid transparent;font-size:13px;white-space:nowrap;font-weight:500}
+.ctab.on{color:var(--tx);border-bottom-color:var(--acc)}.ctab .c{font-size:11px;background:var(--panel2);border-radius:8px;padding:0 6px;margin-left:5px;color:var(--tx3)}
+.ctab.tpl{margin-left:auto;color:#c4b5fd}
+.cbody{flex:1;overflow:auto;padding:16px 20px;position:relative}
+.cnt{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ok);background:var(--okbg);padding:4px 10px;border-radius:20px;font-weight:600;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cc{padding:12px;display:flex;flex-direction:column;gap:8px}
+.cc.on{border-color:rgba(52,211,153,.45)}
+.ico{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-weight:700;color:#fff;font-size:13px;flex:none}
+.cc .t{display:flex;gap:10px;align-items:center}.cc .nm{font-weight:600}.cc .d{font-size:12px;color:var(--tx2);min-height:34px}
+.cc .ft{display:flex;align-items:center;gap:6px;margin-top:auto}
+.kind{font-size:10.5px;padding:1px 6px;border-radius:5px;border:1px solid var(--line2);color:var(--tx3)}
+.kind.local{color:#5eead4;border-color:rgba(94,234,212,.35)}
+.okd{color:var(--ok);font-size:12px;font-weight:600}
+/* permission card */
+.perm-bg{position:absolute;inset:0;background:rgba(10,12,18,.72);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:5}
+.perm-bg.open{display:flex}
+.perm{width:470px;background:var(--panel);border:1px solid var(--line2);border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.55);overflow:hidden}
+.perm .top{padding:18px 20px 12px;text-align:center}
+.link{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px}
+.link .dots{color:var(--tx3);letter-spacing:3px}
+.perm h3{margin:0 0 4px;font-size:16px}
+.plist{margin:0 20px;border:1px solid var(--line);border-radius:10px}
+.pi{display:flex;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:13px;align-items:flex-start}
+.pi:last-child{border-bottom:none}
+.lvl{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:auto;white-space:nowrap}
+.lvl.r{color:var(--ok);background:var(--okbg)}.lvl.w{color:var(--warn);background:var(--warnbg)}.lvl.a{color:#93c5fd;background:rgba(147,197,253,.12)}
+.perm .act{display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--line);margin-top:12px;background:var(--bg2)}
+.perm .act .btn{flex:1;justify-content:center;padding:9px}
+.scope{margin:10px 20px 0;font-size:12px}
+/* mcp */
+textarea.code{font-family:ui-monospace,Consolas,monospace;font-size:12px;height:140px;resize:vertical}
+.srv{display:flex;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);font-size:13px}
+.srv code{font-size:11.5px;color:var(--tx2);background:var(--bg);padding:2px 6px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:380px;display:inline-block;vertical-align:middle}
+.err{color:var(--bad);font-size:12.5px;margin-top:6px}
+/* templates */
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tc{padding:14px;display:flex;flex-direction:column;gap:8px}
+.tc .need{display:flex;flex-wrap:wrap;gap:5px}
+.nchip{font-size:11.5px;padding:2px 8px;border-radius:12px;border:1px solid var(--line2);color:var(--tx3);display:inline-flex;gap:4px;align-items:center}
+.nchip.ok{color:var(--ok);border-color:rgba(52,211,153,.4);background:var(--okbg)}
+.dfoot{padding:10px 20px;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx3)}
+</style></head><body>
+<div class="app"><nav class="rail"></nav>
+<div class="main">
+  <div class="draft">⚠ Bản nháp, chưa phải thiết kế chính thức <span style="font-weight:400;color:var(--tx2)">— dựng từ yêu cầu để Khôi góp ý · dữ liệu mẫu · lưu trong trình duyệt</span><span style="flex:1"></span><button class="btn sm ghost" onclick="resetAll()">↺ Đặt lại</button></div>
+  <div class="topbar"><h1>AIVN AGENT</h1><span class="sub">Trợ lý điều khiển máy và ứng dụng của bạn</span><span class="grow"></span><span class="sample">Dữ liệu mẫu</span></div>
+  <div class="wrap">
+    <aside class="agents" id="agents"></aside>
+    <section class="center">
+      <div class="atb"><b id="agName">Trợ lý chung</b><span class="muted small">· Qwen3-VL 4B · chạy trên máy</span><span style="flex:1"></span>
+        <button class="conn-btn" id="openBtn"><span class="stack" id="stack"></span><span>🔌 Kết nối ứng dụng</span><span class="cnt" id="cntTop" style="padding:1px 8px">0</span></button></div>
+      <div class="hero"><div><div style="font-size:42px">🔌</div><h2 style="color:var(--tx);margin:8px 0 6px">Cho AIVN AGENT dùng ứng dụng của bạn</h2>
+        <div>Kết nối Gmail, Google Drive, GitHub, thư mục trên máy, phần Kinh doanh… để agent đọc và làm việc thay bạn.<br>Mọi kết nối đều cần bạn cho phép qua thẻ xin phép.</div>
+        <button class="btn pri" style="margin-top:16px;padding:10px 18px" onclick="openDlg()">🔌 Kết nối ứng dụng</button></div></div>
+    </section>
+  </div>
+</div></div>
+
+<div class="modal-bg" id="dlg"><div class="modal cd">
+  <header><h2 id="t_title"></h2><span class="tag" style="color:var(--warn)" id="t_draft"></span>
+    <div class="lang" id="lang"><button data-l="vi">VI</button><button data-l="en">EN</button><button data-l="zh">中文</button></div><button class="x" onclick="closeDlg()">×</button></header>
+  <div class="cbar"><div class="search" style="flex:1"><span id="sic"></span><input class="inp" id="q"></div><span class="cnt" id="cnt"></span><button class="btn" id="impBtn"></button></div>
+  <div class="ctabs" id="tabs"></div>
+  <div class="cbody scroll" id="body"></div>
+  <div class="dfoot"><span>🔒</span><span id="t_foot"></span></div>
+  <div class="perm-bg" id="permBg"><div class="perm" id="perm"></div></div>
+</div></div>
+<input type="file" id="file" accept=".json,application/json" style="display:none">
+<script src="assets/shell.js"></script>
+<script>
+renderRail('agent');document.getElementById('sic').outerHTML=ICONS.search;
+const I18N={
+ vi:{title:'Kết nối ứng dụng',draft:'Bản nháp',search:'Tìm ứng dụng hoặc máy chủ MCP…',connected:n=>`${n} đã kết nối`,imp:'⤓ Nhập mcp.json',
+  cats:{all:'Tất cả',prod:'Năng suất',dev:'Lập trình',data:'Dữ liệu',comm:'Giao tiếp',custom:'Tuỳ chỉnh',on:'Đã kết nối',tpl:'✨ Thư viện mẫu agent',imp:'Nhập mcp.json'},
+  connect:'Kết nối',disconnect:'Ngắt',isOn:'✓ Đã kết nối',local:'Trên máy',cloud:'Đám mây',mcp:'MCP',empty:'Không có ứng dụng nào khớp.',
+  permTitle:n=>`AIVN AGENT muốn truy cập ${n}`,permSub:'Agent sẽ được cấp các quyền dưới đây. Bạn có thể thu hồi bất cứ lúc nào.',allow:'Cho phép',deny:'Từ chối',
+  lv:{r:'Chỉ đọc',w:'Ghi',a:'Hỏi trước'},folder:'Thư mục được phép:',revoke:'Dữ liệu chỉ xử lý trên máy; AIVN không gửi đi đâu khác.',cloudNote:'Kết nối bằng tài khoản của bạn; thao tác ghi/gửi luôn hỏi lại trước.',
+  allowed:n=>`Đã kết nối ${n}`,denied:n=>`Đã từ chối kết nối ${n}`,
+  foot:'Mọi kết nối cần bạn cho phép · thao tác ghi/gửi luôn hỏi lại trước khi thực hiện.',
+  mcpHint:'Dán nội dung mcp.json (định dạng giống LM Studio / Claude Desktop) hoặc chọn tệp. Chỉ đọc khoá "mcpServers".',
+  pick:'📂 Chọn tệp…',parse:'Phân tích',sample:'Dùng ví dụ',found:n=>`Tìm thấy ${n} máy chủ`,addSel:n=>`Thêm ${n} máy chủ`,
+  badJson:'JSON không hợp lệ: ',noServers:'Không tìm thấy khoá "mcpServers".',warnCmd:'⚠ Máy chủ dạng lệnh (stdio) sẽ chạy chương trình trên máy bạn. Chỉ thêm nguồn bạn tin cậy.',
+  added:n=>`Đã thêm ${n} máy chủ — bấm Kết nối để cấp quyền`,exists:'đã có',envHidden:'biến môi trường (đã ẩn giá trị)',
+  needs:'Cần kết nối:',use:'Dùng mẫu này',connectMissing:n=>`Kết nối ${n} ứng dụng còn thiếu`,ready:'✓ Sẵn sàng',created:n=>`Đã tạo agent "${n}"`,inUse:'✓ Đã thêm'},
+ en:{title:'Connect apps',draft:'Draft',search:'Search apps or MCP servers…',connected:n=>`${n} connected`,imp:'⤓ Import mcp.json',
+  cats:{all:'All',prod:'Productivity',dev:'Developer',data:'Data',comm:'Communication',custom:'Custom',on:'Connected',tpl:'✨ Agent templates',imp:'Import mcp.json'},
+  connect:'Connect',disconnect:'Disconnect',isOn:'✓ Connected',local:'On device',cloud:'Cloud',mcp:'MCP',empty:'No matching apps.',
+  permTitle:n=>`AIVN AGENT wants to access ${n}`,permSub:'The agent will get the permissions below. You can revoke them at any time.',allow:'Allow',deny:'Deny',
+  lv:{r:'Read only',w:'Write',a:'Asks first'},folder:'Allowed folder:',revoke:'Data is processed on this device only.',cloudNote:'Uses your own account; write/send actions always ask first.',
+  allowed:n=>`Connected ${n}`,denied:n=>`Denied ${n}`,
+  foot:'Every connection needs your approval · write/send actions always ask again first.',
+  mcpHint:'Paste an mcp.json (LM Studio / Claude Desktop format) or pick a file. Only the "mcpServers" key is read.',
+  pick:'📂 Choose file…',parse:'Parse',sample:'Use example',found:n=>`Found ${n} server(s)`,addSel:n=>`Add ${n} server(s)`,
+  badJson:'Invalid JSON: ',noServers:'No "mcpServers" key found.',warnCmd:'⚠ Command (stdio) servers run programs on your computer. Only add sources you trust.',
+  added:n=>`Added ${n} server(s) — click Connect to grant access`,exists:'exists',envHidden:'env vars (values hidden)',
+  needs:'Needs:',use:'Use template',connectMissing:n=>`Connect ${n} missing app(s)`,ready:'✓ Ready',created:n=>`Created agent "${n}"`,inUse:'✓ Added'},
+ zh:{title:'连接应用',draft:'草稿',search:'搜索应用或 MCP 服务器…',connected:n=>`已连接 ${n} 个`,imp:'⤓ 导入 mcp.json',
+  cats:{all:'全部',prod:'效率',dev:'开发',data:'数据',comm:'沟通',custom:'自定义',on:'已连接',tpl:'✨ 智能体模板库',imp:'导入 mcp.json'},
+  connect:'连接',disconnect:'断开',isOn:'✓ 已连接',local:'本机',cloud:'云端',mcp:'MCP',empty:'没有匹配的应用。',
+  permTitle:n=>`AIVN AGENT 请求访问 ${n}`,permSub:'智能体将获得以下权限，您可随时撤销。',allow:'允许',deny:'拒绝',
+  lv:{r:'只读',w:'写入',a:'先询问'},folder:'允许的文件夹：',revoke:'数据仅在本机处理。',cloudNote:'使用您自己的账户；写入/发送操作前总会先询问。',
+  allowed:n=>`已连接 ${n}`,denied:n=>`已拒绝 ${n}`,
+  foot:'每个连接都需要您的许可 · 写入/发送操作执行前会再次确认。',
+  mcpHint:'粘贴 mcp.json（LM Studio / Claude Desktop 格式）或选择文件。仅读取 "mcpServers"。',
+  pick:'📂 选择文件…',parse:'解析',sample:'使用示例',found:n=>`找到 ${n} 个服务器`,addSel:n=>`添加 ${n} 个服务器`,
+  badJson:'JSON 无效：',noServers:'未找到 "mcpServers"。',warnCmd:'⚠ 命令型 (stdio) 服务器会在您的电脑上运行程序，请只添加可信来源。',
+  added:n=>`已添加 ${n} 个服务器 — 点击连接以授权`,exists:'已存在',envHidden:'环境变量（值已隐藏）',
+  needs:'需要：',use:'使用模板',connectMissing:n=>`连接缺少的 ${n} 个应用`,ready:'✓ 就绪',created:n=>`已创建智能体「${n}」`,inUse:'✓ 已添加'}
+};
+// quyền dùng chung: [mức, vi, en, zh]
+const PERMS={
+ mailR:['r','Đọc thư và tìm kiếm hộp thư','Read and search email','读取和搜索邮件'],
+ mailD:['w','Soạn thư nháp','Create drafts','创建草稿'],
+ mailS:['a','Gửi thư (luôn hỏi bạn trước)','Send email (always asks you)','发送邮件（总是先询问）'],
+ fileR:['r','Xem danh sách và đọc tệp','List and read files','列出并读取文件'],
+ fileW:['w','Tạo và sửa tệp','Create and edit files','创建和编辑文件'],
+ fileD:['a','Xoá tệp (luôn hỏi bạn trước)','Delete files (always asks)','删除文件（总是先询问）'],
+ repoR:['r','Đọc kho mã, issue, pull request','Read repos, issues, PRs','读取仓库、Issue、PR'],
+ repoW:['a','Tạo issue / bình luận (hỏi trước)','Create issues / comments (asks first)','创建 Issue / 评论（先询问）'],
+ chatR:['r','Đọc kênh và tin nhắn','Read channels and messages','读取频道和消息'],
+ chatS:['a','Gửi tin nhắn (luôn hỏi bạn trước)','Send messages (always asks)','发送消息（总是先询问）'],
+ pageR:['r','Đọc trang và cơ sở dữ liệu','Read pages and databases','读取页面和数据库'],
+ pageW:['w','Tạo / sửa trang','Create / edit pages','创建 / 编辑页面'],
+ bizR:['r','Đọc sản phẩm, tồn kho, đơn hàng, hoá đơn','Read products, stock, orders, invoices','读取产品、库存、订单、发票'],
+ bizW:['a','Tạo báo giá / đơn hàng (hỏi trước)','Create quotes / orders (asks first)','创建报价 / 订单（先询问）'],
+ dbR:['r','Chạy truy vấn SELECT','Run SELECT queries','执行 SELECT 查询'],
+ dbW:['a','Thay đổi dữ liệu (hỏi trước)','Modify data (asks first)','修改数据（先询问）'],
+ webR:['r','Tìm kiếm và đọc trang web công khai','Search and read public web pages','搜索并读取公开网页'],
+ calR:['r','Xem lịch và sự kiện','View calendars and events','查看日历和活动'],
+ calW:['a','Tạo sự kiện (hỏi trước)','Create events (asks first)','创建活动（先询问）'],
+ scrR:['r','Chụp màn hình để agent nhìn thấy','Take screenshots so the agent can see','截屏供智能体查看'],
+ scrW:['a','Điều khiển chuột & bàn phím (hỏi trước)','Control mouse & keyboard (asks first)','控制鼠标和键盘（先询问）'],
+ mcpRun:['w','Chạy máy chủ MCP trên máy','Run the MCP server locally','在本机运行 MCP 服务器'],
+ mcpTool:['a','Dùng các công cụ của máy chủ (hỏi trước với thao tác ghi)','Use the server tools (asks before writes)','使用服务器工具（写入前先询问）'],
+};
+const BASE=[
+ {id:'gmail',name:'Gmail',cat:'comm',kind:'cloud',c:'#ea4335',l:'M',perms:['mailR','mailD','mailS'],d:['Đọc, tóm tắt và soạn thư','Read, summarize and draft email','阅读、总结和起草邮件']},
+ {id:'gdrive',name:'Google Drive',cat:'prod',kind:'cloud',c:'#1a73e8',l:'D',perms:['fileR','fileW'],d:['Tìm và đọc tài liệu, bảng tính','Find and read docs and sheets','查找和阅读文档、表格']},
+ {id:'gcal',name:'Google Calendar',cat:'prod',kind:'cloud',c:'#0f9d58',l:'31',perms:['calR','calW'],d:['Xem lịch, đặt lịch họp','View and schedule meetings','查看和安排会议']},
+ {id:'github',name:'GitHub',cat:'dev',kind:'cloud',c:'#24292f',l:'GH',perms:['repoR','repoW'],d:['Đọc mã, issue và pull request','Read code, issues and PRs','读取代码、Issue 和 PR']},
+ {id:'fs',name:['Tệp trên máy (Filesystem)','Local files (Filesystem)','本地文件 (Filesystem)'],cat:'dev',kind:'local',c:'#475569',l:'📁',perms:['fileR','fileW','fileD'],folder:'C:\\Users\\Khoi\\Documents\\AIVN',d:['Đọc/ghi tệp trong thư mục bạn chọn','Read/write files in a chosen folder','读写所选文件夹中的文件']},
+ {id:'screen',name:['Điều khiển máy tính','Computer control','电脑控制'],cat:'prod',kind:'local',c:'#6c8cff',l:'🖥',perms:['scrR','scrW'],d:['Agent nhìn màn hình và thao tác','Agent sees the screen and acts','智能体查看屏幕并操作']},
+ {id:'slack',name:'Slack',cat:'comm',kind:'cloud',c:'#611f69',l:'S',perms:['chatR','chatS'],d:['Đọc kênh, gửi tin nhắn','Read channels, send messages','读取频道、发送消息']},
+ {id:'zalo',name:'Zalo OA',cat:'comm',kind:'cloud',c:'#0068ff',l:'Z',perms:['chatR','chatS'],d:['Trả lời khách qua Zalo OA','Reply to customers on Zalo OA','通过 Zalo OA 回复客户']},
+ {id:'notion',name:'Notion',cat:'prod',kind:'cloud',c:'#3f3f46',l:'N',perms:['pageR','pageW'],d:['Đọc và ghi chú vào trang','Read and write pages','读取和编写页面']},
+ {id:'biz',name:['AIVN Kinh doanh','AIVN Business','AIVN 业务'],cat:'data',kind:'local',c:'#16a34a',l:'KD',perms:['bizR','bizW'],d:['Sản phẩm, kho, bán hàng, hoá đơn','Products, stock, sales, invoices','产品、库存、销售、发票']},
+ {id:'sqlite',name:'SQLite',cat:'data',kind:'local',c:'#0e7490',l:'SQ',perms:['dbR','dbW'],folder:'D:\\data\\cuahang.db',d:['Truy vấn cơ sở dữ liệu cục bộ','Query a local database','查询本地数据库']},
+ {id:'sheets',name:'Google Sheets',cat:'data',kind:'cloud',c:'#188038',l:'▦',perms:['fileR','fileW'],d:['Đọc và cập nhật bảng tính','Read and update spreadsheets','读取和更新表格']},
+ {id:'web',name:['Tìm kiếm web','Web search','网页搜索'],cat:'data',kind:'cloud',c:'#f59e0b',l:'🌐',perms:['webR'],d:['Tìm thông tin mới trên Internet','Search the internet','在互联网上搜索']},
+];
+const TPLS=[
+ {id:'mail',ic:'📬',name:['Thư ký hộp thư','Inbox assistant','邮箱助理'],d:['Tóm tắt thư mới mỗi sáng, soạn trả lời nháp, nhắc lịch họp.','Summarizes new mail each morning, drafts replies, reminds meetings.','每天早上总结新邮件，起草回复，提醒会议。'],need:['gmail','gcal']},
+ {id:'shop',ic:'🛒',name:['Trợ lý bán hàng','Sales assistant','销售助理'],d:['Trả lời khách trên Zalo, tra tồn kho và tạo báo giá trong Kinh doanh.','Answers customers on Zalo, checks stock and creates quotes.','在 Zalo 回复客户，查库存并创建报价。'],need:['zalo','biz']},
+ {id:'dev',ic:'🧑‍💻',name:['Trợ lý lập trình','Coding assistant','编程助理'],d:['Đọc mã trên máy, xem issue GitHub, tìm tài liệu trên web.','Reads local code, GitHub issues, searches docs.','读取本地代码、GitHub Issue，搜索文档。'],need:['fs','github','web']},
+ {id:'report',ic:'📊',name:['Báo cáo cuối tuần','Weekly report','周报'],d:['Lấy số liệu doanh thu, ghi vào Google Sheets và gửi tóm tắt lên Slack.','Pulls revenue, writes to Sheets and posts a summary to Slack.','提取营收数据，写入表格并在 Slack 发布摘要。'],need:['biz','sheets','slack']},
+ {id:'research',ic:'🔎',name:['Nghiên cứu tài liệu','Research helper','资料研究'],d:['Tìm trên web, đọc tài liệu trong Drive và viết tổng hợp vào Notion.','Searches the web, reads Drive docs, writes a summary in Notion.','搜索网页、阅读 Drive 文档，并在 Notion 写总结。'],need:['web','gdrive','notion']},
+ {id:'pc',ic:'🖱',name:['Điều khiển máy tính','Computer operator','电脑操控'],d:['Nhìn màn hình, mở ứng dụng, sắp xếp tệp theo yêu cầu.','Sees the screen, opens apps, organizes files on request.','查看屏幕、打开应用、按要求整理文件。'],need:['screen','fs']},
+];
+const SAMPLE=`{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:/Users/Khoi/Desktop"]
+    },
+    "sqlite-cuahang": {
+      "command": "uvx",
+      "args": ["mcp-server-sqlite", "--db-path", "D:/data/cuahang.db"]
+    },
+    "thoi-tiet": {
+      "url": "https://mcp.example.vn/weather"
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_xxxxxxxxxxxx" }
+    }
+  }
+}`;
+let S=LS.get('aivn.connect',null)||{connected:['biz','web'],custom:[],lang:'vi',agents:[]};
+const save=()=>LS.set('aivn.connect',S);
+let ui={tab:'all',q:'',mcpText:'',parsed:null,err:'',sel:{},queue:[]};
+const T=()=>I18N[S.lang],L=a=>a[{vi:0,en:1,zh:2}[S.lang]];
+const nm=c=>Array.isArray(c.name)?L(c.name):c.name;
+const all=()=>BASE.concat(S.custom);
+const byId=id=>all().find(c=>c.id===id);
+const isOn=id=>S.connected.includes(id);
+function ico(c,sz=34){return `<span class="ico" style="background:${c.c};width:${sz}px;height:${sz}px">${c.l}</span>`}
+function renderOuter(){
+  document.getElementById('cntTop').textContent=S.connected.length;
+  document.getElementById('stack').innerHTML=S.connected.slice(0,4).map(id=>{const c=byId(id);return c?`<i style="background:${c.c}">${c.l.length>2?c.l.slice(0,1):c.l}</i>`:''}).join('');
+  document.getElementById('agents').innerHTML=`<div class="grp" style="font-size:11px;color:var(--tx3);padding:4px 8px">AGENT</div><div class="ag on">🤖 Trợ lý chung<small>${S.connected.length} ứng dụng đã kết nối</small></div>`+S.agents.map(a=>{const t=TPLS.find(x=>x.id===a);return `<div class="ag">${t.ic} ${t.name[0]}<small>từ thư viện mẫu</small></div>`}).join('');
+}
+function render(){
+  const t=T();
+  document.getElementById('t_title').textContent=t.title;document.getElementById('t_draft').textContent=t.draft;
+  document.getElementById('q').placeholder=t.search;document.getElementById('cnt').textContent='● '+t.connected(S.connected.length);
+  const ib=document.getElementById('impBtn');ib.textContent=t.imp;ib.classList.toggle('pri',ui.tab==='imp');document.getElementById('t_foot').textContent=t.foot;
+  document.querySelectorAll('#lang button').forEach(b=>b.classList.toggle('on',b.dataset.l===S.lang));
+  const cats=['all','prod','dev','data','comm'].concat(S.custom.length?['custom']:[]).concat(['on']);
+  const count=k=>k==='all'?all().length:k==='on'?S.connected.length:all().filter(c=>c.cat===k).length;
+  document.getElementById('tabs').innerHTML=cats.map(k=>`<div class="ctab ${ui.tab===k?'on':''}" data-k="${k}">${t.cats[k]}<span class="c">${count(k)}</span></div>`).join('')
+    +`<div class="ctab tpl ${ui.tab==='tpl'?'on':''}" data-k="tpl">${t.cats.tpl}</div>`;
+  document.querySelectorAll('.ctab').forEach(e=>e.onclick=()=>{ui.tab=e.dataset.k;render()});
+  const b=document.getElementById('body');
+  if(ui.tab==='imp')b.innerHTML=impView();else if(ui.tab==='tpl')b.innerHTML=tplView();else b.innerHTML=gridView();
+  renderOuter();
+}
+function gridView(){const t=T(),q=ui.q.toLowerCase();
+  const list=all().filter(c=>(ui.tab==='all'||(ui.tab==='on'?isOn(c.id):c.cat===ui.tab))&&(nm(c)+' '+L(c.d)).toLowerCase().includes(q));
+  if(!list.length)return `<div class="empty">${t.empty}</div>`;
+  return `<div class="grid">${list.map(c=>`<div class="card cc ${isOn(c.id)?'on':''}"><div class="t">${ico(c)}<div style="min-width:0"><div class="nm">${nm(c)}</div><span class="kind ${c.kind}">${c.kind==='local'?t.local:c.kind==='mcp'?'MCP · '+(c.url?'HTTP':'stdio'):t.cloud}</span></div></div>
+   <div class="d">${L(c.d)}</div>
+   <div class="ft">${isOn(c.id)?`<span class="okd">${t.isOn}</span><span style="flex:1"></span><button class="btn sm ghost" onclick="disc('${c.id}')">${t.disconnect}</button>`:`<span style="flex:1"></span><button class="btn sm pri" onclick="ask(['${c.id}'])">${t.connect}</button>`}</div></div>`).join('')}</div>`}
+function tplView(){const t=T();return `<div class="tg">${TPLS.map(p=>{const miss=p.need.filter(id=>!isOn(id)),used=S.agents.includes(p.id);
+  return `<div class="card tc"><div class="row"><span style="font-size:24px">${p.ic}</span><b style="font-size:14.5px">${L(p.name)}</b><span style="flex:1"></span>${miss.length?'':`<span class="okd">${t.ready}</span>`}</div>
+  <div class="small" style="color:var(--tx2)">${L(p.d)}</div>
+  <div class="need"><span class="small muted">${t.needs}</span>${p.need.map(id=>{const c=byId(id);return `<span class="nchip ${isOn(id)?'ok':''}">${isOn(id)?'✓':'○'} ${nm(c)}</span>`}).join('')}</div>
+  <div class="row" style="margin-top:4px">${used?`<span class="okd">${t.inUse}</span>`:miss.length?`<button class="btn sm" onclick="ask(${JSON.stringify(miss).replace(/"/g,"'")},'${p.id}')">🔌 ${t.connectMissing(miss.length)}</button>`:`<button class="btn sm pri" onclick="useTpl('${p.id}')">${t.use}</button>`}</div></div>`}).join('')}</div>`}
+function impView(){const t=T(),p=ui.parsed;
+  return `<div class="small" style="color:var(--tx2);margin-bottom:8px">${t.mcpHint}</div>
+  <textarea class="inp code" id="mcpTxt" placeholder='{ "mcpServers": { … } }'>${ui.mcpText.replace(/</g,'&lt;')}</textarea>
+  <div class="row" style="margin-top:8px"><button class="btn sm" onclick="document.getElementById('file').click()">${t.pick}</button><button class="btn sm ghost" onclick="ui.mcpText=SAMPLE;ui.parsed=null;render()">${t.sample}</button><span style="flex:1"></span><button class="btn sm pri" onclick="parse()">${t.parse}</button></div>
+  ${ui.err?`<div class="err">${ui.err}</div>`:''}
+  ${p?`<div style="margin-top:14px" class="row"><b>${t.found(p.length)}</b></div>
+   <div class="card" style="margin-top:8px">${p.map((s,i)=>{const ex=all().some(c=>c.id==='mcp-'+s.name);return `<label class="srv"><input type="checkbox" ${ui.sel[i]&&!ex?'checked':''} ${ex?'disabled':''} onchange="ui.sel[${i}]=this.checked;render()">
+     <b style="min-width:120px">${s.name}</b><span class="kind">${s.url?'HTTP':'stdio'}</span><code>${s.url||[s.command].concat(s.args||[]).join(' ')}</code>
+     ${s.env?`<span class="small muted" title="${Object.keys(s.env).join(', ')}">🔑 ${Object.keys(s.env).length} ${t.envHidden}</span>`:''}${ex?`<span class="small muted">(${t.exists})</span>`:''}</label>`}).join('')}</div>
+   ${p.some(s=>!s.url)?`<div class="small" style="color:var(--warn);margin-top:8px">${t.warnCmd}</div>`:''}
+   <div class="row" style="margin-top:10px"><span style="flex:1"></span><button class="btn pri" onclick="addParsed()" ${Object.values(ui.sel).filter(Boolean).length?'':'disabled'}>${t.addSel(p.filter((s,i)=>ui.sel[i]&&!all().some(c=>c.id==='mcp-'+s.name)).length)}</button></div>`:''}`}
+function parse(){const t=T();ui.mcpText=document.getElementById('mcpTxt').value;ui.err='';ui.parsed=null;
+  try{const j=JSON.parse(ui.mcpText);const m=j.mcpServers||j.servers;if(!m||typeof m!=='object'){ui.err=t.noServers;return render()}
+   ui.parsed=Object.entries(m).map(([name,v])=>({name,command:v.command,args:v.args,url:v.url,env:v.env&&Object.keys(v.env).length?Object.fromEntries(Object.keys(v.env).map(k=>[k,'••••'])):null}));
+   ui.sel={};ui.parsed.forEach((s,i)=>ui.sel[i]=true);}catch(e){ui.err=t.badJson+e.message}render()}
+function addParsed(){const t=T();let n=0;ui.parsed.forEach((s,i)=>{if(!ui.sel[i]||all().some(c=>c.id==='mcp-'+s.name))return;n++;
+  S.custom.push({id:'mcp-'+s.name,name:s.name,cat:'custom',kind:'mcp',c:'#7c3aed',l:'⚙',url:s.url||null,perms:['mcpRun','mcpTool'],cmd:s.url||[s.command].concat(s.args||[]).join(' '),
+   d:[`Máy chủ MCP · ${s.url?'HTTP':s.command}`,`MCP server · ${s.url?'HTTP':s.command}`,`MCP 服务器 · ${s.url?'HTTP':s.command}`]})});
+  save();toast(t.added(n));ui.parsed=null;ui.mcpText='';ui.tab='custom';render()}
+document.getElementById('file').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(x=>{ui.mcpText=x;render();parse()});e.target.value=''};
+// thẻ xin phép, xử lý lần lượt
+let afterQueue=null;
+function ask(ids,tpl){ui.queue=ids.slice();afterQueue=tpl||null;showPerm()}
+function showPerm(){const t=T();const id=ui.queue[0];const bg=document.getElementById('permBg');if(!id){bg.classList.remove('open');if(afterQueue&&TPLS.find(x=>x.id===afterQueue).need.every(isOn))useTpl(afterQueue);afterQueue=null;render();return}
+  const c=byId(id);bg.classList.add('open');
+  document.getElementById('perm').innerHTML=`<div class="top"><div class="link"><span class="ico" style="background:linear-gradient(135deg,var(--acc),var(--acc2))">AI</span><span class="dots">• • •</span>${ico(c)}</div>
+   <h3>${t.permTitle(nm(c))}</h3><div class="small muted">${t.permSub}</div>${ui.queue.length>1?`<div class="small" style="margin-top:6px;color:var(--acc)">1 / ${ui.queue.length}</div>`:''}</div>
+   <div class="plist">${c.perms.map(k=>{const p=PERMS[k];return `<div class="pi"><span>${p[0]==='r'?'👁':p[0]==='w'?'✏️':'✋'}</span><span>${L(p.slice(1))}</span><span class="lvl ${p[0]}">${t.lv[p[0]]}</span></div>`}).join('')}</div>
+   ${c.folder?`<div class="scope"><span class="muted">${t.folder}</span> <code style="background:var(--bg);padding:2px 6px;border-radius:5px">${c.folder}</code></div>`:''}
+   ${c.cmd?`<div class="scope"><code style="background:var(--bg);padding:2px 6px;border-radius:5px;font-size:11.5px">${c.cmd}</code></div>`:''}
+   <div class="scope muted">🔒 ${c.kind==='cloud'?t.cloudNote:t.revoke}</div>
+   <div class="act"><button class="btn" onclick="decide(false)">${t.deny}</button><button class="btn pri" onclick="decide(true)">${t.allow}</button></div>`}
+function decide(ok){const t=T(),id=ui.queue.shift(),c=byId(id);if(ok){if(!isOn(id))S.connected.push(id);save();toast(t.allowed(nm(c)))}else{toast(t.denied(nm(c)));if(afterQueue){ui.queue=[];}}render();showPerm()}
+function disc(id){S.connected=S.connected.filter(x=>x!==id);save();render()}
+function useTpl(id){if(!S.agents.includes(id))S.agents.push(id);save();toast(T().created(L(TPLS.find(x=>x.id===id).name)));render()}
+function openDlg(tab){if(tab)ui.tab=tab;document.getElementById('dlg').classList.add('open');render();document.getElementById('q').value=ui.q}
+function closeDlg(){document.getElementById('dlg').classList.remove('open');document.getElementById('permBg').classList.remove('open')}
+function resetAll(){localStorage.removeItem('aivn.connect');location.reload()}
+document.getElementById('openBtn').onclick=()=>openDlg();
+document.getElementById('impBtn').onclick=()=>{ui.tab='imp';render()};
+document.getElementById('q').oninput=e=>{ui.q=e.target.value;if(ui.tab==='tpl'||ui.tab==='imp')ui.tab='all';render()};
+document.querySelectorAll('#lang button').forEach(b=>b.onclick=()=>{S.lang=b.dataset.l;save();render();if(document.getElementById('permBg').classList.contains('open'))showPerm()});
+document.getElementById('dlg').onclick=e=>{if(e.target.id==='dlg')closeDlg()};
+renderOuter();if(location.hash==='#open')openDlg();
+</script></body></html>
