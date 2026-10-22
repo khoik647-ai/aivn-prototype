@@ -36,6 +36,17 @@ Dữ liệu mẫu lưu trong localStorage (aivn.downloaded, aivn.biz). Nút "Đ�
 - §17.5: so khớp URL sau khi chuẩn hoá (bỏ '/' cuối, host không phân biệt hoa thường, path phân biệt). Gói so khớp bỏ qua phiên bản. Chỉ trùng tên → Của tôi.
 - Ảnh: `shots/8*.png`, chạy lại bằng `tools/shots8.py` (in kiểm tra chữ kỹ thuật trên màn hình chính, thanh agent và bảng bên).
 
+## connect.html v4.9 (góp ý QA bản 4.8, lượt 7)
+- Bản 4.8 giữ nguyên ở `connect-v4.8.html` (JS riêng `assets/connect-v48.js`, `assets/connect-i18n-v48.js`, khoá lưu `aivn.plugins.v48`). Bản 4.9 dùng khoá `aivn.plugins.v49`.
+- Hướng LM Studio: mỗi dòng có công tắc bật/tắt (`role="switch"`, `aria-checked`, Space/Enter), bật/tắt vẫn qua thẻ xin phép như đã thống nhất; nút “⋯” trên dòng và ở bảng phải thay hàng 5 nút (Mở chi tiết, Kết nối lại, Chạy thử lại, Đổi tên hiển thị, Thêm khoá, Xem chi tiết kỹ thuật, Gỡ/Xoá — chỉ hiện mục áp dụng được). Bảng phải còn một nút chính lớn.
+- Dưới 768px: danh sách → chi tiết (một khung mỗi lúc), nút “Quay lại” (Esc cũng quay lại); từ 768px trở lên giữ hai cột.
+- Bộ lọc: “Tất cả” gồm cả mục đã kết nối và mục tự thêm; ô tìm cũng tìm trong đó. **Đã cài** = ứng dụng có sẵn đã kết nối + mọi ứng dụng tự thêm (kể cả đang tắt hay lỗi); có dòng chú thích dưới bộ lọc. Bấm huy hiệu “x đã kết nối” → lọc “Đã kết nối” (chỉ mục đang bật, chấm xanh lá), bấm lại hoặc ✕ để bỏ.
+- Màu chấm dưới ô chat khớp chú thích: xanh dương = đang chạy thử / đang cài, xanh lá = đã kết nối, đỏ = lỗi.
+- Bàn phím: focus giữ nguyên khi vẽ lại; ↑/↓ chọn dòng, Enter mở chi tiết; Tab bị giữ trong hộp; đóng thì focus về nút đã mở; vòng focus rõ.
+- Sửa mcp.json trong ứng dụng (nút `{ }` trên thanh trên, hoặc Nâng cao → mcp.json): số dòng, kiểm tra JSON báo lỗi dễ hiểu kèm dòng/cột và “Đến chỗ lỗi”, khoá chỉ hiện `${secret:…}` (khoá thô dán vào sẽ được cất an toàn), Lưu qua thẻ xin phép, mục thêm/đổi được chạy thử theo luật cũ.
+- Sửa lỗi nhỏ: tóm tắt quyền Excel khớp bảng; ẩn “＋ Thêm khoá (nếu cần)” khi đã có ô khoá (thêm khoá phụ qua ⋯); chữ thanh bên, tiêu đề, tiêu đề trang, thông báo đã dịch EN/ZH; nút “Kết nối ứng dụng” không bị che ở 768/1024; mô tả bị cắt có chú thích khi rê chuột; mô tả tiếng Anh ngắn hơn.
+- Ảnh: `shots/13*.png` (`tools/shots13.py`), so sánh 4.8 | 4.9 ở `shots/cmp49/` (`tools/compare49.py`).
+
 ## connect.html v4.8 (quyết định ngày 22/10, lượt 6)
 - Bản 4.7 giữ nguyên ở `connect-v4.7.html` (+ `assets/connect-v47.js`, `assets/connect-i18n-v47.js`, khoá lưu v47). Bản 4.8 dùng khoá `aivn.plugins.v48` / `aivn.secrets.v48`.
 - Dòng lỗi trong danh sách bên trái chỉ còn chấm đỏ + “Lỗi” (Error / 错误); “(mẫu lỗi)” chỉ ở bảng bên phải của lich-cong-ty.

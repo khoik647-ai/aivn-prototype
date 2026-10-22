@@ -1,5 +1,5 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AIVN AGENT · Kết nối ứng dụng v4.8 (bản nháp)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
+<title>AIVN AGENT · Kết nối ứng dụng v4.9 (bản nháp)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
 <style>
 /* Màu & hình theo F-PLUGINS mục 3.5 (accent #D7263D, nút bo 10, thẻ bo 14, hộp thoại bo 16 + cạnh trên 4px accent) */
 :root{--acc:#D7263D;--acc2:#b51d31;--accbg:rgba(215,38,61,.13);--card:#1a1e29}
@@ -10,7 +10,7 @@
 .draft>*{white-space:nowrap;flex:none}.draft #o_draft{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .chat{flex:1;display:flex;flex-direction:column;min-width:0}
 #agentBar{border-bottom:1px solid var(--line);padding:10px 18px;background:var(--bg2)}
-.agent-title{display:flex;align-items:center;gap:10px}
+.agent-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap;row-gap:6px}
 .agent-title h1{font-size:15px;margin:0}
 .cab{display:inline-flex;align-items:center;gap:8px}
 .cnt-badge{font-size:11.5px;font-weight:600;color:var(--ok);background:var(--okbg);border-radius:20px;padding:1px 8px}
@@ -37,7 +37,8 @@
 .cbox textarea{flex:1;background:none;border:none;outline:none;resize:none;height:40px}
 #mcpBadges{max-width:720px;margin:6px auto 12px;display:flex;flex-wrap:wrap;gap:6px;padding:0 24px;box-sizing:content-box}
 .mb{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;border:1px solid var(--line2);border-radius:20px;padding:2px 8px 2px 3px;cursor:pointer;color:var(--tx2);background:var(--panel)}
-.mb .d{width:6px;height:6px;border-radius:50%}
+.mb .d{width:7px;height:7px;border-radius:50%;flex:none}.mb .d.ok{background:var(--ok)}.mb .d.busy{background:#3b82f6}.mb .d.bad{background:var(--bad)}.mb .d.off{border:1.5px solid var(--tx3);box-sizing:border-box}.mb .d.soon{background:var(--warn)}
+button.mb{font:inherit;font-size:11.5px}
 /* bảng phải #agentSettings */
 #agentSettings{width:300px;flex:none;border-left:1px solid var(--line);background:var(--bg2);overflow:auto;padding:14px}
 .sec{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px;background:var(--panel)}
@@ -52,6 +53,7 @@
 .modal.narrow{width:min(520px,92vw);max-height:86vh}
 .mh{display:flex;align-items:center;gap:10px;padding:14px 18px;flex:none}.mh h2{margin:0;font-size:16px}
 .badge{font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--panel2);color:var(--tx2)}.badge.on{background:var(--okbg);color:var(--ok)}
+button.badge{border:1px solid transparent;cursor:pointer;font-family:inherit}button.badge:hover{border-color:currentColor}button.badge.act{border-color:var(--ok);box-shadow:0 0 0 1px var(--ok) inset}
 .x{margin-left:auto;background:none;border:none;color:var(--tx3);font-size:20px;cursor:pointer}
 .mq{padding:0 18px;flex:none}
 .tabs{display:flex;gap:6px;padding:10px 18px 12px;flex:none;border-bottom:1px solid var(--line)}
@@ -65,7 +67,7 @@
 .srv .meta{font-size:11.5px;color:var(--tx3);margin:4px 0 0 44px;font-family:ui-monospace,Consolas,monospace}
 .srv .err{font-size:12px;color:var(--bad);margin:4px 0 0 44px}
 .st{font-size:11px;font-weight:600;padding:1px 8px;border-radius:20px;background:var(--panel2);color:var(--tx2);white-space:nowrap}
-.st.on{background:var(--okbg);color:var(--ok)}.st.error{background:var(--badbg);color:var(--bad)}.st.starting,.st.needs-setup{background:var(--warnbg);color:var(--warn)}
+.st.on{background:var(--okbg);color:var(--ok)}.st.error{background:var(--badbg);color:var(--bad)}.st.needs-setup{background:var(--warnbg);color:var(--warn)}.st.starting{background:rgba(59,130,246,.15);color:#60a5fa}
 .setup{margin:9px 0 2px 44px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.setup .inp{max-width:360px}
 .exp{margin:10px 0 0 44px;border-top:1px dashed var(--line2);padding-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .exp .tl div{font-size:12px;margin-bottom:4px}.exp .tl code{color:var(--tx)}.exp .tl span{color:var(--tx3)}
@@ -114,10 +116,10 @@
 .pl .dest{color:var(--tx3);white-space:nowrap}
 .st.waiting{background:var(--okbg);color:var(--ok);opacity:.8}
 /* v4.5: chạy thử + đổi tên hiển thị */
-.st.testing{background:var(--warnbg);color:var(--warn)}
-.st.installing{background:var(--warnbg);color:var(--warn)}
-.tst{margin-top:6px;font-size:12px}.tst.ok{color:var(--ok)}.tst.run{color:var(--warn);display:flex;align-items:center;gap:8px}
-.tst .bar{flex:1;max-width:160px;height:4px;background:var(--panel2);border-radius:4px;overflow:hidden}.tst .bar i{display:block;height:100%;background:var(--warn);transition:width .2s}
+.st.testing{background:rgba(59,130,246,.15);color:#60a5fa}
+.st.installing{background:rgba(59,130,246,.15);color:#60a5fa}
+.tst{margin-top:6px;font-size:12px}.tst.ok{color:var(--ok)}.tst.run{color:#60a5fa;display:flex;align-items:center;gap:8px}
+.tst .bar{flex:1;max-width:160px;height:4px;background:var(--panel2);border-radius:4px;overflow:hidden}.tst .bar i{display:block;height:100%;background:#3b82f6;transition:width .2s}
 .tst.bad{background:var(--badbg);border-radius:8px;padding:8px 10px;color:var(--tx);cursor:default}.tst.bad b{color:var(--bad)}.tst .fix{color:var(--tx2);margin-top:3px}
 .tst pre.log{white-space:pre-wrap;margin:0;font-size:11px}.tst .apdet{margin-top:6px}
 .lt.ic svg{width:64%;height:64%}
@@ -152,15 +154,59 @@
 .fnote{margin:2px 0 6px}.always b{font-weight:600}.twdet{margin:6px 0}.twdet .twl{margin-top:6px}
 
 /* ===== v4.7 (lượt 5): hai cột — danh sách gọn bên trái, chi tiết bên phải ===== */
-.ca-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:0 18px 14px;border-bottom:1px solid var(--line);flex:none}
-.ca-top .search{width:240px}.ca-top .chips{display:flex;gap:6px;flex-wrap:wrap}
+.ca-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 18px 14px;border-bottom:1px solid var(--line);flex:none}
+.ca-top .search{width:200px}@media (max-width:1400px){.jtxt{display:none}}.ca-top .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip.adv{border-style:dashed}.chip.adv.on{border-style:solid}
-.ca-body{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:340px minmax(0,1fr)}
+.ca-body{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:380px minmax(0,1fr)}
 .ca-left{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line);background:var(--bg2,transparent)}
 #caList{flex:1 1 auto;min-height:0;padding:10px 10px 16px}
 #caPanel{min-height:0;padding:24px 30px 32px}
 .lgrp{font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin:14px 10px 6px}.lsec:first-child .lgrp{margin-top:4px}
-.li{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:12px;padding:9px 10px;cursor:pointer;color:var(--tx);font:inherit;margin-bottom:2px}
+/* v4.9: dòng = nút mở (logo + chấm ở góc logo + tên + một dòng) + công tắc + nút ⋯ */
+.li{display:flex;align-items:center;gap:6px;width:100%;box-sizing:border-box;border:1px solid transparent;border-radius:12px;padding:3px 6px 3px 2px;cursor:pointer;color:var(--tx);margin-bottom:2px}
+.li-main{display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:left;background:none;border:none;border-radius:10px;padding:6px 6px 6px 8px;cursor:pointer;color:inherit;font:inherit}
+.lgw{position:relative;flex:none;display:inline-flex}.lgw .sd{position:absolute;right:-5px;bottom:-5px;width:16px;height:16px;font-size:10px;box-shadow:0 0 0 2px var(--card)}.lgw .sd.off{background:var(--card)}
+.swt{position:relative;flex:none;width:36px;height:20px;border-radius:11px;border:none;background:var(--line2);cursor:pointer;padding:0}.swt i{position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.swt.on{background:var(--ok)}.swt.on i{left:18px}.swt.busy{background:#3b82f6}.swt[aria-disabled="true"]{opacity:.45;cursor:not-allowed}.swt.busy[aria-disabled="true"]{opacity:.8;cursor:progress}
+.swt-ph{width:36px;flex:none}.kebab-ph{width:28px;flex:none}
+.kebab{flex:none;width:28px;height:28px;border-radius:8px;border:1px solid transparent;background:none;color:var(--tx2);font-size:16px;line-height:1;cursor:pointer;padding:0}.kebab:hover,.kebab[aria-expanded="true"]{background:var(--panel2);border-color:var(--line2)}
+.kebab.pk{width:40px;height:40px;font-size:18px;border-color:var(--line2)}
+.camenu{position:fixed;z-index:90;min-width:220px;max-width:300px;background:var(--card);border:1px solid var(--line2);border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,.45);padding:6px;display:flex;flex-direction:column}
+.camenu button{display:block;width:100%;text-align:left;background:none;border:none;border-radius:8px;padding:8px 10px;color:var(--tx);font:inherit;font-size:13px;cursor:pointer}.camenu button:hover,.camenu button:focus{background:var(--panel2)}
+.camenu button.danger{color:var(--bad)}.camenu button:disabled{opacity:.45;cursor:default}.camenu .msep{height:1px;background:var(--line);margin:5px 4px}
+.fnote{font-size:11.5px;color:var(--tx3);padding:8px 16px 0;line-height:1.4}
+.chip.conn{border-color:var(--ok);color:var(--ok)}.mh .chip.conn{padding:3px 10px;font-size:12px;white-space:nowrap}
+.mback{display:none}
+/* vòng focus rõ ràng (P48-5) */
+#caModal :focus-visible,#askModal :focus-visible,#approveCard :focus-visible,#osDlg :focus-visible,#caMenu :focus-visible,.agent-title :focus-visible,#mcpBadges :focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
+#caMenu button:focus-visible{outline-offset:-2px}#caPanel:focus-visible{outline-offset:-3px}
+/* trình sửa mcp.json */
+.edbox{display:flex;border:1px solid var(--line2);border-radius:10px;overflow:hidden;background:var(--bg2,#0b0d12);height:min(46vh,420px);font:12.5px/18px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.edbox.bad{border-color:var(--bad)}
+.edgut{flex:none;min-width:38px;padding:8px 8px 8px 6px;text-align:right;color:var(--tx3);background:var(--panel2);overflow:hidden;user-select:none;box-sizing:border-box}.edgut div{height:18px}.edgut div.bad{background:var(--bad);color:#3a0a0a;border-radius:4px;font-weight:700}
+.edta{flex:1;min-width:0;margin:0;border:none;outline:none;resize:none;background:transparent;color:var(--tx);padding:8px 10px;font:inherit;white-space:pre;overflow:auto;box-sizing:border-box;tab-size:2}
+.edbox:focus-within{box-shadow:0 0 0 2px #93c5fd}
+.ederr{margin:10px 0 0}#edErr .tst{margin:10px 0 0}
+@media (max-width:1100px){#agentSettings{width:240px}}
+/* điện thoại / cửa sổ hẹp (P48-1): một cột, danh sách → chi tiết, có nút Quay lại */
+@media (max-width:767px){
+ .body{flex-direction:column}#agentSettings{width:auto;border-left:none;border-top:1px solid var(--line)}
+ .draft{overflow-x:auto}
+ .modal.wide{width:100vw;height:100vh;height:100dvh;max-width:none;max-height:none;border-radius:0;border-left:none;border-right:none}
+ #caModal .mh{padding:10px 12px}
+ .ca-top{padding:0 12px 10px;gap:8px;flex-wrap:nowrap;overflow:hidden}.ca-top .search{width:auto;flex:1 1 140px;min-width:0}.ca-top>span[style]{display:none}
+ .ca-top{flex-wrap:wrap}.ca-top .chips{order:3;flex-wrap:nowrap;overflow-x:auto;width:100%;padding-bottom:2px;scrollbar-width:none}.ca-top .chips .chip{flex:none}
+ .imptxt{display:none}
+ .ca-body{grid-template-columns:minmax(0,1fr)}
+ .ca-left{border-right:none}
+ #caModal:not(.m-detail) #caPanel{display:none}
+ #caModal.m-detail .ca-left,#caModal.m-detail .ca-top{display:none}
+ #caPanel{padding:12px 16px 28px}
+ .mback{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--line2);border-radius:10px;color:var(--tx);font:inherit;font-size:13.5px;font-weight:600;padding:7px 12px;margin:0 0 14px;cursor:pointer}
+ .btn.big{min-width:0;flex:1}
+ .ph{gap:12px}.ph h3{font-size:18px}
+}
+.li-main:hover{background:transparent}.li:hover{background:var(--panel2)}
 .li:hover{background:var(--panel2)}
 .li.cur{background:var(--accbg);border-color:rgba(215,38,61,.45)}
 .li.flash{animation:fl 1.6s}
@@ -206,7 +252,7 @@
 </style></head><body>
 <div class="app"><nav class="rail"></nav>
 <div class="main">
-  <div class="draft" style="position:relative"><span id="o_draft"></span><a href="connect-v4.7.html" id="o_v47" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.6.html" id="o_v46" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.5.html" id="o_v45" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.4.html" id="o_v44" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.3.html" id="o_v43" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.2.html" id="o_v42" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.1.html" id="o_v41" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><span style="flex:1"></span>
+  <div class="draft" style="position:relative"><span id="o_draft"></span><a href="connect-v4.8.html" id="o_v48" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.7.html" id="o_v47" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.6.html" id="o_v46" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.5.html" id="o_v45" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.4.html" id="o_v44" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.3.html" id="o_v43" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.2.html" id="o_v42" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.1.html" id="o_v41" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><span style="flex:1"></span>
     <span style="font-weight:400;color:var(--tx3)">Ctrl+K</span><button class="btn sm ghost" id="o_restart" data-testid="sim-restart"></button><button class="btn sm ghost" id="o_set" data-testid="mock-settings-btn"></button><button class="btn sm ghost" id="o_reset"></button>
     <div id="setPop" data-testid="mock-settings"></div></div>
   <div class="body">
