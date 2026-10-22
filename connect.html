@@ -1,5 +1,5 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AIVN AGENT · Kết nối ứng dụng (bản nháp theo PR #1)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
+<title>AIVN AGENT · Kết nối ứng dụng v4.2 (bản nháp, F-PLUGINS bản 2)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
 <style>
 /* Màu & hình theo F-PLUGINS mục 3.5 (accent #D7263D, nút bo 10, thẻ bo 14, hộp thoại bo 16 + cạnh trên 4px accent) */
 :root{--acc:#D7263D;--acc2:#b51d31;--accbg:rgba(215,38,61,.13);--card:#1a1e29}
@@ -7,6 +7,7 @@
 .draft{display:flex;align-items:center;gap:10px;padding:7px 16px;background:repeating-linear-gradient(135deg,rgba(251,191,36,.12) 0 12px,rgba(251,191,36,.06) 12px 24px);border-bottom:1px solid rgba(251,191,36,.35);color:var(--warn);font-size:12.5px;font-weight:600}
 .draft .seg{display:flex;border:1px solid rgba(251,191,36,.4);border-radius:8px;overflow:hidden}.draft .seg button{background:none;border:none;color:var(--tx2);padding:2px 8px;font-size:11.5px;cursor:pointer}.draft .seg button.on{background:rgba(251,191,36,.2);color:var(--warn)}
 .body{flex:1;display:flex;min-height:0}
+.draft>*{white-space:nowrap;flex:none}.draft #o_draft{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .chat{flex:1;display:flex;flex-direction:column;min-width:0}
 #agentBar{border-bottom:1px solid var(--line);padding:10px 18px;background:var(--bg2)}
 .agent-title{display:flex;align-items:center;gap:10px}
@@ -85,18 +86,52 @@
 .osdlg{width:440px;background:#f3f4f6;color:#111;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.6);font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden}
 .osdlg .t{background:#e5e7eb;padding:8px 12px;font-size:12.5px;display:flex}.osdlg .f{padding:6px 12px;font-size:13px;cursor:pointer;border-radius:4px;margin:2px 8px}.osdlg .f.on{background:#cfe3ff}
 .osdlg .b{display:flex;justify-content:flex-end;gap:8px;padding:10px 12px}.osdlg button{border:1px solid #9ca3af;background:#fff;color:#111;border-radius:4px;padding:4px 14px;cursor:pointer}.osdlg button.p{background:#2563eb;color:#fff;border-color:#2563eb}
+
+/* v4.2 theo F-PLUGINS bản 2 (PR #5): lưới 2 cột, .card bo 14, logo 32 bo 8 */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:6px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.card.tile{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:7px;min-height:112px}
+.card.tile.clickable{cursor:pointer}.card.tile.clickable:hover{border-color:var(--line2)}
+.card.tile.on{border-color:rgba(52,211,153,.45)}.card.tile.soon{opacity:.85}
+.card.tile.wide{grid-column:1/-1}.card.tile.flash{animation:fl 1.6s}
+.card.tile .t{display:flex;gap:10px;align-items:center}.card.tile .nm{font-weight:600}
+.card.tile .d{font-size:12.5px;color:var(--tx2);flex:1}
+.card.tile .gl{font-size:12px;color:var(--tx3)}
+.card.tile .err{font-size:12px;color:var(--bad)}
+.card.tile .ft{display:flex;align-items:center;gap:6px;min-height:28px}
+.card.tile .exp{margin:4px 0 0}.card.tile .meta{font-size:11.5px;color:var(--tx3);font-family:ui-monospace,Consolas,monospace;word-break:break-all;margin:3px 0 0}
+.lg,.lgimg,.lt{border-radius:8px!important}
+.lt{display:inline-grid;place-items:center;flex:none;background:var(--panel2);color:var(--tx2);font-weight:700;font-size:14px;border:1px solid var(--line2);box-sizing:border-box}
+.st.soon{background:var(--panel2);color:var(--tx3)}
+.exp1{border-top:1px dashed var(--line2);padding-top:9px;margin-top:2px;cursor:default}
+.tg{margin-bottom:8px}.tgh{font-size:11.5px;font-weight:600;color:var(--tx3);margin-bottom:3px}.tgl{font-size:12.5px;color:var(--tx2);line-height:1.55}
+.srv .dep{font-size:12px;color:var(--warn);margin:4px 0 0 44px}
+.mf .warnline{margin:0}
+.advhead{display:flex;align-items:center;gap:10px;padding:0 18px 8px;border-bottom:1px solid var(--line)}
+.impbox{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:10px;background:var(--panel)}
+#setPop{display:none;position:absolute;right:16px;top:34px;z-index:40;width:280px;background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:12px;box-shadow:0 16px 40px rgba(0,0,0,.45);color:var(--tx);font-weight:400;white-space:normal}
+#setPop.open{display:block}
+#approveCard{flex:0 1 auto;min-height:0;overflow:auto}.msgs{flex:1 1 0;min-height:48px}
+.apact{position:sticky;bottom:-14px;background:var(--card);padding:8px 0 4px;margin-bottom:-4px}
+.apul{margin:4px 0 6px 18px;padding:0;font-size:13px}.apul li{margin:2px 0}
+.apdet{margin-top:8px;border:1px solid var(--line);border-radius:10px;padding:6px 10px}.apdet summary{cursor:pointer;font-size:12.5px;color:var(--tx2)}
+.apdet .apf{margin:8px 0 4px}
+.toolwarn{margin-top:8px;padding:9px 12px;border:1px solid rgba(251,191,36,.45);background:var(--warnbg);border-radius:10px;font-size:12.5px;color:var(--tx)}
+.toolwarn.block{border-color:rgba(248,113,113,.55);background:var(--badbg)}
+.twl{display:flex;flex-wrap:wrap;gap:6px;margin:7px 0}.twi{display:inline-flex;align-items:center;gap:5px;background:var(--panel);border:1px solid var(--line2);border-radius:20px;padding:2px 4px 2px 8px;font-size:12px}
+.twi:first-child{padding-right:8px}.twi .btn{padding:1px 8px;font-size:11px}
 </style></head><body>
 <div class="app"><nav class="rail"></nav>
 <div class="main">
-  <div class="draft"><span id="o_draft"></span><span style="flex:1"></span><span class="muted" id="o_lang" style="font-weight:400"></span>
-    <div class="seg" id="langSeg"><button data-l="vi">VI</button><button data-l="en">EN</button><button data-l="zh">中文</button></div>
-    <span style="font-weight:400;color:var(--tx3)">Ctrl+K</span><button class="btn sm ghost" id="o_reset"></button></div>
+  <div class="draft" style="position:relative"><span id="o_draft"></span><a href="connect-v4.1.html" id="o_v41" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><span style="flex:1"></span>
+    <span style="font-weight:400;color:var(--tx3)">Ctrl+K</span><button class="btn sm ghost" id="o_set" data-testid="mock-settings-btn"></button><button class="btn sm ghost" id="o_reset"></button>
+    <div id="setPop" data-testid="mock-settings"></div></div>
   <div class="body">
     <section class="chat">
-      <div id="agentBar"><div class="agent-title"><h1>AIVN AGENT</h1><span class="small muted" id="o_model"></span><span style="flex:1"></span>
+      <div id="agentBar"><div class="agent-title"><h1>AIVN AGENT</h1><span class="small muted" id="o_model"></span><select id="modelSel" class="inp" style="width:auto;padding:3px 8px;font-size:12px"></select><span style="flex:1"></span>
         <button class="btn sm" data-testid="agent-tpl-btn" id="tplBtn"></button>
         <button class="btn sm cab" data-testid="connect-apps-btn" id="caBtn"></button></div>
-        <div id="tplHint"></div></div>
+        <div id="toolWarn"></div><div id="tplHint"></div></div>
       <div class="msgs scroll" id="msgs"></div>
       <div id="approveCard" role="alertdialog"></div>
       <div class="composer"><div class="cbox"><textarea id="inp"></textarea><button class="btn pri sm" id="sendBtn"></button></div></div>

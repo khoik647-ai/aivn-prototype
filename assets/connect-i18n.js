@@ -143,7 +143,737 @@ const STR={
 'Luôn cho phép':['Always allow','始终允许'],'Chưa có công cụ nào.':['No tools yet.','还没有工具。'],
 // --- Ctrl+K
 'Gõ lệnh…':['Type a command…','输入命令…'],'Khám phá mô hình':['Discover models','发现模型'],'Kinh doanh':['Business','业务'],'Lệnh nhanh':['Commands','命令'],
+// --- v4.2 (hướng mới) ---
+'Bản nháp 4.2 theo hướng mới, chờ PR tài liệu cập nhật':['Draft 4.2 following the new direction, awaiting the design-doc update PR','草稿 4.2，按新方向制作，等待设计文档更新的 PR'],
+'Bản 4.1 (kỹ thuật, để so sánh)':['Version 4.1 (technical, for comparison)','4.1 版（技术版，供对比）'],
+'Mô hình:':['Model:','模型：'],'ngữ cảnh {0}':['context {0}','上下文 {0}'],
+'Năng suất':['Productivity','效率'],'Giao tiếp':['Communication','沟通'],'Bán hàng':['Sales','销售'],'Tài chính':['Finance','财务'],
+'Nâng cao':['Advanced','高级'],'Tìm ứng dụng…':['Search apps…','搜索应用…'],
+'AIVN Kinh doanh':['AIVN Business','AIVN 业务'],
+'Hỏi nhanh về sản phẩm, tồn kho, đơn bán và hoá đơn trong mục Kinh doanh của AIVN.':['Ask about products, stock, sales orders and invoices in AIVN Business.','快速查询 AIVN 业务中的产品、库存、销售订单和发票。'],
+'Dữ liệu nằm trên máy bạn, không gửi ra ngoài.':['Your data stays on this computer and is not sent anywhere.','数据保存在您的电脑上，不会发送出去。'],
+'Đọc và cập nhật tệp Excel trong thư mục bạn chọn: xem bảng, tính tổng, thêm dòng. Không cần cài Excel.':['Read and update Excel files in a folder you choose: view tables, add up totals, add rows. Excel does not need to be installed.','读取和更新您所选文件夹中的 Excel 文件：查看表格、求和、添加行。无需安装 Excel。'],
+'Chạy trên máy bạn. Tệp không gửi ra ngoài.':['Runs on your computer. Files are not sent anywhere.','在您的电脑上运行。文件不会发送出去。'],
+'Đọc và trả lời tin nhắn khách hàng gửi tới Zalo OA của cửa hàng.':['Read and reply to customer messages sent to your shop’s Zalo OA.','阅读并回复客户发到店铺 Zalo OA 的消息。'],
+'Tóm tắt thư mới và soạn thư trả lời nháp.':['Summarize new mail and draft replies.','总结新邮件并起草回复。'],
+'Tìm và đọc tài liệu, bảng tính trong Google Drive.':['Find and read docs and spreadsheets in Google Drive.','在 Google Drive 中查找和阅读文档、表格。'],
+'Xem lịch, nhắc lịch hẹn và đặt lịch họp.':['View your calendar, get reminders and schedule meetings.','查看日历、提醒约会并安排会议。'],
+'Đọc trang và ghi chú vào Notion.':['Read pages and take notes in Notion.','阅读页面并在 Notion 中记笔记。'],
+'Xem sản phẩm, giá và tồn kho':['See products, prices and stock','查看产品、价格和库存'],'Xem đơn bán và hoá đơn':['See sales orders and invoices','查看销售订单和发票'],'Tạo đơn bán nháp':['Create draft sales orders','创建销售订单草稿'],
+'Mở và đọc tệp Excel trong thư mục bạn chọn':['Open and read Excel files in the folder you choose','打开并读取您所选文件夹中的 Excel 文件'],'Thêm hoặc sửa ô, tạo trang tính mới':['Add or edit cells, create new sheets','添加或修改单元格，新建工作表'],
+'Trên máy':['On this computer','本机'],'Sắp có':['Coming soon','即将推出'],'Báo tôi khi có':['Notify me','上线时通知我'],
+'Đã ghi nhận. AIVN sẽ báo khi {0} dùng được.':['Noted. AIVN will let you know when {0} is available.','已记录。{0} 可用时 AIVN 会通知您。'],
+'Cần xem kỹ':['Review carefully','请仔细查看'],'Chi tiết':['Details','详情'],'Ẩn chi tiết':['Hide details','隐藏详情'],
+'Cho phép AIVN AGENT dùng “{0}”?':['Allow AIVN AGENT to use “{0}”?','允许 AIVN AGENT 使用“{0}”吗？'],
+'AIVN AGENT sẽ có thể:':['AIVN AGENT will be able to:','AIVN AGENT 将可以：'],
+'Mỗi lần ghi hoặc sửa dữ liệu, AIVN AGENT vẫn hỏi bạn trước.':['AIVN AGENT still asks you before each write or edit.','每次写入或修改数据前，AIVN AGENT 仍会先询问您。'],
+'Công cụ gắn sẵn trong AIVN':['Built into AIVN','AIVN 内置工具'],'không có (không chạy chương trình ngoài)':['none (no external program runs)','无（不运行外部程序）'],
+'Tự kết nối lại ứng dụng này khi mở AIVN':['Reconnect this app automatically when AIVN opens','打开 AIVN 时自动重新连接此应用'],
+'Địa chỉ http này nằm trong mạng nội bộ của bạn.':['This http address is on your local network.','此 http 地址位于您的局域网内。'],
+'Lệnh này không ghim phiên bản. npx có thể tải mã mới.':['This command does not pin a version. npx can download new code.','此命令没有固定版本。npx 可能会下载新代码。'],
+'“url” của “{0}” dùng http ra ngoài mạng nội bộ. Hãy dùng https, hoặc một địa chỉ trong mạng nội bộ.':['The http “url” for “{0}” points outside the local network. Use https, or an address on the local network.','“{0}”的 http“url”指向局域网之外。请改用 https，或使用局域网内的地址。'],
+'Chưa hỗ trợ':['Not supported yet','暂不支持'],'Chưa hỗ trợ đăng nhập OAuth':['OAuth sign-in not supported yet','暂不支持 OAuth 登录'],'Chưa được duyệt':['Not approved yet','尚未批准'],
+'Có sẵn':['Built-in','内置'],'Do bạn thêm':['Added by you','由您添加'],
+'Máy chủ MCP bạn tự thêm hoặc bật trong Nâng cao. Dành cho người dùng quen kỹ thuật.':['MCP servers you added yourself or turned on in Advanced. For technical users.','您自行添加或在“高级”中开启的 MCP 服务器。适合熟悉技术的用户。'],
+'Thêm máy chủ có sẵn':['Add a built-in server','添加内置服务器'],'Không thấy “{0}”.':['Nothing matches “{0}”.','没有找到“{0}”。'],
+'Có {0} máy chủ MCP khớp trong Nâng cao.':['{0} MCP servers in Advanced match.','“高级”中有 {0} 个 MCP 服务器匹配。'],'Xem trong Nâng cao':['View in Advanced','在“高级”中查看'],
+'Mọi kết nối cần bạn cho phép. Việc ghi hoặc sửa dữ liệu luôn hỏi lại trước.':['Every connection needs your permission. Writing or editing data always asks first.','每个连接都需要您的许可。写入或修改数据前总会再次询问。'],
+'Máy chủ MCP, lệnh và tệp mcp.json — dành cho người dùng quen kỹ thuật.':['MCP servers, commands and the mcp.json file — for technical users.','MCP 服务器、命令和 mcp.json 文件——适合熟悉技术的用户。'],
+'Tìm máy chủ, công cụ…':['Search servers, tools…','搜索服务器、工具…'],
+'{0} chỉ hiện ở tab riêng của chúng cho đến khi đã có trong mcp.json.':['{0} only appear in their own tabs until they are in mcp.json.','{0} 在加入 mcp.json 之前只显示在各自的标签中。'],
+'Vẫn giữ trong mcp.json, không chạy.':['Kept in mcp.json, not run.','保留在 mcp.json 中，不运行。'],
+'Một mẫu cho cả hồ sơ: đổi mẫu là đổi cho mọi cuộc trò chuyện, từ lượt sau.':['One template per profile: changing it applies to every conversation from the next turn.','每个档案一个模板：更换后从下一轮起对所有对话生效。'],
+'Mô hình này đang thấy {0} công cụ, nhiều hơn mức hợp với ngữ cảnh {1}. Hãy tắt bớt máy chủ. AIVN không tự bỏ công cụ.':['This model can see {0} tools, more than fits context {1}. Turn some servers off. AIVN does not drop tools on its own.','此模型能看到 {0} 个工具，超过上下文 {1} 所能承受的。请关闭一些服务器。AIVN 不会自行丢掉工具。'],
+'Mô tả công cụ (khoảng {0} token) vượt ngân sách {1} token. Lượt sau chưa bắt đầu cho đến khi bạn tắt bớt.':['Tool descriptions (about {0} tokens) exceed the {1}-token budget. The next turn will not start until you turn some off.','工具描述（约 {0} 个 token）超出 {1} 个 token 的预算。在您关闭一些之前，下一轮不会开始。'],
+'Công cụ của AIVN AGENT':['AIVN AGENT’s own tools','AIVN AGENT 自带工具'],'Tắt':['Turn off','关闭'],'Mở Kết nối ứng dụng':['Open Connect apps','打开“连接应用”'],'Đã hiểu':['Got it','知道了'],
+'Chưa bắt đầu lượt: hãy tắt bớt máy chủ trước.':['Turn not started: turn some servers off first.','未开始本轮：请先关闭一些服务器。'],
+'(bản mẫu) Tin nhắn không được gửi thật.':['(prototype) The message is not actually sent.','（原型）消息不会真正发送。'],
+'Máy chủ có sẵn':['Built-in servers','内置服务器'],'Sửa mcp.json':['Edit mcp.json','编辑 mcp.json'],
+'Gmail':['Gmail','Gmail'],'Google Calendar':['Google Calendar','Google 日历'],'Google Drive':['Google Drive','Google 云端硬盘'],'Microsoft Excel':['Microsoft Excel','Microsoft Excel'],'Notion':['Notion','Notion'],'Zalo OA':['Zalo OA','Zalo OA'],
 };
 let LANG='vi';
 function tr(k,...a){let s=k;if(LANG!=='vi'){const v=STR[k];if(v)s=v[LANG==='en'?0:1];else console.warn('i18n thiếu:',k)}return s.replace(/\{(\d)\}/g,(m,i)=>a[+i])}
 const foldVi=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();
+
+// ---- PR #5 (F-PLUGINS bản 2): câu trong bảng mục 11 của tài liệu được chép nguyên văn; phần còn lại do bản mẫu viết ----
+const STR_PR5_DOC={
+"Kết nối ứng dụng": [
+"Connect apps",
+"连接应用"
+],
+"{0} đã kết nối": [
+"{0} connected",
+"已连接 {0} 个"
+],
+"Chưa kết nối": [
+"Not connected",
+"未连接"
+],
+"Tìm ứng dụng…": [
+"Search apps…",
+"搜索应用…"
+],
+"Không thấy “{0}”.": [
+"Nothing matches “{0}”.",
+"没有找到“{0}”。"
+],
+"Nâng cao": [
+"Advanced",
+"高级"
+],
+"Nhập mcp.json…": [
+"Import mcp.json…",
+"导入 mcp.json…"
+],
+"Nâng cao: mcp.json": [
+"Advanced: mcp.json",
+"高级：mcp.json"
+],
+"Lưu & kết nối lại": [
+"Save and reconnect",
+"保存并重新连接"
+],
+"Xuất mcp.json…": [
+"Export mcp.json…",
+"导出 mcp.json…"
+],
+"Kết nối": [
+"Connect",
+"连接"
+],
+"Ngắt kết nối": [
+"Disconnect",
+"断开连接"
+],
+"Kết nối lại": [
+"Reconnect",
+"重新连接"
+],
+"Thử lại": [
+"Try again",
+"重试"
+],
+"Gỡ": [
+"Remove",
+"移除"
+],
+"Đang kết nối…": [
+"Connecting…",
+"正在连接…"
+],
+"Đã kết nối": [
+"Connected",
+"已连接"
+],
+"Đã tắt": [
+"Off",
+"已关闭"
+],
+"Lỗi": [
+"Error",
+"出错"
+],
+"Cần thiết lập": [
+"Needs setup",
+"需要设置"
+],
+"Sắp có": [
+"Coming soon",
+"即将推出"
+],
+"Chờ đăng nhập Google.": [
+"Waiting on Google sign-in.",
+"等待 Google 登录。"
+],
+"Chưa có ứng dụng trong nhóm này.": [
+"Nothing in this group yet.",
+"这个分组里还没有应用。"
+],
+"Chưa kết nối ứng dụng nào.": [
+"No apps connected yet.",
+"还没有连接任何应用。"
+],
+"Năng suất": [
+"Productivity",
+"效率"
+],
+"Giao tiếp": [
+"Communication",
+"沟通"
+],
+"Bán hàng": [
+"Sales",
+"销售"
+],
+"Tài chính": [
+"Finance",
+"财务"
+],
+"Của tôi": [
+"Mine",
+"我的"
+],
+"Tất cả": [
+"All",
+"全部"
+],
+"Chi tiết": [
+"Details",
+"详情"
+],
+"Lệnh": [
+"Command",
+"命令"
+],
+"Loại": [
+"Kind",
+"类型"
+],
+"Mô hình này đang thấy {0} công cụ, nhiều hơn mức hợp với ngữ cảnh {1}. Hãy tắt bớt máy chủ. AIVN không tự bỏ công cụ.": [
+"This model can see {0} tools, more than fits context {1}. Turn some servers off. AIVN does not drop tools on its own.",
+"此模型能看到 {0} 个工具，超过上下文 {1} 所能承受的。请关闭一些服务器。AIVN 不会自行丢掉工具。"
+],
+"Tắt": [
+"Turn off",
+"关闭"
+],
+"Tự kết nối khi mở AIVN": [
+"Connect automatically when AIVN opens",
+"打开 AIVN 时自动连接"
+],
+"Mẫu: {0}": [
+"Template: {0}",
+"模板：{0}"
+],
+"Đang dùng": [
+"In use",
+"正在使用"
+],
+"Tạo mẫu của tôi": [
+"Create my template",
+"创建我的模板"
+],
+"Lưu thành mẫu của tôi": [
+"Save as my template",
+"另存为我的模板"
+],
+"Mẫu này dùng được với: {0}": [
+"This template can use: {0}",
+"此模板可以使用：{0}"
+],
+"Công tắc “Cho AIVN AGENT dùng công cụ MCP” đang tắt. Máy chủ ở phần Nâng cao sẽ không chạy. Ứng dụng trên cửa hàng vẫn kết nối được.": [
+"The “Let AIVN AGENT use MCP tools” switch is off. Servers under Advanced will not run. Store apps can still be connected.",
+"“允许 AIVN AGENT 使用 MCP 工具”开关已关闭。高级里的服务器不会运行。商店里的应用仍可连接。"
+],
+"Cho phép kết nối “{0}”?": [
+"Allow “{0}” to connect?",
+"允许连接“{0}”？"
+],
+"Tự kết nối lại máy chủ này khi mở AIVN": [
+"Connect this server again when AIVN opens",
+"打开 AIVN 时重新连接此服务器"
+],
+"Tự bật lại kết nối này khi mở AIVN": [
+"Turn this connection back on when AIVN opens",
+"打开 AIVN 时重新启用此连接"
+],
+"Nhập {0} máy chủ từ mcp.json?": [
+"Import {0} servers from mcp.json?",
+"从 mcp.json 导入 {0} 个服务器？"
+],
+"Tự kết nối các máy chủ này khi mở AIVN": [
+"Connect these servers when AIVN opens",
+"打开 AIVN 时连接这些服务器"
+],
+"Thay thế máy chủ “{0}”?": [
+"Replace server “{0}”?",
+"替换服务器“{0}”？"
+],
+"Đã tách {0} khoá bí mật ra khỏi tệp. Chúng được mã hoá bằng kho khoá hệ điều hành và không ghi dạng chữ vào mcp.json.": [
+"Moved {0} secrets out of the file. They are encrypted with the operating system key store and are not written in mcp.json as plain text.",
+"已从文件中取出 {0} 个密钥。它们由操作系统密钥库加密，不会以明文写入 mcp.json。"
+],
+"Dữ liệu gửi tới máy chủ này rời khỏi máy bạn.": [
+"Data sent to this server leaves your computer.",
+"发给此服务器的数据会离开您的电脑。"
+],
+"Địa chỉ http này nằm trong mạng nội bộ của bạn.": [
+"This http address is on your local network.",
+"此 http 地址位于您的局域网内。"
+],
+"Lệnh này không ghim phiên bản. npx có thể tải mã mới.": [
+"This command does not pin a version. npx can download new code.",
+"此命令没有固定版本。npx 可能会下载新代码。"
+],
+"AIVN Kinh doanh đọc và sửa dữ liệu kinh doanh trên máy này. Xoá, huỷ và ghi nhận thanh toán vẫn hỏi bạn từng lần.": [
+"AIVN Business reads and changes business data on this computer. Delete, cancel, and record-payment still ask you each time.",
+"AIVN 业务会读取并修改这台电脑上的业务数据。删除、取消和登记付款仍会每次询问你。"
+],
+"Ghi tệp Excel trong thư mục được phép. Ghi đè vẫn hỏi bạn trước.": [
+"Write Excel files in allowed folders. Overwriting still asks you first.",
+"在允许的文件夹里写 Excel 文件。覆盖前仍会询问你。"
+],
+"Gỡ “{0}”?": [
+"Remove “{0}”?",
+"移除“{0}”？"
+],
+"Công cụ của kết nối này sẽ biến mất. Các mục “Luôn cho phép” của nó cũng bị xoá.": [
+"This connection’s tools will disappear. Its “Always allow” entries are removed too.",
+"此连接的工具会消失。“始终允许”也会一并移除。"
+],
+"Gỡ máy chủ “{0}”?": [
+"Remove server “{0}”?",
+"移除服务器“{0}”？"
+],
+"Công cụ của máy chủ này sẽ biến mất. Các mục “Luôn cho phép” của nó cũng bị xoá. Khoá bí mật của máy chủ này bị xoá khỏi máy.": [
+"This server’s tools will disappear. Its “Always allow” entries are removed too. Its secrets are deleted from this computer.",
+"此服务器的工具会消失。“始终允许”也会一并移除。此服务器的密钥会从这台电脑删除。"
+],
+"Cho phép máy chủ này tự chạy mỗi khi mở AIVN.": [
+"Let this server start each time AIVN opens.",
+"允许此服务器在每次打开 AIVN 时自行启动。"
+],
+"mcp.json phải là một đối tượng JSON.": [
+"mcp.json must be a JSON object.",
+"mcp.json 必须是一个 JSON 对象。"
+],
+"Thiếu \"mcpServers\": { tên: { command, args, env } }.": [
+"Missing \"mcpServers\": { name: { command, args, env } }.",
+"缺少 \"mcpServers\": { 名称: { command, args, env } }。"
+],
+"Máy chủ \"{0}\" không hợp lệ.": [
+"Server \"{0}\" is not valid.",
+"服务器“{0}”无效。"
+],
+"Máy chủ \"{0}\" cần \"command\" (stdio) hoặc \"url\" (http/SSE).": [
+"Server \"{0}\" needs \"command\" (stdio) or \"url\" (http/SSE).",
+"服务器“{0}”需要 \"command\"（stdio）或 \"url\"（http/SSE）。"
+],
+"\"args\" của \"{0}\" phải là mảng.": [
+"\"args\" of \"{0}\" must be an array.",
+"“{0}”的 \"args\" 必须是数组。"
+],
+"\"env\" của \"{0}\" phải là đối tượng.": [
+"\"env\" of \"{0}\" must be an object.",
+"“{0}”的 \"env\" 必须是对象。"
+],
+"\"url\" của \"{0}\" phải bắt đầu bằng http:// hoặc https://": [
+"\"url\" of \"{0}\" must start with http:// or https://",
+"“{0}”的 \"url\" 必须以 http:// 或 https:// 开头"
+],
+"Thiếu \"mcpServers\". Nếu tệp dùng khoá \"servers\", hãy đổi thành \"mcpServers\".": [
+"Missing \"mcpServers\". If the file uses the key \"servers\", rename it to \"mcpServers\".",
+"缺少“mcpServers”。如果文件用的是“servers”，请改成“mcpServers”。"
+],
+"mcp.json không phải JSON hợp lệ.": [
+"mcp.json is not valid JSON.",
+"mcp.json 不是有效的 JSON。"
+],
+"Tên máy chủ phải từ 1 đến 64 ký tự.": [
+"A server name must be 1 to 64 characters.",
+"服务器名称须为 1 到 64 个字符。"
+],
+"Máy chủ \"{0}\" chỉ được có command hoặc url.": [
+"Server \"{0}\" must have either command or url, not both.",
+"服务器“{0}”只能有 command 或 url 其中之一。"
+],
+"\"args\" của \"{0}\" chỉ được chứa chuỗi.": [
+"\"args\" of \"{0}\" may only contain strings.",
+"“{0}”的 \"args\" 只能包含字符串。"
+],
+"\"type\" của \"{0}\" chỉ được là \"sse\".": [
+"\"type\" of \"{0}\" may only be \"sse\".",
+"“{0}”的 \"type\" 只能是 \"sse\"。"
+],
+"\"timeout\" của \"{0}\" phải là số nguyên từ 1000 đến 600000.": [
+"\"timeout\" of \"{0}\" must be an integer from 1000 to 600000.",
+"“{0}”的 \"timeout\" 必须是 1000 到 600000 的整数。"
+],
+"\"cwd\" của \"{0}\" phải là thư mục có sẵn.": [
+"\"cwd\" of \"{0}\" must be a folder that already exists.",
+"“{0}”的 \"cwd\" 必须是已存在的文件夹。"
+],
+"\"url\" của \"{0}\" dùng http ra ngoài mạng nội bộ. Hãy dùng https, hoặc một địa chỉ trong mạng nội bộ.": [
+"The http \"url\" for \"{0}\" points outside the local network. Use https, or an address on the local network.",
+"“{0}”的 http“url”指向局域网之外。请改用 https，或使用局域网内的地址。"
+],
+"Tên \"{0}\" và \"{1}\" trùng nhau sau khi chuẩn hoá.": [
+"The names \"{0}\" and \"{1}\" are the same once normalised.",
+"名称“{0}”和“{1}”规范化之后相同。"
+],
+"AIVN chưa hỗ trợ đăng nhập OAuth (trường auth) của máy chủ \"{0}\".": [
+"AIVN does not support OAuth sign-in (the auth field) for server \"{0}\" yet.",
+"AIVN 尚不支持服务器“{0}”的 OAuth 登录（auth 字段）。"
+],
+"Tệp mcp.json lớn hơn 256 KB.": [
+"The mcp.json file is larger than 256 KB.",
+"mcp.json 文件超过 256 KB。"
+],
+"Tệp xuất không có khoá bí mật. Máy khác phải nhập lại khoá.": [
+"The exported file has no secrets. Another computer will need the keys entered again.",
+"导出的文件不含密钥。换一台电脑需要重新填写密钥。"
+],
+"Đã có \"{0}\".": [
+"\"{0}\" is already there.",
+"已经有“{0}”。"
+]
+};
+const STR_PR5_PROTO={
+"Khoá được mã hoá bằng kho khoá của hệ điều hành và không bao giờ hiện lại hay ghi vào nhật ký.": [
+"The key is encrypted with the operating system's keychain and is never shown again or written to logs.",
+"密钥用操作系统的钥匙串加密，不会再次显示，也不会写入日志。"
+],
+"Máy này không có kho khoá an toàn của hệ điều hành: khoá chỉ giữ trong bộ nhớ đến khi thoát AIVN (không ghi ra đĩa).": [
+"This computer has no secure OS keychain: the key is kept in memory only until AIVN quits (never written to disk).",
+"本机没有安全的系统钥匙串：密钥只保存在内存中，直到退出 AIVN（不会写入磁盘）。"
+],
+"⚠ Máy chủ MCP là chương trình chạy trên máy bạn (stdio) hoặc dịch vụ bên ngoài (http/SSE) và có thể đọc/ghi dữ liệu. Chỉ thêm máy chủ bạn tin tưởng. AIVN luôn xin phép trước mỗi lần gọi công cụ MCP (trừ khi bạn chọn “Luôn cho phép”).": [
+"⚠ An MCP server is a program running on your computer (stdio) or an external service (http/SSE) and can read/write data. Only add servers you trust. AIVN always asks permission before each MCP tool call (unless you choose “Always allow”).",
+"⚠ MCP 服务器是在你电脑上运行的程序（stdio）或外部服务（http/SSE），可以读写数据。请只添加你信任的服务器。每次调用 MCP 工具前 AIVN 都会请求许可（除非你选择“始终允许”）。"
+],
+"Gói này trên npm đã ngừng được hỗ trợ. AIVN ghim đúng bản cuối và không tự tải bản khác.": [
+"This npm package is no longer supported. AIVN pins the last published version and does not download another.",
+"此 npm 包已停止维护。AIVN 固定最后发布的版本，不会另行下载。"
+],
+"Bản nháp 4.2 theo thiết kế F-PLUGINS bản 2 (PR #5)": [
+"Draft 4.2 following F-PLUGINS design v2 (PR #5)",
+"草稿 4.2，按 F-PLUGINS 设计第 2 版（PR #5）"
+],
+"AIVN Kinh doanh": [
+"AIVN Business",
+"AIVN 业务"
+],
+"Excel": [
+"Excel",
+"Excel"
+],
+"Zalo": [
+"Zalo",
+"Zalo"
+],
+"Drive": [
+"Drive",
+"云端硬盘"
+],
+"Calendar": [
+"Calendar",
+"日历"
+],
+"Notion": [
+"Notion",
+"Notion"
+],
+"Gmail": [
+"Gmail",
+"Gmail"
+],
+"Khách hàng, đơn bán, kho và hoá đơn ngay trong AIVN. Dữ liệu nằm trên máy này.": [
+"Customers, sales orders, stock, and invoices inside AIVN. The data stays on this computer.",
+"客户、销售单、库存和发票都在 AIVN 里。数据留在这台电脑上。"
+],
+"Đọc và ghi tệp Excel trong thư mục được phép. Không cần cài Microsoft Excel.": [
+"Read and write Excel files in allowed folders. Microsoft Excel does not need to be installed.",
+"在允许的文件夹里读写 Excel 文件。不必安装 Microsoft Excel。"
+],
+"Nhắn tin Zalo.": [
+"Send Zalo messages.",
+"发送 Zalo 消息。"
+],
+"Đọc và gửi thư Gmail.": [
+"Read and send Gmail.",
+"阅读和发送 Gmail。"
+],
+"Tệp trên Google Drive.": [
+"Files on Google Drive.",
+"Google 云端硬盘上的文件。"
+],
+"Lịch Google.": [
+"Google Calendar.",
+"Google 日历。"
+],
+"Trang và cơ sở dữ liệu Notion.": [
+"Notion pages and databases.",
+"Notion 的页面和数据库。"
+],
+"Việc": [
+"Does",
+"用途"
+],
+"Khách hàng, đơn bán, kho và hoá đơn trong AIVN Kinh doanh.": [
+"Customers, sales orders, stock and invoices in AIVN Business.",
+"AIVN 业务里的客户、销售单、库存和发票。"
+],
+"Đọc và ghi tệp .xlsx và .csv.": [
+"Read and write .xlsx and .csv files.",
+"读写 .xlsx 和 .csv 文件。"
+],
+"Dữ liệu nằm trên máy này (crm.db).": [
+"The data stays on this computer (crm.db).",
+"数据留在这台电脑上（crm.db）。"
+],
+"Chỉ trong thư mục được phép.": [
+"Only in allowed folders.",
+"只在允许的文件夹里。"
+],
+"Không cần cài Microsoft Excel.": [
+"Microsoft Excel does not need to be installed.",
+"不必安装 Microsoft Excel。"
+],
+"Cho phép kết nối này tự bật mỗi khi mở AIVN.": [
+"Let this connection turn on each time AIVN opens.",
+"允许此连接在每次打开 AIVN 时自动启用。"
+],
+"Lưu khoá": [
+"Key storage",
+"密钥保存"
+],
+"Gói này nằm sẵn trong bản cài AIVN. Khi chạy, AIVN không gọi npx và không tải gì.": [
+"This package ships inside the AIVN installer. When it runs, AIVN does not call npx and downloads nothing.",
+"此包随 AIVN 安装程序附带。运行时 AIVN 不调用 npx，也不下载任何内容。"
+],
+"đóng sẵn trong bản cài": [
+"bundled with the installer",
+"随安装程序附带"
+],
+"Máy chủ có sẵn": [
+"Built-in servers",
+"内置服务器"
+],
+"Máy chủ khác trong mcp.json": [
+"Other servers in mcp.json",
+"mcp.json 里的其他服务器"
+],
+"Nhập / xuất": [
+"Import / export",
+"导入 / 导出"
+],
+"Mọi máy chủ nhập vào nằm ở Của tôi.": [
+"Every imported server goes to Mine.",
+"所有导入的服务器都放在“我的”里。"
+],
+"Mẫu của bạn giữ nguyên ngôn ngữ bạn viết, không dịch máy.": [
+"Your templates stay in the language you wrote them in; they are not machine-translated.",
+"你的模板保持你写的语言，不做机器翻译。"
+],
+"Cài đặt (mô phỏng)": [
+"Settings (mock)",
+"设置（模拟）"
+],
+"Cài đặt": [
+"Settings",
+"设置"
+],
+"Giao diện": [
+"Appearance",
+"外观"
+],
+"Ngôn ngữ giao diện": [
+"Interface language",
+"界面语言"
+],
+"Chỗ này đóng vai mục Cài đặt của ứng dụng. Hộp thoại Kết nối ứng dụng không có nút đổi ngôn ngữ.": [
+"This stands in for the app's Settings. The Connect apps dialog has no language switch.",
+"这里代替应用的“设置”。“连接应用”对话框没有切换语言的按钮。"
+],
+"Lệnh không thuộc danh mục Nâng cao.": [
+"The command is not in the Advanced catalogue.",
+"此命令不在“高级”目录中。"
+],
+"Chỉ xem, không hỏi": [
+"View only, no question asked",
+"只查看，不询问"
+],
+"Thay đổi dữ liệu, hỏi bạn trước": [
+"Changes data, asks you first",
+"会修改数据，先询问你"
+],
+"Xoá, huỷ, thanh toán, hỏi bạn từng lần": [
+"Delete, cancel, payment: asks you every time",
+"删除、取消、付款：每次都询问你"
+],
+"Xem tồn kho": [
+"View stock",
+"查看库存"
+],
+"Xem một phiếu kho": [
+"View a stock transfer",
+"查看一张库存单"
+],
+"Xem danh sách phiếu kho": [
+"List stock transfers",
+"列出库存单"
+],
+"Xem một đơn bán": [
+"View a sales order",
+"查看一张销售单"
+],
+"Xem danh sách đơn bán": [
+"List sales orders",
+"列出销售单"
+],
+"Xem một hoá đơn": [
+"View an invoice",
+"查看一张发票"
+],
+"Xem danh sách hoá đơn": [
+"List invoices",
+"列出发票"
+],
+"Xem báo cáo bán hàng": [
+"View the sales report",
+"查看销售报表"
+],
+"Xem báo cáo hoá đơn": [
+"View the invoice report",
+"查看发票报表"
+],
+"Xem báo cáo kho": [
+"View the stock report",
+"查看库存报表"
+],
+"Xem tổng quan kinh doanh": [
+"View the business overview",
+"查看业务概览"
+],
+"Tạo phiếu nhập kho": [
+"Create a goods receipt",
+"创建入库单"
+],
+"Đánh dấu phiếu kho đã xong": [
+"Mark a stock transfer as done",
+"将库存单标记为完成"
+],
+"Xác nhận phiếu kho": [
+"Validate a stock transfer",
+"确认库存单"
+],
+"Điều chỉnh số tồn": [
+"Adjust stock quantity",
+"调整库存数量"
+],
+"Gửi báo giá": [
+"Send a quotation",
+"发送报价"
+],
+"Xác nhận đơn bán": [
+"Confirm a sales order",
+"确认销售单"
+],
+"Đưa đơn bán về báo giá": [
+"Set a sales order back to quotation",
+"将销售单退回报价"
+],
+"Lưu hoá đơn": [
+"Save an invoice",
+"保存发票"
+],
+"Lập hoá đơn từ đơn bán": [
+"Invoice a sales order",
+"根据销售单开票"
+],
+"Ghi sổ hoá đơn": [
+"Post an invoice",
+"过账发票"
+],
+"Đưa hoá đơn về nháp": [
+"Set an invoice back to draft",
+"将发票退回草稿"
+],
+"Huỷ phiếu kho": [
+"Cancel a stock transfer",
+"取消库存单"
+],
+"Huỷ đơn bán": [
+"Cancel a sales order",
+"取消销售单"
+],
+"Huỷ hoá đơn": [
+"Cancel an invoice",
+"取消发票"
+],
+"Ghi nhận thanh toán": [
+"Record a payment",
+"登记付款"
+],
+"Lập hoá đơn điều chỉnh giảm": [
+"Create a credit note",
+"开具红字发票"
+],
+"Xoá hoá đơn": [
+"Delete an invoice",
+"删除发票"
+],
+"Đọc tệp Excel hoặc CSV trong thư mục được phép": [
+"Read an Excel or CSV file in allowed folders",
+"读取允许文件夹里的 Excel 或 CSV 文件"
+],
+"Ghi tệp Excel hoặc CSV trong thư mục được phép (ghi đè thì hỏi kỹ hơn)": [
+"Write an Excel or CSV file in allowed folders (overwriting asks more carefully)",
+"在允许的文件夹里写 Excel 或 CSV 文件（覆盖时会更谨慎地询问）"
+],
+"Cần xem kỹ": [
+"Look carefully",
+"请仔细查看"
+],
+"Không có mã truy cập: máy chủ có thể từ chối yêu cầu.": [
+"No access token: the server may refuse requests.",
+"没有访问令牌：服务器可能会拒绝请求。"
+],
+"Tuỳ chọn: chữ “Bearer …”. Bỏ trống vẫn kết nối được, nhưng yêu cầu có thể bị từ chối.": [
+"Optional: the text “Bearer …”. You can leave it empty and still connect, but requests may be refused.",
+"可选：填“Bearer …”。留空也能连接，但请求可能被拒绝。"
+],
+"Máy chủ MCP trong mcp.json của bạn.": [
+"An MCP server in your mcp.json.",
+"你 mcp.json 里的 MCP 服务器。"
+],
+"← Quay lại": [
+"← Back",
+"← 返回"
+],
+"(bản mẫu) Dùng tệp ví dụ": [
+"(prototype) Use the sample file",
+"（原型）使用示例文件"
+],
+"Nhập các mục mới": [
+"Import the new entries",
+"导入新条目"
+],
+"Tiến trình cũ sẽ bị dừng.": [
+"The old process will be stopped.",
+"旧进程会被停止。"
+],
+"Lệnh mới": [
+"New command",
+"新命令"
+],
+"Mô tả công cụ (khoảng {0} token) vượt ngân sách {1} token. Lượt sau chưa bắt đầu cho đến khi bạn tắt bớt.": [
+"Tool descriptions (about {0} tokens) exceed the {1}-token budget. The next turn will not start until you turn some off.",
+"工具说明（约 {0} 个 token）超出 {1} token 的预算。在你关闭一些之前，下一轮不会开始。"
+],
+"Công cụ của AIVN AGENT": [
+"AIVN AGENT tools",
+"AIVN AGENT 工具"
+],
+"Mở Kết nối ứng dụng": [
+"Open Connect apps",
+"打开“连接应用”"
+],
+"Đã hiểu": [
+"Got it",
+"知道了"
+],
+"Không bao giờ áp dụng cho công cụ MCP.": [
+"Never applies to MCP tools.",
+"从不适用于 MCP 工具。"
+],
+"Chưa bắt đầu lượt: hãy tắt bớt máy chủ trước.": [
+"Turn not started: turn some servers off first.",
+"本轮未开始：请先关闭一些服务器。"
+],
+"Bản sao của {0}": [
+"Copy of {0}",
+"{0} 的副本"
+]
+};
+Object.assign(STR,STR_PR5_PROTO,STR_PR5_DOC);

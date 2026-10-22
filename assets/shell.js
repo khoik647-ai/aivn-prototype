@@ -38,7 +38,7 @@ const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{re
 // Logo: màu thương hiệu lấy từ dữ liệu Simple Icons (xem assets/logos/CREDITS.md)
 const LOGOS={gmail:'#EA4335',googledrive:'#4285F4',googlecalendar:'#4285F4',googlesheets:'#34A853',github:'#181717',slack:'#4A154B',zalo:'#0068FF',notion:'#000000',sqlite:'#003B57',
  qwen:'#6950EF',meta:'#0467DF',google:'#4285F4',mistralai:'#FA520F',nvidia:'#76B900',amd:'#ED1C24',brave:'#FB542B',modelcontextprotocol:'#000000',
- huggingface:{c:'#000000',bg:'#FFD21E'}}; // HF: màu vàng thương hiệu làm nền để logo đơn sắc đọc được
+ huggingface:{c:'#000000',bg:'#FFD21E'},microsoftexcel:'#217346'}; // HF: màu vàng thương hiệu làm nền để logo đơn sắc đọc được
 function logoTile(key,sz=34,title=''){const L0=LOGOS[key],gen=!L0;const f=gen?'generic-'+key:key;const r=Math.round(sz*0.26);
   const col=gen?'#fff':(typeof L0==='string'?L0:L0.c),bg=(L0&&L0.bg)?`background:${L0.bg};`:'';
   return `<span class="lg ${gen?'gen':''}" style="${bg}width:${sz}px;height:${sz}px;border-radius:${r}px" ${title?`title="${title}"`:''}><i style="background:${col};-webkit-mask-image:url(assets/logos/${f}.svg);mask-image:url(assets/logos/${f}.svg)"></i></span>`}
