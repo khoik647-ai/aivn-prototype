@@ -38,3 +38,12 @@ Tải một lần vào ngày 22/10/2026 (UTC+7) và dùng cục bộ; trang khô
 - `generic-mcp.svg`: máy chủ MCP nhập từ mcp.json
 - `generic-org.svg`: nhà phát hành không có logo
 - `generic-cpu.svg`: lựa chọn "Chỉ dùng CPU"
+
+## Bổ sung khi bám theo F-PLUGINS (PR #1)
+
+| Tệp | Thương hiệu | Màu | Bản simple-icons | Trang thương hiệu | Giấy phép |
+|---|---|---|---|---|---|
+| brave.svg | Brave | #FB542B | 16.35.0 | https://brave.com/brave-branding-assets | CC0 1.0 (gói simple-icons); nhãn hiệu thuộc chủ sở hữu |
+| huggingface.svg | Hugging Face | #FFD21E (nền ô vàng, hình đen) | 16.35.0 | https://huggingface.co/brand | CC0 1.0 (gói simple-icons); nhãn hiệu thuộc chủ sở hữu |
+| modelcontextprotocol.svg | Model Context Protocol (dùng cho máy chủ “Của tôi”) | #000000 (vẽ trên ô trắng) | 16.35.0 | https://modelcontextprotocol.io | CC0 1.0 (gói simple-icons); nhãn hiệu thuộc chủ sở hữu |
+| generic-fetch.svg, generic-memory.svg, generic-time.svg, generic-thinking.svg | Biểu tượng chung tự vẽ cho Đọc trang web / Ghi nhớ MCP / Giờ và múi giờ / Suy nghĩ từng bước | nền accent, hình trắng | — | — | Tự vẽ cho bản mẫu |
