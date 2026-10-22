@@ -163,7 +163,7 @@ function _renderList(keepFocus){
  renderPop();
 }
 const fmtParams=t=>{const b=t/1e9;return(b>=10?Math.round(b):b.toFixed(1)).toString().replace('.',LANG==='vi'?',':'.')+'B '+tr('tham số')};
-function renderPop(){const p=$('howPop');p.hidden=!st.pop;if(!st.pop)return;const m=mach(),t=thr(m),g=x=>fmtG(x);
+function renderPop(){const p=$('howPop');p.hidden=!st.pop;p.setAttribute('aria-label',tr('Cách ước tính'));if(!st.pop)return;const m=mach(),t=thr(m),g=x=>fmtG(x);
  p.innerHTML=`<div class="ph2"><b>${tr('Cách ước tính')}</b><button class="x" aria-label="${tr('Đóng')}" onclick="togglePop(false)">×</button></div>
  <p class="small">${tr('Trong danh sách (chưa mở kho): bản Q4_K_M ≈ số tham số × 4,85 / 8 byte, cộng 10% dự phòng, cộng ≈ 0,8 GB nếu kho có tệp mmproj (phần nhìn ảnh).')}</p>
  <table class="th"><tr><th>${tr('Máy')}</th><td colspan="2">${esc(m.gpu)} · ${m.vram} GB VRAM · ${m.ram} GB RAM</td></tr>
@@ -203,7 +203,7 @@ function md(src,id){if(!src)return`<p class="muted">${tr('Kho này không có RE
 function openRepo(id,o={}){const r=findRepo(id);st.ext=null;st.sel=r?r.id:null;st.tab=o.tab||'readme';if(o.file)st.quant[st.sel]=o.file;st.mpane='detail';
  if(!r){st.ext=o.ext||{id};renderAll();return}
  const c=realCache();
- if(!c[r.id]&&!o.quiet){st.loading=r.id;renderAll();setTimeout(()=>{c[r.id]={at:new Date().toISOString(),files:r.files.length};LS.set(LSK.real,c);st.loading=null;renderAll();afterOpen(o)},window.FAST?60:450)}
+ if(!c[r.id]&&!o.quiet){st.loading=r.id;renderAll();setTimeout(()=>{const c2=realCache();c2[r.id]={at:new Date().toISOString(),files:r.files.length};LS.set(LSK.real,c2);st.loading=null;renderAll();afterOpen(o)},window.FAST?60:450)}
  else{renderAll();afterOpen(o)}}
 function afterOpen(o){if(o.kbd||narrow())setTimeout(()=>{const b=narrow()?$('detail').querySelector('.mback'):$('detail').querySelector('[role=tab][aria-selected=true]');b&&b.focus({preventScroll:true})},0)}
 function openRef(){const ref=parseRef(st.q);if(!ref)return;if(ref.bad){toast(tr('Liên kết này không phải trang mô hình'));return}
@@ -220,11 +220,11 @@ function renderDetail(){const el=$('detail'),back=`<button class="mback" onclick
  if(!r){el.innerHTML=`<div class="empty">${tr('Chọn một mô hình để xem chi tiết, hoặc dán liên kết Hugging Face vào ô tìm kiếm.')}</div>`;return}
  const m=mach(),f=listFit(r),mo=moe(r);
  let h=back+`<div class="dh"><div class="row">${logoTile(LOGO(r),40,r.author)}<div style="min-width:0"><h2>${esc(repoName(r))}</h2><div class="muted small rid">${esc(r.id)}</div></div></div>
-  <div class="row wrap" style="margin-top:10px;gap:5px">${r.gguf.arch?`<span class="tag">${esc(r.gguf.arch)}</span>`:''}${r.gguf.total?`<span class="tag">${fmtParams(r.gguf.total)}</span>`:''}${r.gguf.ctx?`<span class="tag">${tr('ngữ cảnh tối đa {0}',fmtK(r.gguf.ctx))}</span>`:''}
+  <div class="row tagrow" style="margin-top:10px;gap:5px">${r.gguf.arch?`<span class="tag">${esc(r.gguf.arch)}</span>`:''}${r.gguf.total?`<span class="tag">${fmtParams(r.gguf.total)}</span>`:''}${r.gguf.ctx?`<span class="tag">${tr('ngữ cảnh tối đa {0}',fmtK(r.gguf.ctx))}</span>`:''}
    ${hasVision(r)?`<span class="tag cap">👁 ${tr('Nhìn màn hình')}</span>`:''}${hasTools(r)?`<span class="tag cap">🛠 ${tr('Công cụ')}</span>`:''}${mo?`<span class="tag">MoE ${mo.tot}B / ${mo.act}B</span>`:''}${r.gated?`<span class="tag">🔒 ${tr('cần đồng ý điều khoản')}</span>`:''}
    <span class="tag">⬇ ${fmtK(r.downloads)}</span><span class="tag">♥ ${fmtK(r.likes)}</span><span class="tag">${tr('cập nhật')} ${ago(r.lastModified)}</span></div>
-  <div class="row" style="margin-top:10px;gap:8px">${badge(f,'big')}<span class="small">${f.real?tr('{0} cần {1} trên {2} (tệp thật + KV cache, ngữ cảnh {3})',f.q,fmtG(f.need),esc(m.gpu),fmtN(TH.ctx)):tr('ước tính {0} cần ≈ {1}',f.q,fmtG(f.need))}</span>
-   <a class="lnk small" href="https://huggingface.co/${esc(r.id)}" target="_blank" rel="noopener noreferrer" style="margin-left:auto">${tr('Mở trên Hugging Face')} ↗</a></div></div>`;
+  <div class="fitrow">${badge(f,'big')}<span class="small fittxt">${f.real?tr('{0} cần {1} trên {2} (tệp thật + KV cache, ngữ cảnh {3})',f.q,fmtG(f.need),esc(m.gpu),fmtN(TH.ctx)):tr('ước tính {0} cần ≈ {1}',f.q,fmtG(f.need))}</span>
+   <a class="lnk small hflink" href="https://huggingface.co/${esc(r.id)}" target="_blank" rel="noopener noreferrer">${tr('Mở trên Hugging Face')} ↗</a></div></div>`;
  const G=groupFiles(r.files).filter(g=>g.kind==='chat').length;
  h+=`<div class="tabs" role="tablist" aria-label="${tr('Chi tiết mô hình')}">${[['readme',tr('Giới thiệu (README)')],['files',tr('Tệp & lượng tử ({0})',G)]].map(([k,t])=>`<button role="tab" id="tab-${k}" aria-controls="pane" aria-selected="${st.tab===k}" tabindex="${st.tab===k?0:-1}" class="${st.tab===k?'on':''}" data-tab="${k}" data-testid="tab-${k}">${t}</button>`).join('')}</div>
   <div id="pane" role="tabpanel" aria-labelledby="tab-${st.tab}" class="pane scroll" tabindex="0">`;
@@ -243,11 +243,11 @@ function selQuant(r,x){const k=st.quant[r.id];return x.rows.find(g=>g.key===k)||
 function filesPane(r,m){const x=realFor(r,m),sel=selQuant(r,x),rec=recQuant(x.rows),d=done(),t=thr(m);
  const kvTxt=x.kv==null?tr('không đọc được phần đầu tệp GGUF, giả định KV ≈ 0,5 GB'):tr('KV cache {0} cho {1} token ({2}, {3} lớp)',fmtG(x.kv),fmtN(TH.ctx),x.kvT,r.meta.layers);
  let h=`<div class="small muted asm">${tr('Số thật cho {0}: dung lượng tệp + {1} + {2} bộ đệm tính toán',esc(m.gpu),kvTxt,fmtG(TH.overhead))}${x.mmp?' + '+tr('mmproj {0} ({1}) + {2} bộ đệm ảnh',esc(x.mmp.quant||x.mmp.name),fmtG(x.mmp.size),fmtG(TH.visionBuf)):''}. <span class="cached">✓ ${tr('đã lưu đệm')}</span></div>
- <div class="qtable" role="radiogroup" aria-label="${tr('Chọn bản lượng tử hoá')}"><div class="qh"><span></span><span>${tr('Bản')}</span><span>${tr('Tệp')}</span><span>${tr('Cần (chạy)')}</span><span>${tr('Mức chạy')}</span><span class="tps">≈ tok/s</span></div>`;
+ <div class="qtable" role="radiogroup" aria-label="${tr('Chọn bản lượng tử hoá')}"><div class="qh"><span></span><span>${tr('Bản')}</span><span class="qsz">${tr('Tệp')}</span><span>${tr('Cần (chạy)')}</span><span class="qlv">${tr('Mức chạy')}</span><span class="tps">≈ tok/s</span></div>`;
  for(const g of x.rows){const s=g===sel,have=d.some(y=>y.id===r.id&&y.k===g.key);
   h+=`<div class="q ${s?'sel':''}" role="radio" aria-checked="${s}" tabindex="${s?0:-1}" data-k="${esc(g.key)}" data-testid="q-${esc(g.quant||g.name)}"><span class="rad"></span>
    <span class="qn">${esc(g.quant||g.name)}${g.parts>1?` <span class="muted">· ${g.parts} ${tr('phần')}</span>`:''}${g===rec?`<span class="rec">★ ${tr('Đề xuất')}</span>`:''}${have?`<span class="rec">✓ ${tr('Đã tải')}</span>`:''}</span>
-   <span class="small">${fmtG(g.size)}</span><span class="small"><b>${fmtG(g.need)}</b></span><span>${badge({lv:g.lv,real:true})}</span><span class="small muted tps">${g.tps?(g.tps>=10?Math.round(g.tps):g.tps.toFixed(1)).toString().replace('.',LANG==='vi'?',':'.'):'—'}</span></div>`}
+   <span class="small qsz">${fmtG(g.size)}</span><span class="small"><b>${fmtG(g.need)}</b></span><span class="qlv">${badge({lv:g.lv,real:true})}</span><span class="small muted tps">${g.tps?(g.tps>=10?Math.round(g.tps):g.tps.toFixed(1)).toString().replace('.',LANG==='vi'?',':'.'):'—'}</span></div>`}
  h+='</div>';
  if(x.mmp)h+=`<div class="small muted asm">${tr('Tệp nhìn ảnh (mmproj) sẽ tải kèm: {0} · {1}',esc(x.mmp.first),fmtG(x.mmp.size))}</div>`;
  if(x.aux.length)h+=`<div class="small muted asm">${tr('Tệp phụ trợ không tính (MTP/draft/imatrix): {0}',x.aux.map(a=>esc(a.name)).join(', '))}</div>`;
@@ -291,7 +291,7 @@ function renderList(k){keepF(()=>_renderList(k))}
 function renderAll(){keepF(_renderAll)}
 function setLang(l){LANG=l;LS.set(LSK.lang,l);renderAll()}
 function setMach(id){st.mach=id;LS.set(LSK.mach,id);renderAll();const b=document.querySelector(`[data-testid="mach-${id}"]`);b&&b.focus()}
-function _renderAll(){renderShell();$('q').placeholder=tr('Tìm mô hình, hoặc dán liên kết Hugging Face / tên-người/tên-mô-hình');$('q').setAttribute('aria-label',tr('Tìm mô hình hoặc dán liên kết Hugging Face'));
+function _renderAll(){renderShell();$('q').placeholder=narrow()?tr('Tìm hoặc dán liên kết HF'):tr('Tìm mô hình, hoặc dán liên kết Hugging Face / tên-người/tên-mô-hình');$('q').setAttribute('aria-label',tr('Tìm mô hình hoặc dán liên kết Hugging Face'));
  $('qhelp').textContent=tr('Ví dụ: qwen3-vl · gemma 3 · https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct-GGUF');renderList();renderDetail();renderDl()}
 const qi=$('q');
 qi.oninput=()=>{st.q=qi.value;renderList()};
@@ -304,6 +304,7 @@ $('list').addEventListener('keydown',e=>{const a=[...$('list').querySelectorAll(
  else if(e.key==='Enter'&&a[i].dataset.id){e.preventDefault();openRepo(a[i].dataset.id,{kbd:true})}});
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();qi.focus()}
  else if(e.key==='Escape'){if(st.pop)togglePop(false);else if($('dlp').classList.contains('open')){toggleDl(false);$('dlToggle').focus()}else if(narrow()&&st.mpane==='detail')mBack()}});
+matchMedia('(max-width:767px)').addEventListener('change',()=>renderAll());
 renderRail('models');$('sic').outerHTML=ICONS.search;
 $('dlClose').onclick=()=>{toggleDl(false);$('dlToggle').focus()};
 {const o=Q.get('open');if(Q.get('fresh'))LS.set(LSK.real,{});renderAll();if(o){qi.value=o;st.q=o;openRef()}}

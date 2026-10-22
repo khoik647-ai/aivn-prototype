@@ -1,166 +1,138 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Khám phá mô hình · AIVN (bản mẫu)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
+<!-- Bản 2 theo issue #44 (nâng từ models-v2-wip.html ngày 2026-10-23). Bản 1 giữ nguyên ở models-v1.html -->
 <style>
+.topbar{gap:10px}
+.banner{font-size:11px;font-weight:600;color:#c4b5fd;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.4);padding:2px 9px;border-radius:20px;white-space:nowrap}
+.sample{white-space:nowrap}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:9px;overflow:hidden;flex:none}
+.seg button{background:transparent;border:none;border-right:1px solid var(--line2);padding:5px 10px;cursor:pointer;color:var(--tx2);font-size:12.5px}
+.seg button:last-child{border-right:none}.seg button.on{background:var(--accbg);color:var(--acc);font-weight:600}
+.mseg button{text-align:left;line-height:1.25;padding:6px 12px}.mseg button b{font-weight:600;color:var(--tx)}.mseg button.on b{color:var(--acc)}.mseg button span{font-size:11.5px;color:var(--tx3);white-space:nowrap}
+:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
 .wrap{flex:1;display:flex;min-height:0}
 .left{flex:1;display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line)}
-.filters{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:11px}
-.vram{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.vram .lbl{font-size:12.5px;color:var(--tx2);font-weight:600;margin-right:2px}
-.switch{position:relative;width:34px;height:19px;border-radius:12px;background:var(--line2);cursor:pointer;flex:none;transition:.2s}
-.switch::after{content:"";position:absolute;left:2px;top:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:.2s}
-.switch.on{background:var(--acc)}.switch.on::after{left:17px}
-.custom{display:flex;align-items:center;gap:4px}.custom .inp{width:64px;padding:4px 8px}
-.list{flex:1;padding:10px 12px}
-.m{display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:10px;cursor:pointer;border:1px solid transparent}
-.m:hover{background:var(--panel)}
-.m.sel{background:var(--panel);border-color:var(--acc)}
-.av{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
-.m .nm{font-weight:600}
-.m .meta{font-size:12px;color:var(--tx3);display:flex;gap:10px;margin-top:2px}
-.m .right{margin-left:auto;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-.hot{font-size:10.5px;color:var(--acc2);background:rgba(139,92,246,.15);padding:1px 6px;border-radius:5px;margin-left:6px;font-weight:600}
-.detail{width:420px;flex:none;display:flex;flex-direction:column}
-.dh{padding:18px 20px 12px}
-.dh h2{margin:6px 0 4px;font-size:19px}
-.qtable{margin:0 20px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.q{display:grid;grid-template-columns:20px 80px 1fr auto;gap:8px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer}
-.q:last-child{border-bottom:none}
-.q:hover{background:var(--panel)}
-.q.sel{background:var(--accbg)}
-.q .rad{width:14px;height:14px;border-radius:50%;border:2px solid var(--line2)}
-.q.sel .rad{border-color:var(--acc);background:radial-gradient(var(--acc) 40%,transparent 45%)}
-.q .qn{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;font-weight:600}
-.rec{font-size:10.5px;color:var(--ok);margin-left:6px}
-.dfoot{margin-top:auto;padding:14px 20px;border-top:1px solid var(--line);background:var(--bg2)}
-.memviz{height:10px;border-radius:6px;background:var(--line);position:relative;overflow:hidden;margin:8px 0 4px}
-.memviz i{position:absolute;left:0;top:0;bottom:0;border-radius:6px}
-.dlp{position:fixed;right:438px;bottom:18px;width:400px;z-index:40;box-shadow:0 20px 50px rgba(0,0,0,.5);display:none}
+.filters{padding:12px 18px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:9px}
+#qhelp{font-size:11.5px;color:var(--tx3);margin-top:-3px}
+.frow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.lbl{font-size:12px;color:var(--tx2);font-weight:600;margin-right:2px}
+.chip.fc i{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+.chip.fc.ok i{background:var(--ok)}.chip.fc.chk i{background:#38bdf8}.chip.fc.warn i{background:var(--warn)}.chip.fc.bad i{background:var(--bad)}
+.chip .c{font-size:11px;opacity:.75}
+#cntrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}#cntrow .grow{flex:1}
+.sel{width:auto;padding:4px 8px;font-size:12.5px}
+.lnk{background:none;border:none;color:var(--acc);cursor:pointer;padding:2px 0;font:inherit}
+.lnk.small{font-size:12px}
+.list{flex:1;padding:6px 12px 20px}
+.gh{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;padding:12px 12px 4px}
+.m{display:flex;width:100%;text-align:left;gap:12px;align-items:center;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid transparent;background:transparent;color:inherit;font:inherit}
+.m:hover{background:var(--panel)}.m.sel{background:var(--panel);border-color:var(--acc)}
+.m.refhint{border:1px dashed var(--acc);margin:6px 0 4px;background:var(--accbg)}
+.mm{min-width:0;flex:1;display:flex;flex-direction:column}
+.m .nm{font-weight:600;overflow-wrap:anywhere;min-width:0} /* #44: tên mô hình là thông tin chính — xuống dòng thay vì cắt (#37 A2) */
+.m .meta{font-size:12px;color:var(--tx3);display:flex;gap:4px 10px;margin-top:2px;flex-wrap:wrap}
+.m .tags{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}.m .tags:empty{display:none}
+.tag.cap{color:#c7d2fe;border-color:rgba(108,140,255,.35)}
+.m .right{margin-left:auto;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none}
+.kbd{font-size:11px;border:1px solid var(--line2);border-radius:5px;padding:1px 6px;color:var(--tx2);flex:none}
+.realmk{color:#a5b4fc}.okc{color:var(--ok)}.accc{color:var(--acc)}
+/* huy hiệu mức chạy: ≈ = ước tính; "cần kiểm tra" viền đứt để thấy là chưa chắc */
+.fit2{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.fit2::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.fit2.ok{color:var(--ok);background:var(--okbg)}.fit2.warn{color:var(--warn);background:var(--warnbg)}.fit2.bad{color:var(--bad);background:var(--badbg)}
+.fit2.chk{color:#38bdf8;background:rgba(56,189,248,.12);border:1px dashed rgba(56,189,248,.7);padding:1px 8px}.fit2.unk{color:var(--tx3);background:var(--panel2)}
+.fit2.dot{padding:0;background:none;border:none}.fit2.dot::before{width:8px;height:8px}
+.fit2.big{font-size:12.5px;padding:4px 11px}
+.howpop{position:absolute;z-index:60;right:14px;top:8px;max-height:calc(100% - 16px);overflow:auto;width:min(560px,calc(100% - 28px));padding:14px 16px;background:var(--panel);border:1px solid var(--line2);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.howpop .ph2{display:flex;align-items:center}.howpop p{margin:8px 0;color:var(--tx2)}
+table.th{border-collapse:collapse;width:100%;font-size:12px;margin:6px 0}table.th td,table.th th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}table.th th{color:var(--tx3);font-weight:600}
+.detail{width:480px;flex:none;display:flex;flex-direction:column;min-height:0}
+.dh{padding:16px 20px 10px}.dh h2{margin:0 0 2px;font-size:18px;word-break:break-word}.rid{word-break:break-all}
+.row.tagrow{flex-wrap:wrap}
+.fitrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:10px}.fittxt{flex:1 1 220px;min-width:0}.hflink{flex:none;margin-left:auto;white-space:nowrap}
+.topbar h1{white-space:nowrap}
+.tabs{display:flex;gap:2px;padding:0 16px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:none;border-bottom:2px solid transparent;padding:9px 10px;cursor:pointer;color:var(--tx2);font:inherit;font-size:13px;font-weight:600}
+.tabs button.on{color:var(--tx);border-bottom-color:var(--acc)}
+.pane{flex:1;min-height:0;padding:12px 18px}
+.readme{font-size:13px;line-height:1.6;color:var(--tx);overflow-wrap:anywhere}
+.readme h3,.readme h4,.readme h5,.readme h6{margin:16px 0 6px;font-size:14.5px}.readme h3{font-size:16px}
+.readme p{margin:6px 0}.readme pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;overflow:auto;font-size:12px;white-space:pre}
+.readme code{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:var(--panel2);padding:0 4px;border-radius:4px}.readme pre code{background:none;padding:0}
+.readme .tw{overflow:auto}.readme table{border-collapse:collapse;font-size:12px;margin:6px 0}.readme td,.readme th{border:1px solid var(--line);padding:4px 7px;text-align:left}
+.readme blockquote{margin:6px 0;padding:4px 12px;border-left:3px solid var(--line2);color:var(--tx2)}
+.readme .img{font-size:12px;color:var(--tx3)}.rsrc{margin-bottom:8px}
+.asm{margin:4px 0 8px}.cached{color:#a5b4fc;white-space:nowrap}
+.qtable{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:6px 0 8px}
+.q,.qh{display:grid;grid-template-columns:16px minmax(0,1.5fr) 70px 70px 128px 52px;gap:6px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line)}
+.qh{font-size:11px;color:var(--tx3);font-weight:600;background:var(--bg2);padding:6px 10px}
+.q{cursor:pointer}.q:last-child{border-bottom:none}.q:hover{background:var(--panel)}.q.sel{background:var(--accbg)}
+.q .rad{width:14px;height:14px;border-radius:50%;border:2px solid var(--line2)}.q.sel .rad{border-color:var(--acc);background:radial-gradient(var(--acc) 40%,transparent 45%)}
+.q .qn{font-family:ui-monospace,Consolas,monospace;font-size:12px;font-weight:600;min-width:0;overflow-wrap:anywhere}
+.rec{font-size:10.5px;color:var(--ok);display:block;white-space:nowrap;font-family:'Be Vietnam Pro',system-ui,sans-serif;font-weight:500}.tps{text-align:right}
+.dfoot{padding:12px 20px;border-top:1px solid var(--line);background:var(--bg2);flex:none}.dfoot .grow{flex:1}
+.memviz{height:10px;border-radius:6px;background:var(--line);position:relative;overflow:visible;margin:8px 0 4px}
+.memviz i{position:absolute;left:0;top:0;bottom:0;border-radius:6px}.memviz b{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff;opacity:.8}
+.dlgo{width:100%;justify-content:center;padding:10px;white-space:normal}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line2);border-top-color:var(--acc);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px}@keyframes sp{to{transform:rotate(360deg)}}
+.mback{display:none}
+.dlp{position:fixed;right:498px;bottom:18px;width:400px;max-width:calc(100vw - 24px);z-index:40;box-shadow:0 20px 50px rgba(0,0,0,.5);display:none}
 .dlp.open{display:block}
 .dlp header{padding:11px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;font-weight:600}
-.dli{padding:11px 14px;border-bottom:1px solid var(--line)}
-.dli:last-child{border-bottom:none}
-.dli .t{display:flex;justify-content:space-between;gap:8px;font-size:13px}
-.dli .s{display:flex;justify-content:space-between;font-size:11.5px;color:var(--tx3);margin-top:5px}
-.dlbtn{position:relative}
+.dli{padding:11px 14px;border-bottom:1px solid var(--line)}.dli:last-child{border-bottom:none}
+.dli .t{display:flex;justify-content:space-between;gap:8px;font-size:13px}.dli .s{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--tx3);margin-top:5px}
 .dlbtn .n{background:var(--acc);color:#fff;border-radius:9px;font-size:10.5px;padding:0 6px;margin-left:2px}
+.leftwrap{position:relative;display:flex;flex-direction:column;min-height:0;flex:1}
+@media (max-width:1439px){.topbar .sub{display:none}}
+@media (max-width:1200px){.detail{width:430px}.dlp{right:448px}}
+@media (max-width:1000px){.topbar .sample{display:none}}
+/* điện thoại / cửa sổ hẹp: danh sách → chi tiết, có nút Quay lại (giống Connect 4.9) */
+@media (max-width:767px){
+ .rail{width:48px}.rail a{width:40px;height:40px}.rail .logo{width:34px;height:34px;font-size:11px}
+ .topbar{height:auto;flex-wrap:wrap;padding:8px 12px;gap:8px}.topbar h1{font-size:14px}.topbar .grow{display:none}.banner{order:5}
+ .dlt{display:none}.seg button{min-height:40px;padding:5px 10px}.btn{min-height:40px}
+ .wrap{flex-direction:column}.left{border-right:none}.detail{width:auto;flex:1}
+ body:not(.m-detail) .detail{display:none}body.m-detail .left{display:none}
+ .filters{padding:10px 12px}.mseg{width:100%}.mseg button{flex:1;min-height:44px;padding:5px 8px}.mseg button span{white-space:normal}.mdemo{display:none}
+ .chip{min-height:40px}.list{padding:4px 6px 20px}.m{min-height:56px;padding:9px 8px;gap:9px}.m .lg{width:32px!important;height:32px!important}
+ .mback{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--line2);border-radius:10px;color:var(--tx);font:inherit;font-size:13.5px;font-weight:600;padding:9px 14px;margin:10px 14px 0;cursor:pointer;min-height:44px;align-self:flex-start}
+ .dh{padding:12px 14px 8px}.pane{padding:10px 12px}.tabs{padding:0 8px;overflow-x:auto}.tabs button{min-height:44px;white-space:normal;flex:1 1 0;min-width:0;line-height:1.25;padding:6px 6px}
+ .q,.qh{grid-template-columns:14px minmax(0,1fr) auto;padding:8px;row-gap:4px}.qh .qlv{display:none}.q .qlv{grid-column:2/-1}.qsz,.tps{display:none}.tabs,.dh,.mback{flex:none}.q{min-height:48px}
+ .dfoot{padding:10px 12px}.dlp{right:12px;left:12px;width:auto}.howpop{position:fixed;left:8px;right:8px;top:8px;bottom:8px;width:auto;max-height:none}#cntrow .grow{display:none}.mseg button b{display:block}
+ .detail{min-height:0;overflow:auto}.pane{flex:none;overflow:visible}
+}
+@media (max-width:520px){.m{flex-wrap:wrap;row-gap:6px}.m .mm{flex:1 1 0;min-width:0}.m .right{flex-basis:calc(100% - 41px);min-width:0;flex-direction:row;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:4px 8px;margin-left:41px;text-align:left}.m.refhint .kbd{display:none}.m .right .need{white-space:normal}}
+@media (max-width:420px){.mseg button span{font-size:10.5px}.lbl{width:100%}}
+@media (pointer:coarse){
+ /* #44 / #37 A3: mọi đích chạm ≥ 44×44 px khi dùng ngón tay (kiểm bằng tools/touch-check-models.py) */
+ .main button,.main a[href]:not(.readme a),.main select,.main input,.main summary,.main [role=tab],.dlp button,.dlp a[href]{min-height:44px;min-width:44px;box-sizing:border-box}
+ .main .chip,.main .btn,.dlp .btn,.main .lnk,.dlp .lnk,.main a.hflink{display:inline-flex;align-items:center;justify-content:center;padding-top:0;padding-bottom:0}
+ .main .x,.dlp .x{width:44px;height:44px}
+ .rail a{width:44px;height:44px}
+}
 </style></head><body>
 <div class="app"><nav class="rail"></nav>
 <div class="main">
-  <div class="topbar"><h1>Khám phá mô hình</h1><span class="sub">Tìm, so sánh và tải mô hình GGUF chạy trên máy</span><span class="grow"></span><span class="sample">Dữ liệu mẫu</span>
-    <button class="btn dlbtn" id="dlToggle">⬇ Tải về <span class="n" id="dlCount">0</span></button></div>
+  <div class="topbar" id="top"></div>
   <div class="wrap">
     <section class="left">
       <div class="filters">
-        <div class="search"><span id="sic"></span><input class="inp" id="q" placeholder="Tìm mô hình… ví dụ: qwen3-vl, llama, gemma, tiếng Việt"></div>
-        <div class="vram">
-          <div class="switch on" id="fitSw" title="Bật/tắt lọc"></div><span class="lbl">Vừa VRAM máy:</span>
-          <button class="chip" data-v="4">4 GB · RTX 3050 Ti Laptop</button>
-          <button class="chip" data-v="8">8 GB</button>
-          <button class="chip" data-v="12">12 GB · RTX 4070 SUPER</button>
-          <span class="custom"><span class="muted small">Tuỳ chỉnh</span><input class="inp" id="vc" type="number" min="1" max="96" step="1"><span class="muted small">GB</span></span>
-        </div>
-        <div class="row" style="gap:6px;flex-wrap:wrap" id="caps">
-          <button class="chip on" data-c="">Tất cả</button><button class="chip" data-c="Thị giác">👁 Thị giác</button><button class="chip" data-c="Suy luận">🧠 Suy luận</button><button class="chip" data-c="Công cụ">🛠 Gọi công cụ</button>
-          <span class="grow" style="flex:1"></span><span class="muted small" id="cnt"></span>
-        </div>
+        <div class="frow" id="machine"></div>
+        <div class="search"><span id="sic"></span><input class="inp" id="q" autocomplete="off" spellcheck="false" data-testid="q"></div>
+        <div id="qhelp"></div>
+        <div class="frow" id="caps"></div>
+        <div class="frow" id="fits"></div>
+        <div id="cntrow"></div>
       </div>
-      <div class="list scroll" id="list"></div>
+      <div class="leftwrap"><div class="howpop" id="howPop" role="dialog" aria-label="Cách ước tính" hidden></div>
+      <div class="list scroll" id="list" role="list"></div></div>
     </section>
-    <aside class="detail" id="detail"></aside>
+    <aside class="detail" id="detail" aria-live="polite"></aside>
   </div>
 </div></div>
-<div class="card dlp" id="dlp"><header>Đang tải về <span class="grow" style="flex:1"></span><button class="x" id="dlClose">×</button></header><div id="dll" class="scroll" style="max-height:340px"></div></div>
+<div class="card dlp" id="dlp"><header><span id="dlpH">Đang tải về</span> <span class="grow" style="flex:1"></span><button class="x" id="dlClose" aria-label="×">×</button></header><div id="dll" class="scroll" style="max-height:340px"></div></div>
 <script src="assets/shell.js"></script>
-<script>
-renderRail('models');document.getElementById('sic').outerHTML=ICONS.search;
-const ORGLOGO={Qwen:'qwen',Meta:'meta',Google:'google','Mistral AI':'mistralai',Microsoft:'org'};
-const COLORS={Qwen:['#6c4cf5','#ece9ff'],Meta:['#1d4ed8','#dbeafe'],Google:['#0f766e','#ccfbf1'],'Mistral AI':['#c2410c','#ffedd5'],Microsoft:['#15803d','#dcfce7']};
-let st={q:'',vram:4,fitOn:true,cap:'',sel:'qwen3-vl-4b',quant:{}};
-let dls=[]; // {key,id,q,size,done,speed,state}
-const done=()=>LS.get('aivn.downloaded',[]);
-function recQuant(m,v){ // bản lượng tử cao nhất vẫn "vừa"
-  let best=null;for(const [q] of QUANTS){if(q==='F16')continue;if(fitOf(qsize(m,q),v)[0]==='ok')best=q}
-  if(!best){for(const [q] of QUANTS){if(fitOf(qsize(m,q),v)[0]==='warn'){best=q;break}}}
-  return best||'Q4_K_M';
-}
-function visible(){
-  return MODELS.filter(m=>{
-    const s=(m.name+' '+m.org+' '+m.arch+' '+m.caps.join(' ')).toLowerCase();
-    if(st.q&&!st.q.toLowerCase().split(/\s+/).every(w=>s.includes(w)))return false;
-    if(st.cap&&!m.caps.includes(st.cap))return false;
-    if(st.fitOn&&fitOf(qsize(m,'Q3_K_M'),st.vram)[0]==='bad')return false;
-    return true;});
-}
-function renderList(){
-  const v=visible();
-  document.getElementById('cnt').textContent=`${v.length} / ${MODELS.length} mô hình`+(st.fitOn?` · vừa ${st.vram} GB`:'');
-  document.querySelectorAll('.vram .chip').forEach(c=>c.classList.toggle('on',+c.dataset.v===st.vram));
-  document.getElementById('vc').value=[4,8,12].includes(st.vram)?'':st.vram;
-  const d=done();
-  document.getElementById('list').innerHTML=v.length?v.map(m=>{
-    const q=recQuant(m,st.vram),sz=qsize(m,q),[f,ft]=fitOf(sz,st.vram),[c1,c2]=COLORS[m.org];
-    const have=d.some(x=>x.id===m.id),ing=dls.find(x=>x.id===m.id&&x.state!=='done');
-    return `<div class="m ${m.id===st.sel?'sel':''}" data-id="${m.id}">
-      ${logoTile(ORGLOGO[m.org],38,m.org)}
-      <div style="min-width:0"><div class="nm">${m.name}${m.hot?'<span class="hot">MỚI</span>':''}</div>
-        <div class="meta"><span>${m.org}</span><span>${String(m.params).replace('.',',')}B tham số</span><span>⬇ ${m.dl}</span><span>${m.upd}</span></div>
-        <div class="row" style="gap:5px;margin-top:6px">${m.caps.map(c=>`<span class="tag">${c}</span>`).join('')}<span class="tag">GGUF</span></div></div>
-      <div class="right"><span class="fit ${f}">${ft}</span><span class="small muted">${q} · ${fmtGB(sz)}</span>
-        ${have?'<span class="small" style="color:var(--ok)">✓ Đã tải</span>':ing?`<span class="small" style="color:var(--acc)">Đang tải ${Math.floor(ing.done/ing.size*100)}%</span>`:''}</div></div>`}).join('')
-    :`<div class="empty">Không có mô hình nào vừa ${st.vram} GB VRAM với bộ lọc này.<br><button class="btn sm" style="margin-top:10px" onclick="st.fitOn=false;sync()">Bỏ lọc VRAM</button></div>`;
-  document.querySelectorAll('.m').forEach(e=>e.onclick=()=>{st.sel=e.dataset.id;sync()});
-}
-function renderDetail(){
-  const m=MODELS.find(x=>x.id===st.sel);const el=document.getElementById('detail');
-  if(!m){el.innerHTML='<div class="empty">Chọn một mô hình để xem chi tiết</div>';return}
-  const q=st.quant[m.id]||recQuant(m,st.vram),rq=recQuant(m,st.vram),sz=qsize(m,q),[f,ft]=fitOf(sz,st.vram);
-  const d=done(),have=d.find(x=>x.id===m.id&&x.q===q),ing=dls.find(x=>x.id===m.id&&x.q===q&&x.state!=='done');
-  const need=sz+0.6,pct=Math.min(100,need/st.vram*100),col=f==='ok'?'var(--ok)':f==='warn'?'var(--warn)':'var(--bad)';
-  el.innerHTML=`<div class="dh"><div class="row"><span class="tag">${m.org}</span><span class="tag">${m.arch}</span><span class="tag">Ngữ cảnh ${(m.ctx/1024)|0}K</span></div>
-    <h2>${m.name}</h2><div class="muted small">${m.org.toLowerCase().replace(' ','')}/${m.id}-GGUF</div>
-    <p style="color:var(--tx2);margin:10px 0 0">${m.desc}</p></div>
-    <div style="padding:6px 20px 8px" class="row"><b style="font-size:13px">Chọn bản lượng tử hoá</b><span class="grow" style="flex:1"></span><span class="small muted">so với ${st.vram} GB VRAM</span></div>
-    <div class="qtable">${QUANTS.map(([qq])=>{const s=qsize(m,qq),[ff,fft]=fitOf(s,st.vram);const h=d.some(x=>x.id===m.id&&x.q===qq);
-      return `<div class="q ${qq===q?'sel':''}" data-q="${qq}"><span class="rad"></span><span class="qn">${qq}</span>
-      <span class="small">${fmtGB(s)}${qq===rq?'<span class="rec">★ Đề xuất</span>':''}${h?'<span class="rec">✓ Đã tải</span>':''}</span><span class="fit ${ff}">${fft}</span></div>`}).join('')}</div>
-    <div class="small muted" style="padding:8px 20px">Q4_K_M cân bằng chất lượng/kích thước; Q8_0 gần như nguyên bản; F16 là bản gốc, rất nặng.</div>
-    <div class="dfoot">
-      <div class="row small"><span>Ước tính bộ nhớ khi chạy (tệp + ngữ cảnh 4K)</span><span class="grow" style="flex:1"></span><b>${fmtGB(need)}</b><span class="muted">/ ${st.vram} GB</span></div>
-      <div class="memviz"><i style="width:${pct}%;background:${col}"></i></div>
-      <div class="small" style="color:${col};margin-bottom:12px">${f==='ok'?'Chạy toàn bộ trên GPU, tốc độ tốt.':f==='warn'?'Gần đầy VRAM — nên giảm ngữ cảnh hoặc chọn bản nhỏ hơn.':'Không vừa VRAM — sẽ phải chia sang RAM/CPU, chậm hơn nhiều.'}</div>
-      ${have?`<div class="row"><button class="btn" style="flex:1;justify-content:center" disabled>✓ Đã tải về</button><a class="btn pri" href="chat.html?model=${m.id}&q=${q}">Nạp & trò chuyện →</a></div>`
-       :ing?`<div class="row small"><span>Đang tải ${q}…</span><span class="grow" style="flex:1"></span><span>${Math.floor(ing.done/ing.size*100)}%</span></div><div class="bar ${ing.state==='paused'?'paused':''}" style="margin:6px 0 10px"><i style="width:${ing.done/ing.size*100}%"></i></div>
-         <div class="row"><button class="btn" onclick="togglePause('${ing.key}')">${ing.state==='paused'?'▶ Tiếp tục':'⏸ Tạm dừng'}</button><button class="btn danger" onclick="cancelDl('${ing.key}')">✕ Huỷ</button></div>`
-       :`<button class="btn pri" style="width:100%;justify-content:center;padding:10px" onclick="startDl('${m.id}','${q}')">⬇ Tải về ${q} · ${fmtGB(sz)}</button>`}
-    </div>`;
-  el.querySelectorAll('.q').forEach(e=>e.onclick=()=>{st.quant[m.id]=e.dataset.q;renderDetail()});
-}
-function renderDl(){
-  const act=dls.filter(x=>x.state!=='done');
-  document.getElementById('dlCount').textContent=act.length;
-  document.getElementById('dll').innerHTML=dls.length?dls.map(x=>{const m=MODELS.find(y=>y.id===x.id),p=x.done/x.size*100,left=(x.size-x.done)*1024/x.speed;
-    return `<div class="dli"><div class="t"><b>${m.name}</b><span class="tag">${x.q}</span></div>
-    <div class="bar ${x.state==='paused'?'paused':''}" style="margin-top:7px"><i style="width:${p}%"></i></div>
-    <div class="s"><span>${fmtGB(x.done)} / ${fmtGB(x.size)} · ${p.toFixed(0)}%</span>
-    <span>${x.state==='done'?'<span style="color:var(--ok)">✓ Hoàn tất</span>':x.state==='paused'?'Đã tạm dừng':`${x.speed.toFixed(1).replace('.',',')} MB/s · còn ${left>60?Math.ceil(left/60)+' phút':Math.ceil(left)+' giây'}`}</span></div>
-    ${x.state!=='done'?`<div class="row" style="margin-top:7px;gap:6px"><button class="btn sm" onclick="togglePause('${x.key}')">${x.state==='paused'?'▶ Tiếp tục':'⏸ Tạm dừng'}</button><button class="btn sm danger" onclick="cancelDl('${x.key}')">✕ Huỷ</button></div>`:''}</div>`}).join('')
-    :'<div class="empty small">Chưa có tệp nào đang tải.</div>';
-}
-function startDl(id,q){const m=MODELS.find(x=>x.id===id);const key=id+'@'+q;if(dls.some(x=>x.key===key&&x.state!=='done'))return;
-  dls.unshift({key,id,q,size:qsize(m,q),done:0,speed:24,state:'run'});document.getElementById('dlp').classList.add('open');toast('Bắt đầu tải '+m.name+' '+q);sync();}
-function togglePause(k){const x=dls.find(y=>y.key===k);x.state=x.state==='paused'?'run':'paused';sync()}
-function cancelDl(k){dls=dls.filter(y=>y.key!==k);toast('Đã huỷ tải');sync()}
-setInterval(()=>{let ch=false;for(const x of dls){if(x.state!=='run')continue;x.speed=Math.max(8,Math.min(48,x.speed+(Math.random()-.5)*6));
-  x.done=Math.min(x.size,x.done+x.speed/1024*0.5*(window.SPEEDUP||1));ch=true;
-  if(x.done>=x.size){x.state='done';const d=done();d.push({id:x.id,q:x.q,size:x.size});LS.set('aivn.downloaded',d);toast('✓ Đã tải xong '+MODELS.find(y=>y.id===x.id).name)}}
-  if(ch){renderDl();renderDetail();renderList()}},500);
-function sync(){renderList();renderDetail();renderDl();document.getElementById('fitSw').classList.toggle('on',st.fitOn)}
-document.getElementById('q').oninput=e=>{st.q=e.target.value;renderList()};
-document.querySelectorAll('.vram .chip').forEach(c=>c.onclick=()=>{st.vram=+c.dataset.v;st.fitOn=true;st.quant={};sync()});
-document.getElementById('vc').onchange=e=>{const v=+e.target.value;if(v>0){st.vram=v;st.fitOn=true;st.quant={};sync()}};
-document.getElementById('fitSw').onclick=()=>{st.fitOn=!st.fitOn;sync()};
-document.querySelectorAll('#caps .chip').forEach(c=>c.onclick=()=>{st.cap=c.dataset.c;document.querySelectorAll('#caps .chip').forEach(x=>x.classList.toggle('on',x===c));renderList()});
-document.getElementById('dlToggle').onclick=()=>document.getElementById('dlp').classList.toggle('open');
-document.getElementById('dlClose').onclick=()=>document.getElementById('dlp').classList.remove('open');
-sync();
-</script></body></html>
+<script src="assets/data/models-hf-2026-10-23.js"></script>
+<script src="assets/models-i18n.js"></script>
+<script src="assets/models-v2.js"></script>
+</body></html>
