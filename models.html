@@ -73,6 +73,7 @@
 <script src="assets/shell.js"></script>
 <script>
 renderRail('models');document.getElementById('sic').outerHTML=ICONS.search;
+const ORGLOGO={Qwen:'qwen',Meta:'meta',Google:'google','Mistral AI':'mistralai',Microsoft:'org'};
 const COLORS={Qwen:['#6c4cf5','#ece9ff'],Meta:['#1d4ed8','#dbeafe'],Google:['#0f766e','#ccfbf1'],'Mistral AI':['#c2410c','#ffedd5'],Microsoft:['#15803d','#dcfce7']};
 let st={q:'',vram:4,fitOn:true,cap:'',sel:'qwen3-vl-4b',quant:{}};
 let dls=[]; // {key,id,q,size,done,speed,state}
@@ -100,7 +101,7 @@ function renderList(){
     const q=recQuant(m,st.vram),sz=qsize(m,q),[f,ft]=fitOf(sz,st.vram),[c1,c2]=COLORS[m.org];
     const have=d.some(x=>x.id===m.id),ing=dls.find(x=>x.id===m.id&&x.state!=='done');
     return `<div class="m ${m.id===st.sel?'sel':''}" data-id="${m.id}">
-      <div class="av" style="background:${c2};color:${c1}">${m.org.slice(0,2)}</div>
+      ${logoTile(ORGLOGO[m.org],38,m.org)}
       <div style="min-width:0"><div class="nm">${m.name}${m.hot?'<span class="hot">MỚI</span>':''}</div>
         <div class="meta"><span>${m.org}</span><span>${String(m.params).replace('.',',')}B tham số</span><span>⬇ ${m.dl}</span><span>${m.upd}</span></div>
         <div class="row" style="gap:5px;margin-top:6px">${m.caps.map(c=>`<span class="tag">${c}</span>`).join('')}<span class="tag">GGUF</span></div></div>

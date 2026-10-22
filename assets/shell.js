@@ -35,3 +35,8 @@ const QUANTS=[['Q3_K_M',3.9],['Q4_K_M',4.85],['Q5_K_M',5.7],['Q6_K',6.6],['Q8_0'
 const qsize=(m,q)=>{const b=QUANTS.find(x=>x[0]===q)[1];return m.params*b/8*1.02+(m.caps.includes('Thị giác')?0.35:0)};
 function fitOf(size,vram){const need=size+0.6; if(need<=vram*0.85)return['ok','Vừa VRAM']; if(need<=vram*1.02)return['warn','Sát giới hạn']; return['bad','Không vừa'];}
 const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
+// Logo: màu thương hiệu lấy từ dữ liệu Simple Icons (xem assets/logos/CREDITS.md)
+const LOGOS={gmail:'#EA4335',googledrive:'#4285F4',googlecalendar:'#4285F4',googlesheets:'#34A853',github:'#181717',slack:'#4A154B',zalo:'#0068FF',notion:'#000000',sqlite:'#003B57',
+ qwen:'#6950EF',meta:'#0467DF',google:'#4285F4',mistralai:'#FA520F',nvidia:'#76B900',amd:'#ED1C24'};
+function logoTile(key,sz=34,title=''){const gen=!LOGOS[key];const f=gen?'generic-'+key:key;const r=Math.round(sz*0.26);
+  return `<span class="lg ${gen?'gen':''}" style="width:${sz}px;height:${sz}px;border-radius:${r}px" ${title?`title="${title}"`:''}><i style="background:${LOGOS[key]||'#fff'};-webkit-mask-image:url(assets/logos/${f}.svg);mask-image:url(assets/logos/${f}.svg)"></i></span>`}

@@ -127,7 +127,7 @@ function renderDlg(){
   const e=est();
   document.getElementById('layV').textContent=(cfg.gpu==='cpu'?0:cfg.lay)+' / '+m.layers+' lớp';
   document.getElementById('gpus').innerHTML=GPUS.map(g=>`<div class="gpu ${g.id===cfg.gpu?'sel':''}" data-g="${g.id}"><span class="rad"></span>
-    <span class="ic" style="background:${g.ic[1]};color:${g.ic[0]}">${g.id==='nv'?'NV':g.id==='amd'?'AMD':'CPU'}</span>
+    ${logoTile(g.id==='nv'?'nvidia':g.id==='amd'?'amd':'cpu',34)}
     <div style="flex:1;min-width:0"><div style="font-weight:600">${g.name}${g.id==='nv'?'<span class="rec">Đề xuất</span>':''}</div>
     <div class="small muted">${g.kind} · ${g.id==='cpu'?'chậm, chỉ dùng khi không có GPU':g.shared?'VRAM 512 MB + dùng chung RAM hệ thống':'VRAM '+g.vram+' GB GDDR6'} · ${g.api}</div></div>
     ${g.id!=='cpu'?`<span class="small" style="text-align:right;min-width:70px"><b>${g.shared?'0,5':g.vram} GB</b><br><span class="muted">${g.id==='nv'?'trống 3,6 GB':'dùng chung'}</span></span>`:''}</div>`).join('');

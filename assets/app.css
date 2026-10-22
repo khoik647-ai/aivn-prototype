@@ -73,3 +73,8 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:#0b0d12;border:1px solid var(--line2);padding:10px 16px;border-radius:10px;opacity:0;transition:.25s;z-index:200;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .toast.show{opacity:1;transform:translateX(-50%)}
 .empty{padding:40px;text-align:center;color:var(--tx3)}
+/* logo tiles (Simple Icons + generic icons, local files in assets/logos) */
+.lg{display:inline-grid;place-items:center;border-radius:9px;flex:none;background:#fff;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.lg>i{display:block;width:62%;height:62%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain}
+.lg.gen{background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:none}
+.lg.gen>i{background:#fff!important}
