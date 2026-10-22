@@ -28,10 +28,30 @@ Dữ liệu mẫu lưu trong localStorage (aivn.downloaded, aivn.biz). Nút "Đ�
 - Ảnh: `shots/7*.png`, chạy lại bằng `tools/shots7.py` (in ra cả kiểm tra chữ MCP/máy chủ/công cụ trên màn hình chính).
 
 ## connect.html v4.4 (quyết định ngày 22/10, lượt 2)
-- connect.html = bản 4.4. Mã: `assets/connect.js`; chữ: `assets/connect-i18n.js` (khối v4.4 ở cuối tệp). localStorage `aivn.plugins.v44`.
+- Bản 4.4 giờ là `connect-v4.4.html` (bản chụp, mã riêng `assets/connect-v44.js` + `assets/connect-i18n-v44.js`, localStorage `aivn.plugins.v44`).
 - (a) "Ghi nhớ MCP" → "Ghi nhớ" (Memory / 记忆); chữ MCP và tên gốc chỉ trong "Chi tiết".
 - (b) Công tắc bảng bên: "Cho AIVN AGENT dùng các ứng dụng đã kết nối" (giờ áp dụng cả ứng dụng cửa hàng). Cảnh báo/chặn nhiều ứng dụng dùng chữ thường; số liệu trong "Chi tiết".
 - (c) Mọi ứng dụng chỉ chạy khi AIVN AGENT dùng lần đầu. Máy chủ Nâng cao có "Luôn chạy sẵn" (mặc định tắt) thay cho tự khởi động.
 - (d) Excel có thư mục riêng (lần đầu = thư mục của AIVN AGENT, hiện trong thẻ xin phép). "Đổi thư mục" của Excel chỉ đổi thư mục Excel; thư mục của AIVN AGENT đổi ở bảng bên. Đổi sang thư mục mới (cả hai) đều qua thẻ xin phép.
 - §17.5: so khớp URL sau khi chuẩn hoá (bỏ '/' cuối, host không phân biệt hoa thường, path phân biệt). Gói so khớp bỏ qua phiên bản. Chỉ trùng tên → Của tôi.
 - Ảnh: `shots/8*.png`, chạy lại bằng `tools/shots8.py` (in kiểm tra chữ kỹ thuật trên màn hình chính, thanh agent và bảng bên).
+
+## connect.html v4.5 (quyết định ngày 22/10, lượt 3)
+- connect.html = bản 4.5. Mã: `assets/connect.js`; chữ: `assets/connect-i18n.js` (khối v4.5 ở cuối tệp). localStorage `aivn.plugins.v45`. Bản 4.4 để so sánh: `connect-v4.4.html`.
+- (1) Giữ: công tắc chính bật/tắt TẤT CẢ ứng dụng đã kết nối; việc ghi vẫn qua thẻ xin phép.
+- (2) Máy chủ "Ghi nhớ" đổi tên thành "Sổ tay agent" / "Agent notebook" / "智能体笔记本". "Ghi nhớ" dành cho tính năng có sẵn của AIVN. Mô tả mới: "Sổ tay riêng của AIVN AGENT, nằm trong ứng dụng này. Không phải tính năng Ghi nhớ của AIVN và không ghi vào đó." Chữ trên ô lấy theo id (`memory` → M), không theo tên hiển thị.
+- (3) Chạy thử một lần khi nhập mcp.json và khi thêm/kết nối ở Nâng cao: mở → xem danh sách chức năng → tắt ngay, tối đa 15 giây, có thanh "Đang chạy thử… n/15 giây". Thẻ xin phép nói trước là sẽ chạy thử. Được: "Chạy thử được · N chức năng". Lỗi: câu dễ hiểu + cách sửa (quá giờ, thiếu chương trình, thiếu khoá, không tới được qua mạng); mã lỗi, mã thoát, stderr nằm trong "Chi tiết". Nút "Chạy thử lại". Sau khi chạy thử vẫn chờ dùng lần đầu. Tệp ví dụ có `sqlite` (lệnh `uvx` không có → lỗi), `tim-kiem` (khoá trống), `bao-cao` (quá 15 giây), `nas-nha` (không tới được).
+  Bản mẫu giả lập kết quả theo cấu hình (không chạy tiến trình thật).
+- (4) Máy chủ người dùng thêm hiện tên gốc (khoá trong mcp.json). Có nút "Đổi tên hiển thị": sửa ngay tại chỗ, không cho để trống, "Dùng tên gốc" để quay lại. Tên gốc luôn có trong "Chi tiết" (và trong "Chi tiết" của thẻ xin phép). Tên hiển thị dùng ở màn hình chính, huy hiệu, cảnh báo, thẻ. Chữ trên ô vẫn theo tên gốc.
+- Ảnh: `shots/9*.png`, chạy lại bằng `tools/shots9.py`.
+
+### Khác với Doc bản 2 (cho designer)
+- Phạm vi công tắc chính: Doc bản 2 chỉ nói máy chủ MCP; bản mẫu: công tắc "Cho AIVN AGENT dùng các ứng dụng đã kết nối" bật/tắt TẤT CẢ ứng dụng đã kết nối (cả AIVN Kinh doanh, Excel). Việc ghi vẫn qua thẻ xin phép.
+- Bỏ tự khởi động ứng dụng cửa hàng khi mở AIVN.
+- Chạy khi dùng lần đầu cho mọi thứ (Doc §5.6/§8.3 tự khởi động máy chủ đã duyệt). Máy chủ Nâng cao có tuỳ chọn "Luôn chạy sẵn" (mặc định tắt, bật thì qua thẻ xin phép).
+- Ô "Sắp có" có nút "Báo tôi khi có" (chỉ báo trong ứng dụng, không gửi gì ra ngoài).
+- Trạng thái mới "Đã kết nối · chờ dùng lần đầu" (và "Đang chạy thử…").
+- Nhóm Tài chính trống: "Chưa có ứng dụng tài chính. Nhóm này sẽ có thêm ứng dụng trong các bản sau."
+- Excel có thư mục riêng (lần đầu = thư mục của AIVN AGENT), đổi qua thẻ xin phép; thư mục của AIVN AGENT đổi ở bảng bên.
+- Đổi tên: "Plugin/MCP" → "Kết nối ứng dụng"; "Ghi nhớ MCP" → "Sổ tay agent"; công tắc → "Cho AIVN AGENT dùng các ứng dụng đã kết nối"; chữ "máy chủ/công cụ/tool" không có trên màn hình chính (chỉ trong Nâng cao và "Chi tiết").
+- Mới trong 4.5 (Doc chưa có): chạy thử một lần khi nhập/thêm (tối đa 15 giây) và "Đổi tên hiển thị" cho máy chủ người dùng thêm.

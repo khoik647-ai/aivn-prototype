@@ -1143,3 +1143,37 @@ Object.assign(STR,{
 });
 
 Object.assign(STR,{'Địa chỉ không thuộc danh mục Nâng cao.':['Address not in the Advanced catalog.','地址不在“高级”目录中。']});
+
+// v4.5 (quyết định ngày 22/10, lượt 3)
+Object.assign(STR,{
+"Bản nháp 4.5 theo F-PLUGINS bản 2 + quyết định ngày 22/10 (lượt 3)":["Draft 4.5 per F-PLUGINS rev 2 + decisions of 22/10 (round 3)","草稿 4.5，依据 F-PLUGINS 第 2 版 + 10 月 22 日的决定（第 3 轮）"],
+"Bản 4.4":["Version 4.4","4.4 版"],
+"Sổ tay agent":["Agent notebook","智能体笔记本"],
+"Sổ tay riêng của AIVN AGENT, nằm trong ứng dụng này. Không phải tính năng Ghi nhớ của AIVN và không ghi vào đó.":["AIVN AGENT's own notebook, kept inside this app. It is not AIVN's Memory feature and does not write to it.","AIVN AGENT 自己的笔记本，保存在这个应用里。它不是 AIVN 的“记忆”功能，也不会写入其中。"],
+"Ứng dụng không trả lời trong {0} giây nên AIVN đã dừng nó.":["The app did not answer within {0} seconds, so AIVN stopped it.","该应用在 {0} 秒内没有回应，AIVN 已将其停止。"],
+"Bấm Chạy thử lại. Lần đầu ứng dụng có thể phải tải về lâu hơn. Nếu vẫn vậy, hỏi người cung cấp ứng dụng.":["Click Test again. The first time, the app may take longer to download. If it keeps happening, ask whoever provides the app.","点击“重新试运行”。第一次运行时应用可能需要更长时间下载。如果仍然这样，请询问应用的提供者。"],
+"Máy này chưa có chương trình “{0}” mà ứng dụng cần.":["This computer doesn't have the program “{0}” that the app needs.","这台电脑上没有该应用需要的程序“{0}”。"],
+"Cài “{0}” rồi bấm Chạy thử lại.":["Install “{0}”, then click Test again.","安装“{0}”，然后点击“重新试运行”。"],
+"Ứng dụng cần khoá truy cập nhưng khoá đang trống.":["The app needs an access key, but the key is empty.","该应用需要访问密钥，但密钥为空。"],
+"Thêm khoá ở Nâng cao rồi bấm Chạy thử lại.":["Add the key in Advanced, then click Test again.","在“高级”中添加密钥，然后点击“重新试运行”。"],
+"Không tới được ứng dụng qua mạng.":["Couldn't reach the app over the network.","无法通过网络连接到该应用。"],
+"Kiểm tra thiết bị đó đang bật và cùng mạng với máy này, rồi bấm Chạy thử lại.":["Check that the device is on and on the same network as this computer, then click Test again.","请确认该设备已开机，并与这台电脑在同一网络中，然后点击“重新试运行”。"],
+"AIVN sẽ chạy thử nhanh (tối đa {0} giây): mở ứng dụng, xem có những chức năng gì, rồi tắt ngay. Sau đó ứng dụng chỉ chạy khi AIVN AGENT dùng lần đầu.":["AIVN will run a quick test (up to {0} seconds): open the app, see what it can do, then close it right away. After that, the app only runs when AIVN AGENT first uses it.","AIVN 会快速试运行一次（最多 {0} 秒）：打开应用，查看它有哪些功能，然后立即关闭。之后，应用只会在 AIVN AGENT 第一次使用时运行。"],
+"Chạy thử xong: {0} được, {1} lỗi.":["Test finished: {0} OK, {1} failed.","试运行完成：{0} 个成功，{1} 个出错。"],
+"Đang chạy thử… {0}/{1} giây":["Testing… {0}/{1} s","正在试运行… {0}/{1} 秒"],
+"Đang chạy thử…":["Testing…","正在试运行…"],
+"Chạy thử được · {0} chức năng":["Test OK · {0} functions","试运行成功 · {0} 项功能"],
+"Mã lỗi":["Error code","错误代码"],
+"Mã thoát":["Exit code","退出代码"],
+"không có (tiến trình không tự thoát)":["none (the process did not exit by itself)","无（进程没有自行退出）"],
+"Thời gian":["Duration","用时"],
+"{0} giây":["{0} s","{0} 秒"],
+"Chạy thử lại":["Test again","重新试运行"],
+"Tên hiển thị không được để trống.":["The display name can't be empty.","显示名称不能为空。"],
+"Đổi tên hiển thị":["Rename display name","更改显示名称"],
+"Tên hiển thị":["Display name","显示名称"],
+"Lưu":["Save","保存"],
+"Dùng tên gốc":["Use original name","使用原名"],
+"Tên gốc":["Original name","原名"],
+"Tên gốc (trong mcp.json)":["Original name (in mcp.json)","原名（在 mcp.json 中）"],
+});

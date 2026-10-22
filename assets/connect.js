@@ -1,4 +1,4 @@
-// Bản mẫu Kết nối ứng dụng v4.4 — F-PLUGINS bản 2 (PR #5) + quyết định ngày 22/10 (lượt 2). Mô phỏng hoàn toàn trong trình duyệt.
+// Bản mẫu Kết nối ứng dụng v4.5 — F-PLUGINS bản 2 (PR #5) + quyết định ngày 22/10 (lượt 3). Mô phỏng hoàn toàn trong trình duyệt.
 renderRail('agent');
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -40,7 +40,7 @@ const ADV=[
  {id:'fetch',name:'Đọc trang web',desc:'Tiến trình này tự mở mạng, kể cả khi “Cho phép truy cập mạng” đang tắt.',needs:'none',pkg:'mcp-fetch-server',ver:'1.1.2',tools:[['fetch_html','Fetch a website and return the content as HTML'],['fetch_markdown','Fetch a website and return the content as Markdown']]},
  {id:'huggingface',name:'Hugging Face',desc:'Máy chủ từ xa của Hugging Face. Đối số công cụ và kết quả được gửi tới huggingface.co.',needs:'secret',optional:true,secretVar:'Authorization',url:'https://huggingface.co/mcp',
   tools:[['model_search','Search for ML models on the Hugging Face Hub'],['dataset_search','Search for datasets on the Hugging Face Hub'],['paper_search','Find ML research papers'],['hf_doc_search','Search the Hugging Face documentation']]},
- {id:'memory',name:'Ghi nhớ',desc:'Bộ nhớ riêng của ứng dụng này. Không ghi vào mục Ghi nhớ của AIVN.',needs:'none',pkg:'@modelcontextprotocol/server-memory',ver:'2.0.0',
+ {id:'memory',name:'Sổ tay agent',tile:'M',desc:'Sổ tay riêng của AIVN AGENT, nằm trong ứng dụng này. Không phải tính năng Ghi nhớ của AIVN và không ghi vào đó.',needs:'none',pkg:'@modelcontextprotocol/server-memory',ver:'2.0.0',
   tools:[['create_entities','Create multiple new entities in the knowledge graph'],['create_relations','Create multiple new relations between entities'],['add_observations','Add new observations to existing entities'],['delete_entities','Delete multiple entities and their associated relations'],['delete_observations','Delete specific observations from entities'],['delete_relations','Delete multiple relations from the knowledge graph'],['read_graph','Read the entire knowledge graph'],['search_nodes','Search for nodes in the knowledge graph'],['open_nodes','Open specific nodes by their names']]},
  {id:'thinking',name:'Suy nghĩ từng bước',desc:'Máy chủ giữ các bước suy nghĩ trung gian.',needs:'none',pkg:'@modelcontextprotocol/server-sequential-thinking',ver:'2.0.0',tools:[['sequentialthinking','A detailed tool for dynamic and reflective problem-solving through thoughts']]},
 ];
@@ -58,15 +58,15 @@ const BUILTIN=[
   starters:[{vi:'Liệt kê tệp trong thư mục được phép, nhóm theo loại.',en:'List the files in the allowed folder, grouped by kind.',zh:'列出允许文件夹里的文件，按类型分组。'},{vi:'Đọc bảng tính này và nói có bao nhiêu dòng.',en:'Read this spreadsheet and say how many rows it has.',zh:'读这个表格，说出有多少行。'}],suggest:['excel']},
 ];
 const L=o=>o==null?'':typeof o==='string'?o:(o[LANG]??o.vi??Object.values(o)[0]??'');
-const KEY='aivn.plugins.v44';
+const KEY='aivn.plugins.v45';
 function seed(){const t='2026-10-01T09:00:00.000Z';return{
   mcp:{mcpServers:{'memory':{command:'npx',args:['-y',pinned(ADVC('memory'))]},'thoi-tiet':{url:'https://mcp.example.vn/weather'}}},
   meta:{v:1,connectors:{},servers:{'memory':{catalogId:'memory',approvedAt:t,alwaysOn:false},'thoi-tiet':{catalogId:null,approvedAt:t,alwaysOn:false}}},
   model:'q4',warnSig:null,master:true,lang:'vi',tpl:'general',userTpls:[],hintDismissed:false}}
 let DB=LS.get(KEY,null)||seed();const save=()=>LS.set(KEY,DB);
 LANG=DB.lang;
-const RT={state:{},err:{},logs:{},listed:{},used:{},writeOk:{},chat:[],restarted:false};
-let UI={warnOpen:false,excelPick:null,open:false,pane:'main',tab:'all',q:'',expanded:{},setup:{},plan:null,advMsg:null,advText:null,flash:null};
+const RT={state:{},err:{},logs:{},listed:{},used:{},writeOk:{},testT:{},chat:[],restarted:false};
+let UI={rename:null,warnOpen:false,excelPick:null,open:false,pane:'main',tab:'all',q:'',expanded:{},setup:{},plan:null,advMsg:null,advText:null,flash:null};
 const servers=()=>DB.mcp.mcpServers;
 const conn=id=>DB.meta.connectors[id];
 const metaOf=k=>DB.meta.servers[k]||(DB.meta.servers[k]={catalogId:null,approvedAt:null,alwaysOn:false});
@@ -124,7 +124,53 @@ function start(k){const s=servers()[k];if(!s)return;if(!DB.master){RT.state[k]='
  RT.state[k]='starting';delete RT.err[k];const m=DB.meta.servers[k]||{},c=m.catalogId&&ADVC(m.catalogId);
  log(k,runsBundled(c,s)?`start stdio (bundled ${pinned(c)}, no npx)`:`start ${kindOf(s)}: ${redact(s)}`);render();
  setTimeout(()=>{if(!servers()[k]||RT.state[k]!=='starting')return;const ef=()=>validateServer(k,s)||(s.auth?tr('AIVN chưa hỗ trợ đăng nhập OAuth (trường auth) của máy chủ "{0}".',k):null);const e=ef();
-  if(e){RT.state[k]='error';RT.err[k]=ef;const o=LANG;LANG='en';const le=ef();LANG=o;log(k,'error: '+le)}else{RT.state[k]='on';RT.listed[k]=true;log(k,`listTools: ${toolsOf(k).length}`)}render()},window.FAST?150:1100)}
+  const so=e?null:simTest(k,s);
+  if(e){RT.state[k]='error';RT.err[k]=ef;const o=LANG;LANG='en';const le=ef();LANG=o;log(k,'error: '+le)}else if(!so.ok){RT.state[k]='error';RT.err[k]=()=>testMsg(so);log(k,'error: '+so.err)}else{RT.state[k]='on';RT.listed[k]=true;log(k,`listTools: ${toolsOf(k).length}`)}render()},window.FAST?150:1100)}
+// quyết định lượt 3 (3): chạy thử một lần khi nhập mcp.json hoặc thêm ở Nâng cao: mở → xem danh sách chức năng → tắt ngay, tối đa 15 giây.
+// Xong vẫn “chờ dùng lần đầu”. Bản mẫu: kết quả cố định theo cấu hình (lệnh lạ → không tìm thấy, khoá trống → thiếu khoá, http mạng nội bộ → không tới được, gói @vidu/mcp-bao-cao → quá giờ).
+const TEST_LIMIT=15,KNOWN_CMDS=['npx','node','python','python3','docker'],SIM_HANG=['@vidu/mcp-bao-cao'];
+function simTest(k,s){
+ if(s.url){if(isHttp(s.url)&&netKind(s.url)==='lan'){const h=/^[a-z]+:\/\/([^\/]+)/i.exec(s.url)[1];return{code:'network',sec:4,exit:null,err:'ECONNREFUSED',stderr:`connect ECONNREFUSED ${h}`}}return{ok:true,sec:3}}
+ if(!KNOWN_CMDS.includes(s.command))return{code:'notfound',cmd:s.command,sec:1,exit:null,err:'ENOENT',stderr:`spawn ${s.command} ENOENT`};
+ const ek=Object.entries(s.env||{}).find(([n,v])=>SECRET_NAME.test(n)&&v==='');
+ if(ek)return{code:'key',sec:2,exit:1,err:'EXIT_1',stderr:`Error: ${ek[0]} environment variable is required\n    at main (file:///…/index.js:12:11)`};
+ if(SIM_HANG.includes(pkgName(pkgArg(s))))return{code:'timeout',sec:TEST_LIMIT,exit:null,err:'ETIMEDOUT',stderr:`npm notice downloading ${pkgArg(s)} …\n(no reply to "initialize" after ${TEST_LIMIT} s, process killed)`};
+ return{ok:true,sec:3}}
+const TEST_MSG={timeout:['Ứng dụng không trả lời trong {0} giây nên AIVN đã dừng nó.','Bấm Chạy thử lại. Lần đầu ứng dụng có thể phải tải về lâu hơn. Nếu vẫn vậy, hỏi người cung cấp ứng dụng.'],
+ notfound:['Máy này chưa có chương trình “{0}” mà ứng dụng cần.','Cài “{0}” rồi bấm Chạy thử lại.'],
+ key:['Ứng dụng cần khoá truy cập nhưng khoá đang trống.','Thêm khoá ở Nâng cao rồi bấm Chạy thử lại.'],
+ network:['Không tới được ứng dụng qua mạng.','Kiểm tra thiết bị đó đang bật và cùng mạng với máy này, rồi bấm Chạy thử lại.']};
+const testArg=t=>t.code==='timeout'?TEST_LIMIT:t.code==='notfound'?t.cmd:'';
+const testMsg=t=>tr(TEST_MSG[t.code][0],testArg(t)),testFix=t=>tr(TEST_MSG[t.code][1],testArg(t));
+const TEST_LINE=()=>tr('AIVN sẽ chạy thử nhanh (tối đa {0} giây): mở ứng dụng, xem có những chức năng gì, rồi tắt ngay. Sau đó ứng dụng chỉ chạy khi AIVN AGENT dùng lần đầu.',TEST_LIMIT);
+function runTest(k){return new Promise(res=>{const s=servers()[k];if(!s)return res(null);const m=metaOf(k),o=simTest(k,s),lim=Math.min(o.sec,TEST_LIMIT);
+ RT.state[k]='testing';RT.testT[k]=0;delete RT.err[k];delete m.test;log(k,`test: start ${kindOf(s)}: ${redact(s)} (limit ${TEST_LIMIT}s)`);render();
+ const iv=setInterval(()=>{if(!servers()[k]||RT.state[k]!=='testing'){clearInterval(iv);return res(null)}RT.testT[k]++;
+  if(RT.testT[k]<lim)return render();clearInterval(iv);
+  if(o.ok){const n=toolsOf(k).length;m.test={ok:true,n,at:now()};RT.listed[k]=true;log(k,`test: listTools -> ${n}`);log(k,'test: stop');RT.state[k]=DB.master&&m.approvedAt&&!s.disabled?'waiting':'off';log(k,'lazy: waiting for first use')}
+  else{m.test={ok:false,code:o.code,cmd:o.cmd,exit:o.exit,err:o.err,stderr:o.stderr,sec:lim,at:now()};log(k,o.code==='timeout'?`test: no reply in ${TEST_LIMIT}s, killed`:`test: failed (${o.err}${o.exit!=null?', exit '+o.exit:''})`);RT.state[k]='error';RT.err[k]=()=>testMsg(m.test)}
+  save();render();res(m.test)},window.FAST?120:1000)})}
+async function runTests(keys){const rs=await Promise.all(keys.map(runTest));const ok=rs.filter(r=>r&&r.ok).length,bad=rs.filter(r=>r&&!r.ok).length;if(ok+bad)toast(tr('Chạy thử xong: {0} được, {1} lỗi.',ok,bad))}
+function testLine(k){const m=DB.meta.servers[k]||{},t=m.test,s0=RT.state[k],tk=esc(k);
+ if(s0==='testing'){const n=RT.testT[k]||0;return `<div class="tst run" data-testid="test-${tk}">⏳ ${tr('Đang chạy thử… {0}/{1} giây',n,TEST_LIMIT)}<span class="bar"><i style="width:${Math.round(100*n/TEST_LIMIT)}%"></i></span></div>`}
+ if(!t||s0==='starting')return'';
+ if(t.ok)return `<div class="tst ok" data-testid="test-${tk}">✓ ${tr('Chạy thử được · {0} chức năng',t.n)}</div>`;
+ const ek='t:'+k;
+ return `<div class="tst bad" data-testid="test-${tk}" onclick="event.stopPropagation()"><b>✕ ${esc(testMsg(t))}</b><div class="fix">${esc(testFix(t))}</div>
+  <details class="apdet" data-testid="test-details-${tk}" ${UI.expanded[ek]?'open':''} ontoggle="if(this.isConnected)UI.expanded['${esc(ek)}']=this.open"><summary onclick="UI.expanded['${esc(ek)}']=!this.parentNode.open">${tr('Chi tiết')}</summary>
+  <dl class="apf"><dt>${tr('Mã lỗi')}</dt><dd><code>${esc(t.err)}</code></dd><dt>${tr('Mã thoát')}</dt><dd>${t.exit==null?tr('không có (tiến trình không tự thoát)'):`<code>${t.exit}</code>`}</dd><dt>${tr('Thời gian')}</dt><dd>${tr('{0} giây',t.sec)}</dd><dt>stderr</dt><dd><pre class="log">${esc(t.stderr)}</pre></dd></dl></details></div>`}
+// quyết định lượt 3 (4): đổi tên hiển thị (chỉ máy chủ người dùng thêm). Không để trống; “Dùng tên gốc” để quay lại khoá mcp.json.
+const isUserSrv=k=>k[0]!=='@'&&!(DB.meta.servers[k]||{}).catalogId;
+function renameStart(k){UI.rename={k,v:displayName(k),err:null,pos:null};render();setTimeout(()=>{const i=$('rn-in');if(i){i.focus();i.select()}},0)}
+function renameCancel(){UI.rename=null;render()}
+function renameSave(){const r=UI.rename;if(!r)return;const v=r.v.trim();if(!v){r.err=tr('Tên hiển thị không được để trống.');return render()}
+ const m=metaOf(r.k);if(v===r.k)delete m.label;else m.label=v.slice(0,64);UI.rename=null;save();render()}
+function renameReset(){const r=UI.rename;if(!r)return;delete metaOf(r.k).label;UI.rename=null;save();render()}
+function renameBtn(k){return isUserSrv(k)&&!(UI.rename&&UI.rename.k===k)?`<button class="btn sm ghost" data-testid="rename-${esc(k)}" onclick="event.stopPropagation();renameStart('${esc(k)}')">✎ ${tr('Đổi tên hiển thị')}</button>`:''}
+function nameOrEdit(k,cls){const r=UI.rename;if(!r||r.k!==k)return `<span class="${cls}">${esc(displayName(k))}</span>`;const lb=(DB.meta.servers[k]||{}).label;
+ return `<span class="rn" onclick="event.stopPropagation()"><input class="inp" id="rn-in" data-testid="rename-input-${esc(k)}" maxlength="64" value="${esc(r.v)}" aria-label="${tr('Tên hiển thị')}" oninput="UI.rename.v=this.value;UI.rename.pos=this.selectionStart" onkeydown="event.stopPropagation();if(event.key==='Enter')renameSave();if(event.key==='Escape')renameCancel()">
+  <button class="btn sm pri" data-testid="rename-save" onclick="renameSave()">${tr('Lưu')}</button><button class="btn sm ghost" data-testid="rename-cancel" onclick="renameCancel()">${tr('Huỷ')}</button>${lb?`<button class="btn sm ghost" data-testid="rename-reset" onclick="renameReset()">${tr('Dùng tên gốc')}</button>`:''}</span>`}
+const renameErr=k=>UI.rename&&UI.rename.k===k&&UI.rename.err?`<div class="msg-bad small" data-testid="rename-err" style="margin-top:4px">${esc(UI.rename.err)}</div>`:'';
 const errText=k=>{const e=RT.err[k];return typeof e==='function'?(e()||''):(e||'')};
 function stop(k){if(RT.state[k]&&RT.state[k]!=='off')log(k,'stop');RT.state[k]='off'}
 function toolsOf(k){if(k[0]==='@')return storeTools(k.slice(1));const m=DB.meta.servers[k];const c=m&&m.catalogId&&ADVC(m.catalogId);if(c)return c.tools;const n=safeName(k);return [[n+'_query','Sample tool reported by the server'],[n+'_list','Sample tool reported by the server']]}
@@ -132,8 +178,10 @@ const st=k=>k[0]==='@'?storeState(ST(k.slice(1))):(RT.state[k]||'off');
 const connectedKeys=()=>[...['biz','excel'].filter(id=>conn(id)?.enabled).map(SKEY),...Object.keys(servers()).filter(k=>['on','waiting'].includes(RT.state[k])&&!servers()[k].disabled)];
 const onSources=()=>DB.master?connectedKeys():[]; // công tắc tắt → AIVN AGENT không dùng ứng dụng nào
 const countOn=()=>connectedKeys().length;
-function displayName(k){if(k[0]==='@')return tr(ST(k.slice(1)).name);const m=DB.meta.servers[k];const c=m&&m.catalogId&&ADVC(m.catalogId);return c?tr(c.name):k}
-const tileKey=k=>{const m=DB.meta.servers[k];return m&&m.catalogId?ADVC(m.catalogId).name:k}; // tên gốc (tiếng Việt, không dịch) của mục danh mục, hoặc khoá mcp.json
+// quyết định lượt 3 (4): máy chủ người dùng thêm hiện tên gốc (khoá mcp.json); có thể đổi tên hiển thị (meta.label). Tên gốc giữ trong Chi tiết.
+function displayName(k){if(k[0]==='@')return tr(ST(k.slice(1)).name);const m=DB.meta.servers[k];const c=m&&m.catalogId&&ADVC(m.catalogId);return c?tr(c.name):(m&&m.label)||k}
+const catTile=c=>c.tile||c.name; // chữ trên ô cố định theo mục (Sổ tay agent: M theo id memory), không đổi theo tên hiển thị
+const tileKey=k=>{const m=DB.meta.servers[k];return m&&m.catalogId?catTile(ADVC(m.catalogId)):k}; // mục danh mục, hoặc khoá mcp.json (không theo tên hiển thị)
 const letterTile=(name,sz=32)=>`<span class="lt" style="width:${sz}px;height:${sz}px">${esc((String(name).trim()[0]||'?').toUpperCase())}</span>`;
 function storeLogo(a,sz=32){return a.logo==='@aivn'?`<img class="lgimg" src="assets/logos/aivn-app.svg" width="${sz}" height="${sz}" alt="">`:logoTile(a.logo,sz)}
 const srcLogo=(k,sz)=>k[0]==='@'?storeLogo(ST(k.slice(1)),sz):letterTile(tileKey(k),sz);
@@ -190,14 +238,15 @@ function storeSpec(id){return()=>{const a=ST(id),n=tr(a.name);
  return{tool:'connector_connect',logoHtml:storeLogo(a,30),title:tr('Cho phép kết nối “{0}”?',n),sub:n,fields,lines,extraHtml:id==='excel'?excelFolderHtml('card'):'',
   warn:id==='biz'?tr('AIVN Kinh doanh đọc và sửa dữ liệu kinh doanh trên máy này. Xoá, huỷ và ghi nhận thanh toán vẫn hỏi bạn từng lần.'):tr('Ghi tệp Excel trong thư mục này. Ghi đè vẫn hỏi bạn trước.'),
   details:[],danger:false,alwaysLabel:null}}}
-function mcpSpec(k,s,{folder,autostartOnly,noToken,title}={}){return()=>{const sn=secretNames(s),net=s.url?netKind(s.url):null,m=DB.meta.servers[k]||{},c=m.catalogId?ADVC(m.catalogId):catalogMatch(s);
+function mcpSpec(k,s,{folder,autostartOnly,noToken,title,test}={}){return()=>{const sn=secretNames(s),net=s.url?netKind(s.url):null,m=DB.meta.servers[k]||{},c=m.catalogId?ADVC(m.catalogId):catalogMatch(s);
  const lines=[];if(s.url&&net!=='loop')lines.push(tr('Dữ liệu gửi tới máy chủ này rời khỏi máy bạn.'));if(s.url&&net==='lan')lines.push(tr('Địa chỉ http này nằm trong mạng nội bộ của bạn.'));
  if(unpinned(s))lines.push(tr('Lệnh này không ghim phiên bản. npx có thể tải mã mới.'));if(noToken)lines.push(tr('Không có mã truy cập: máy chủ có thể từ chối yêu cầu.'));
  if(autostartOnly)lines.push(tr('Cho phép máy chủ này luôn chạy sẵn từ lúc mở AIVN. Việc này tốn thêm bộ nhớ (RAM/VRAM).'));
+ if(test)lines.push(TEST_LINE());
  const nm=title?title():displayName(k);
- return{tool:'mcp_connect',logoHtml:letterTile(nm,30),title:tr('Cho phép kết nối “{0}”?',nm),sub:k,
+ return{tool:'mcp_connect',logoHtml:letterTile(title?catTile(c||{name:nm}):tileKey(k),30),title:tr('Cho phép kết nối “{0}”?',nm),sub:nm,
   fields:[[tr('Khoá bí mật'),sn.length?sn.join(', '):tr('không có'),sn.length?1:0],...(sn.length?[[tr('Lưu khoá'),KEY_NOTE()]]:[])],lines,
-  details:[[s.url?tr('Địa chỉ'):tr('Lệnh'),redact(s),1],[tr('Loại'),kindOf(s)],...(folder?[[tr('Thư mục'),folder,1]]:[])],
+  details:[[tr('Tên gốc'),k,1],[s.url?tr('Địa chỉ'):tr('Lệnh'),redact(s),1],[tr('Loại'),kindOf(s)],...(folder?[[tr('Thư mục'),folder,1]]:[])],
   detailNote:runsBundled(c,s)?tr('Gói này nằm sẵn trong bản cài AIVN. Khi chạy, AIVN không gọi npx và không tải gì.'):null,
   warn:MCP_WARN(),danger:isDanger(s),alwaysLabel:null}}}
 async function connectStore(id){const a=ST(id);if(!a.ready)return;const c=conn(id);
@@ -224,7 +273,7 @@ async function agentUseMcp(k){if(!DB.master||!servers()[k])return;const say=m=>{
  if(RT.state[k]!=='on'){say('✕ '+tr('Không chạy được “{0}”. Mở Nâng cao để xem.',nm));return}
  const tool=toolsOf(k)[0][0];
  const r=await askApproval(()=>({tool,logoHtml:letterTile(tileKey(k),30),title:tr('AIVN AGENT muốn dùng “{0}”',nm),sub:nm,fields:[[tr('Ứng dụng'),nm]],
-  lines:[tr('Ứng dụng thêm ở Nâng cao luôn hỏi bạn trước mỗi lần dùng.')],details:[[tr('Công cụ'),tool,1]],danger:false,alwaysLabel:null}));
+  lines:[tr('Ứng dụng thêm ở Nâng cao luôn hỏi bạn trước mỗi lần dùng.')],details:[[tr('Tên gốc'),k,1],[tr('Công cụ'),tool,1]],danger:false,alwaysLabel:null}));
  say(r.ok?'✓ '+tr('Đã dùng “{0}”',nm):'✕ '+tr('Bạn đã từ chối: {0}',nm))}
 function restartSim(){closeCA();$('tplBack').classList.remove('open');Object.keys(servers()).forEach(stop);
  RT.state={};RT.listed={};RT.used={};RT.writeOk={};RT.chat=[];RT.restarted=true;
@@ -239,14 +288,15 @@ async function connectCatalog(cid){if(!DB.master)return;const c=ADVC(cid);let k=
  k=newKeyFor(cid);
  const s=c.url?{url:c.url,timeout:120000}:{command:'npx',args:['-y',pinned(c),...(folder?[folder]:[])]};
  if(token){const ref={$aivnSecret:`mcp:${safeName(k)}:${c.secretVar}`};if(c.url)s.headers={[c.secretVar]:ref};else s.env={[c.secretVar]:ref}}
- const a=await withCard(mcpSpec(k,s,{folder,noToken:c.optional&&!token,title:()=>tr(c.name)}));
+ const a=await withCard(mcpSpec(k,s,{folder,noToken:c.optional&&!token,title:()=>tr(c.name),test:true}));
  delete UI.setup[cid];if(!a.ok){render();return}
- servers()[k]=s;DB.meta.servers[k]={catalogId:cid,approvedAt:now(),alwaysOn:false};save();start(k)}
+ servers()[k]=s;DB.meta.servers[k]={catalogId:cid,approvedAt:now(),alwaysOn:false};save();runTest(k)}
 async function connectKey(k){if(!DB.master)return;const s=servers()[k],m=metaOf(k);if(s.auth){start(k);return}delete s.disabled;save();
- if(m.approvedAt){start(k);return}const a=await withCard(mcpSpec(k,s));if(!a.ok){render();return}m.approvedAt=now();save();start(k)}
+ if(!m.approvedAt){const a=await withCard(mcpSpec(k,s,{test:true}));if(!a.ok){render();return}m.approvedAt=now();save()}
+ runTest(k)} // kết nối / kết nối lại / chạy thử lại: chạy thử rồi chờ dùng lần đầu
 function disconnectKey(k){if(k[0]==='@')return disconnectStore(k.slice(1));servers()[k].disabled=true;stop(k);save();render()}
 async function removeKey(k){const ok=await modalAsk(tr('Gỡ máy chủ “{0}”?',displayName(k)),tr('Công cụ của máy chủ này sẽ biến mất. Các mục “Luôn cho phép” của nó cũng bị xoá. Khoá bí mật của máy chủ này bị xoá khỏi máy.'),tr('Gỡ'));
- if(!ok)return;stop(k);delete servers()[k];delete DB.meta.servers[k];delete RT.state[k];delete UI.expanded[k];save();render()}
+ if(!ok)return;stop(k);delete servers()[k];delete DB.meta.servers[k];delete RT.state[k];delete UI.expanded[k];if(UI.rename&&UI.rename.k===k)UI.rename=null;save();render()}
 async function toggleAlways(k,on){ // “Luôn chạy sẵn” — mặc định tắt (thay cho tự chạy khi mở AIVN)
 const m=metaOf(k);if(!on){m.alwaysOn=false;save();return render()}
  const a=await withCard(mcpSpec(k,servers()[k],{autostartOnly:true}));if(a.ok){m.alwaysOn=true;if(!m.approvedAt)m.approvedAt=now();save()}render()}
@@ -254,7 +304,7 @@ function openCA(o={}){UI.open=true;$('caModal').dataset.pane='';if(o.pane)UI.pan
  if(o.scrollTo){const k=o.scrollTo;UI.q='';if(k[0]==='@'){UI.pane='detail';UI.detail=k.slice(1)}else{UI.pane='adv';UI.expanded[k]=true}UI.flash=k}
  render();setTimeout(()=>{const e=document.querySelector('#caModal .flash')||(o.section&&$(o.section));e&&e.scrollIntoView({block:'center'});if(UI.pane==='main'&&!o.scrollTo)$('caQ')&&$('caQ').focus()},0)}
 function closeCA(){UI.open=false;$('caBack').classList.remove('open')}
-const PILL={waiting:'Đã kết nối · chờ dùng lần đầu',available:'Chưa kết nối',soon:'Sắp có','needs-setup':'Cần thiết lập',starting:'Đang kết nối…',on:'Đã kết nối',off:'Đã tắt',error:'Lỗi'};
+const PILL={waiting:'Đã kết nối · chờ dùng lần đầu',available:'Chưa kết nối',soon:'Sắp có','needs-setup':'Cần thiết lập',starting:'Đang kết nối…',testing:'Đang chạy thử…',on:'Đã kết nối',off:'Đã tắt',error:'Lỗi'};
 const pill=s=>`<span class="st ${s}">${tr(PILL[s])}</span>`;
 const toggleExp=k=>{UI.expanded[k]=!UI.expanded[k];render()};
 function storeState(a){if(!a.ready)return'soon';const c=conn(a.id);return !c?'available':!c.enabled?'off':RT.used[a.id]?'on':'waiting'}
@@ -285,11 +335,11 @@ function detailBody(id){const a=ST(id),i=STORE_INFO[id],s=storeState(a),c=conn(i
    <dt>${tr('Công cụ')}</dt><dd>${storeTools(id).map(t=>`<code>${t[0]}</code>`).join(' ')}</dd></dl></details></div>`}
 const MASTER_HINT=()=>tr('Công tắc “Cho AIVN AGENT dùng các ứng dụng đã kết nối” đang tắt. AIVN AGENT sẽ không dùng ứng dụng nào cho đến khi bạn bật lại.');
 function mcpExpand(k){const s=servers()[k],m=DB.meta.servers[k]||{},dis=!DB.master?'disabled':'';
- return `<div class="exp" onclick="event.stopPropagation()"><div style="grid-column:1/-1" class="small"><span style="color:var(--tx3)">${tr('Tên trong mcp.json')}:</span> <code>${esc(k)}</code></div>${errText(k)?`<div class="msg-bad" style="grid-column:1/-1">${esc(errText(k))}</div>`:''}
+ return `<div class="exp" onclick="event.stopPropagation()"><div style="grid-column:1/-1" class="small"><span style="color:var(--tx3)">${tr('Tên gốc (trong mcp.json)')}:</span> <code data-testid="orig-name-${esc(k)}">${esc(k)}</code>${m.label?` · <span style="color:var(--tx3)">${tr('Tên hiển thị')}:</span> ${esc(m.label)}`:''}</div>${errText(k)&&!(m.test&&m.test.ok===false)?`<div class="msg-bad" style="grid-column:1/-1">${esc(errText(k))}</div>`:''}
    <div class="tl"><div class="small" style="color:var(--tx3);margin-bottom:6px">${tr('Công cụ')}</div>${RT.listed[k]?toolsOf(k).map(([n,d])=>`<div><code>${esc(n)}</code> <span>— ${esc(d)}</span></div>`).join(''):`<div class="muted small">—</div>`}</div>
    <div><div class="small" style="color:var(--tx3);margin-bottom:6px">${tr('Nhật ký (60 dòng cuối)')}</div><div class="log">${esc((RT.logs[k]||[]).join('\n'))||'—'}</div></div>
    <div style="grid-column:1/-1"><span class="small" style="color:var(--tx3)">${s.url?tr('Địa chỉ'):tr('Lệnh')} · ${kindOf(s)}</span><div class="meta">${esc(redact(s))}</div></div>
-   <div class="row" style="grid-column:1/-1;gap:8px">${s.auth?'':`<button class="btn sm" ${dis} onclick="connectKey('${esc(k)}')">${tr('Kết nối lại')}</button>`}<button class="btn sm danger" onclick="removeKey('${esc(k)}')">${tr('Gỡ')}</button>
+   <div class="row" style="grid-column:1/-1;gap:8px">${s.auth?'':`<button class="btn sm" ${dis} ${st(k)==='testing'?'disabled':''} onclick="connectKey('${esc(k)}')">${tr('Kết nối lại')}</button>`}<button class="btn sm danger" onclick="removeKey('${esc(k)}')">${tr('Gỡ')}</button>
    </div></div>`}
 function alwaysRow(k){if(!k||servers()[k].auth)return'';const m=metaOf(k);
  return `<label class="row small always" style="gap:6px;margin-top:6px" data-testid="adv-always-${esc(k)}" onclick="event.stopPropagation()"><input type="checkbox" ${m.alwaysOn?'checked':''} onchange="toggleAlways('${esc(k)}',this.checked)"> <b>${tr('Luôn chạy sẵn')}</b> <span class="muted">${m.alwaysOn?tr('Chạy ngay khi mở AIVN, tốn thêm bộ nhớ.'):tr('Tắt: chỉ chạy khi AIVN AGENT cần, đỡ tốn bộ nhớ.')}</span></label>`}
@@ -298,13 +348,16 @@ function mcpBtn(k,id){const s0=st(k),dis=!DB.master?`disabled title="${esc(MASTE
  if(servers()[k].auth)return'';
   if(s0==='on'||s0==='waiting')return `<button class="btn sm" data-testid="connect-apps-connect-${esc(id)}" onclick="event.stopPropagation();disconnectKey('${esc(k)}')">${tr('Ngắt kết nối')}</button>`;
  if(s0==='starting')return `<button class="btn sm" disabled>${tr('Đang kết nối…')}</button>`;
- return `<button class="btn sm ${s0==='error'?'':'pri'}" ${dis} data-testid="connect-apps-connect-${esc(id)}" onclick="event.stopPropagation();connectKey('${esc(k)}')">${s0==='error'?tr('Thử lại'):tr('Kết nối')}</button>`}
+ if(s0==='testing')return `<button class="btn sm" disabled data-testid="connect-apps-connect-${esc(id)}">${tr('Đang chạy thử…')}</button>`;
+ const tf=(DB.meta.servers[k]||{}).test;
+ return `<button class="btn sm ${s0==='error'?'':'pri'}" ${dis} data-testid="connect-apps-connect-${esc(id)}" onclick="event.stopPropagation();connectKey('${esc(k)}')">${s0==='error'?(tf&&tf.ok===false?tr('Chạy thử lại'):tr('Thử lại')):tr('Kết nối')}</button>`}
 const catDesc=k=>{const m=DB.meta.servers[k]||{};const c=m.catalogId&&ADVC(m.catalogId);return c?tr(c.desc):tr('Máy chủ MCP trong mcp.json của bạn.')};
 function mineMcpTile(k){const s0=st(k);
  return `<div class="card tile clickable ${s0==='on'||s0==='waiting'?'on':''}" data-testid="connect-apps-card-${esc(k)}" onclick="openCA({scrollTo:'${esc(k)}'})">
-  <div class="t">${letterTile(tileKey(k))}<div class="nm">${esc(displayName(k))}</div><span style="flex:1"></span>${pill(s0)}</div>
-  <div class="d">${s0==='error'?tr('Không kết nối được. Mở Nâng cao để xem.'):tr('Bạn thêm ở Nâng cao.')}</div>
-  <div class="ft"><span style="flex:1"></span>${mcpBtn(k,k)}</div></div>`}
+  <div class="t">${letterTile(tileKey(k))}${nameOrEdit(k,'nm')}${UI.rename&&UI.rename.k===k?'':`<span style="flex:1"></span>${pill(s0)}`}</div>${renameErr(k)}
+  <div class="d">${s0==='error'&&!tfail(k)?tr('Không kết nối được. Mở Nâng cao để xem.'):tr('Bạn thêm ở Nâng cao.')}</div>${testLine(k)}
+  <div class="ft">${renameBtn(k)}<span style="flex:1"></span>${mcpBtn(k,k)}</div></div>`}
+const tfail=k=>{const t=(DB.meta.servers[k]||{}).test;return t&&t.ok===false}
 const match=(...xs)=>{const q=foldVi(UI.q.trim());return !q||foldVi(xs.join(' ')).includes(q)};
 const EMPTY_GROUP={finance:['💰','Chưa có ứng dụng tài chính.','Nhóm này sẽ có thêm ứng dụng trong các bản sau.']};
 function emptyGroup(g){const [ic,h,sub]=EMPTY_GROUP[g]||['🗂','Chưa có ứng dụng trong nhóm này.',null];
@@ -329,7 +382,8 @@ function renderCA(){const n=countOn(),M=$('caModal');const sc=$('caList')?$('caL
  else{M.innerHTML=head+`<div class="advhead"><button class="btn sm ghost" onclick="UI.pane='main';render()">${tr('← Quay lại')}</button><b>${tr('Nâng cao')}</b></div><div class="mlist scroll" id="caList">${advBody()}</div>
    <div class="mf"><div class="warnline" data-testid="connect-apps-mcp-warn">${MCP_WARN()}</div></div>`}
  const L2=$('caList');if(L2&&samePane&&!UI.flash)L2.scrollTop=sc;
- if(UI.flash)setTimeout(()=>{UI.flash=null},1700)}
+ if(UI.flash)setTimeout(()=>{UI.flash=null},1700);
+ const ri=UI.rename&&$('rn-in');if(ri&&document.activeElement!==ri){const p=UI.rename.pos??ri.value.length;ri.focus();try{ri.setSelectionRange(p,p)}catch(e){}}}
 function advRow(c){const k=keyOfCat(c.id),s0=UI.setup[c.id]?'needs-setup':k?st(k):'available',ex=k&&UI.expanded[k],dis=!DB.master?`disabled title="${esc(MASTER_HINT())}"`:'';
  const btn=k?mcpBtn(k,c.id):s0==='needs-setup'?'':`<button class="btn sm pri" ${dis} data-testid="connect-apps-connect-${c.id}" onclick="event.stopPropagation();connectCatalog('${c.id}')">${tr('Kết nối')}</button>`;
  const setup=s0==='needs-setup'?`<div class="setup" onclick="event.stopPropagation()"><label class="small muted">${c.secretVar}</label><input class="inp" type="password" id="sec-${c.id}" autocomplete="off" placeholder="${c.optional?'Bearer …':tr('Dán khoá vào đây')}" oninput="UI.setup['${c.id}'].v=this.value">
@@ -337,13 +391,13 @@ function advRow(c){const k=keyOfCat(c.id),s0=UI.setup[c.id]?'needs-setup':k?st(k
    <div class="small muted" style="flex-basis:100%">${c.optional?tr('Tuỳ chọn: chữ “Bearer …”. Bỏ trống vẫn kết nối được, nhưng yêu cầu có thể bị từ chối.')+' ':''}${KEY_NOTE()}</div></div>`:'';
  const meta=k&&!c.url&&!runsBundled(c,servers()[k])?esc(redact(servers()[k])):c.url?esc(c.url):esc(pinned(c))+' · '+tr('đóng sẵn trong bản cài');
  return `<div class="srv ${k&&UI.flash===k?'flash':''}" id="adv-${c.id}" data-testid="connect-apps-card-${c.id}">
-  <div class="top">${letterTile(c.name,30)}<span class="nm">${esc(tr(c.name))}</span>${pill(s0)}<span style="flex:1"></span>${btn}</div>
-  <div class="d">${esc(tr(c.desc))}</div>${s0==='error'&&!ex?`<div class="err">${esc(errText(k))}</div>`:''}${alwaysRow(k)}
+  <div class="top">${letterTile(catTile(c),30)}<span class="nm">${esc(tr(c.name))}</span>${pill(s0)}<span style="flex:1"></span>${btn}</div>
+  <div class="d">${esc(tr(c.desc))}</div>${s0==='error'&&!ex&&!tfail(k)?`<div class="err">${esc(errText(k))}</div>`:''}${k?testLine(k):''}${alwaysRow(k)}
   ${c.deprecated?`<div class="dep">${tr('Gói này trên npm đã ngừng được hỗ trợ. AIVN ghim đúng bản cuối và không tự tải bản khác.')}</div>`:''}${setup}${techDetails(c.id,k,meta)}</div>`}
 function advUserRow(k){const s=servers()[k],ex=UI.expanded[k],s0=st(k);
  return `<div class="srv ${UI.flash===k?'flash':''}" id="adv-${esc(k)}" data-testid="connect-apps-card-${esc(k)}">
-  <div class="top">${letterTile(k,30)}<span class="nm">${esc(k)}</span>${pill(s0)}<span style="flex:1"></span>${mcpBtn(k,k)}</div>
-  <div class="d">${tr('Máy chủ MCP trong mcp.json của bạn.')}</div>${s0==='error'&&!ex?`<div class="err">${esc(errText(k))}</div>`:''}${alwaysRow(k)}${techDetails(k,k,esc(kindOf(s))+' · '+esc(redact(s)))}</div>`}
+  <div class="top">${letterTile(k,30)}${UI.rename&&UI.rename.k===k?nameOrEdit(k,'nm'):`${nameOrEdit(k,'nm')}${pill(s0)}<span style="flex:1"></span>${renameBtn(k)}${mcpBtn(k,k)}`}</div>${renameErr(k)}
+  <div class="d">${tr('Máy chủ MCP trong mcp.json của bạn.')}</div>${s0==='error'&&!ex&&!tfail(k)?`<div class="err">${esc(errText(k))}</div>`:''}${testLine(k)}${alwaysRow(k)}${techDetails(k,k,esc(kindOf(s))+' · '+esc(redact(s)))}</div>`}
 function advBody(){const user=Object.keys(servers()).filter(k=>!(DB.meta.servers[k]||{}).catalogId);
  return `${!DB.master?`<div class="apwarn" data-testid="connect-apps-master-off" style="margin:0 0 12px">${MASTER_HINT()}</div>`:''}
   <div class="grp">${tr('Máy chủ có sẵn')}</div>${ADV.map(advRow).join('')}<div class="small muted" style="margin:2px 4px 6px" data-testid="connect-apps-github-note">${tr('GitHub sẽ dùng máy chủ MCP chính thức từ xa (qua URL) trong một bản sau.')}</div>
@@ -366,6 +420,9 @@ const SAMPLE=JSON.stringify({mcpServers:{
  'may-ngoai':{url:'http://203.0.113.7/mcp'},
  'nas-ten':{url:'http://nas.local/mcp'},
  'thinking':{url:'https://example.org/thinking-mcp'},
+ 'sqlite':{command:'uvx',args:['mcp-server-sqlite','--db-path','D:\\DuAn\\data.db']},
+ 'tim-kiem':{command:'npx',args:['-y','@vidu/mcp-tim-kiem@2.1.0'],env:{SEARCH_API_KEY:''}},
+ 'bao-cao':{command:'npx',args:['-y','@vidu/mcp-bao-cao@1.0.0']},
  'lich-cong-ty':{url:'https://calendar.example.com/mcp',auth:{type:'oauth',CLIENT_SECRET:'abc123'}}}},null,2);
 function makePlan(text,file){const r=parseFile(text);if(r.fatal)return{file,fatal:r.fatal};
  const plan={file,add:[],skip:[],conflict:[],rejected:[],oauthSkipped:[],secretCount:0};const seen={},taken=new Set();
@@ -395,15 +452,15 @@ function importPlan(){const p=UI.plan;if(!p)return'';const grp=(title,arr,f)=>ar
 $('fileIn').onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>262144){UI.plan={file:f.name,fatal:tr('Tệp mcp.json lớn hơn 256 KB.')};render();return}f.text().then(t=>{UI.plan=makePlan(t,f.name);render()});e.target.value=''};
 async function applyImport(){const p=UI.plan;
  const a=await withCard(()=>({tool:'mcp_import',logoHtml:letterTile('M',30),title:tr('Nhập {0} máy chủ từ mcp.json?',p.add.length),sub:p.file,preview:p.add.map(x=>[x.name,x.kind+' · → '+(x.slot?tr('Nâng cao: {0}',tr(ADVC(x.slot).name)):tr('Của tôi'))+(x.danger?' · ⚠ '+whyOf(x):'')]),
-  lines:p.secretCount?['🔑 '+secretLine(p.secretCount)]:[],details:p.add.map(x=>[x.name,x.cmd,1]),warn:MCP_WARN(),danger:p.add.some(x=>x.danger),alwaysLabel:null}));
+  lines:[TEST_LINE(),...(p.secretCount?['🔑 '+secretLine(p.secretCount)]:[])],details:p.add.map(x=>[x.name,x.cmd,1]),warn:MCP_WARN(),danger:p.add.some(x=>x.danger),alwaysLabel:null}));
  if(!a.ok)return;
  for(const x of p.add){const s=JSON.parse(JSON.stringify(x.server));extractSecrets(x.name,s);servers()[x.name]=s;DB.meta.servers[x.name]={catalogId:x.slot||null,approvedAt:now(),alwaysOn:false}}
  for(const x of p.oauthSkipped){const s=JSON.parse(JSON.stringify(x.server));extractSecrets(x.name,s);servers()[x.name]=s;DB.meta.servers[x.name]={catalogId:null,approvedAt:null,alwaysOn:false};RT.state[x.name]='error';const nm=x.name;RT.err[nm]=()=>tr('AIVN chưa hỗ trợ đăng nhập OAuth (trường auth) của máy chủ "{0}".',nm)}
- const names=p.add.map(x=>x.name);names.forEach(k=>{RT.state[k]=DB.master?'waiting':'off'});save();UI.plan=null;UI.pane='main';UI.tab='mine';render()}
+ const names=p.add.map(x=>x.name);save();UI.plan=null;UI.pane='main';UI.tab='mine';UI.q='';render();runTests(names)}
 async function replaceOne(name){const x=UI.plan.conflict.find(c=>c.name===name);
  const a=await withCard(()=>({tool:'mcp_replace',logoHtml:letterTile(name,30),title:tr('Thay thế máy chủ “{0}”?',name),sub:name,details:[[tr('Lệnh cũ'),x.old,1],[tr('Lệnh mới'),x.cmd,1]],warn:tr('Tiến trình cũ sẽ bị dừng.'),danger:true,alwaysLabel:null}));
  if(!a.ok)return;stop(name);const s=JSON.parse(JSON.stringify(x.server));extractSecrets(name,s);servers()[name]=s;const m=metaOf(name);m.approvedAt=now();m.alwaysOn=false;save();
- UI.plan.conflict=UI.plan.conflict.filter(c=>c.name!==name);UI.plan.skip.push({name,error:tr('Đã có "{0}".',name)});render();start(name)}
+ UI.plan.conflict=UI.plan.conflict.filter(c=>c.name!==name);UI.plan.skip.push({name,error:tr('Đã có "{0}".',name)});delete m.test;render();runTest(name)}
 function saveAdv(){const text=$('advTxt').value;const r=parseFile(text);
  const fail=m=>{UI.advMsg=`<span class="msg-bad">${esc(tr('Không lưu: {0}',m))}</span>`;UI.advText=text;render()};
  if(r.fatal)return fail(r.fatal);const keys=Object.keys(r.servers);
@@ -413,7 +470,7 @@ function saveAdv(){const text=$('advTxt').value;const r=parseFile(text);
  for(const k of Object.keys(old))if(!r.servers[k]){stop(k);delete DB.meta.servers[k];delete RT.state[k]}
  const restart=[];
  for(const k of keys){const s=r.servers[k];extractSecrets(k,s);const m=metaOf(k);
-  if(!old[k]||sig(old[k])!==sig(s)){if(old[k])stop(k);lost++;m.approvedAt=null;m.alwaysOn=false;RT.state[k]='off'}
+  if(!old[k]||sig(old[k])!==sig(s)){if(old[k])stop(k);lost++;m.approvedAt=null;m.alwaysOn=false;delete m.test;RT.state[k]='off'}
   else if(m.approvedAt&&!s.disabled)restart.push([k,RT.state[k]==='on'||m.alwaysOn])}
  DB.mcp={...JSON.parse(text),mcpServers:r.servers};save();
  UI.advText=null;UI.advMsg=`<span class="msg-ok">${lost?tr('Đã lưu. {0} máy chủ cần cho phép lại trước khi chạy.',lost):tr('Đã lưu.')}</span>`;render();restart.forEach(([k,run])=>{if(run)start(k);else{RT.state[k]=DB.master?'waiting':'off';render()}})}
@@ -477,8 +534,8 @@ function renderWarn(){const c=toolCheck(),el=$('toolWarn');
   ${c.block?'':`<button class="btn sm ghost" onclick="DB.warnSig='${esc(c.sig)}';save();renderPage()">${tr('Đã hiểu')}</button>`}</div></div>`}
 function renderPage(){const n=countOn(),t=curTpl();
  document.documentElement.lang=LANG==='zh'?'zh-CN':LANG;
- $('o_draft').textContent='⚠ '+tr('Bản nháp 4.4 theo F-PLUGINS bản 2 + quyết định ngày 22/10 (lượt 2)')+' · '+tr('Dữ liệu mẫu · lưu trong trình duyệt');$('o_draft').title=$('o_draft').textContent;
- $('o_v41').textContent=tr('Bản 4.1');$('o_v43').textContent=tr('Bản 4.3');$('o_v42').textContent=tr('Bản 4.2');$('o_restart').textContent='↻ '+tr('Mô phỏng mở lại AIVN');$('o_reset').textContent=tr('↺ Đặt lại');$('o_set').textContent='⚙ '+tr('Cài đặt (mô phỏng)');
+ $('o_draft').textContent='⚠ '+tr('Bản nháp 4.5 theo F-PLUGINS bản 2 + quyết định ngày 22/10 (lượt 3)')+' · '+tr('Dữ liệu mẫu · lưu trong trình duyệt');$('o_draft').title=$('o_draft').textContent;
+ $('o_v41').textContent=tr('Bản 4.1');$('o_v44').textContent=tr('Bản 4.4');$('o_v43').textContent=tr('Bản 4.3');$('o_v42').textContent=tr('Bản 4.2');$('o_restart').textContent='↻ '+tr('Mô phỏng mở lại AIVN');$('o_reset').textContent=tr('↺ Đặt lại');$('o_set').textContent='⚙ '+tr('Cài đặt (mô phỏng)');
  $('setPop').innerHTML=`<div class="small" style="font-weight:600;margin-bottom:6px">${tr('Cài đặt')} · ${tr('Giao diện')}</div><label class="small muted" for="uiLangSel">${tr('Ngôn ngữ giao diện')}</label>
   <select id="uiLangSel" class="inp" style="margin-top:4px"><option value="vi" ${LANG==='vi'?'selected':''}>Tiếng Việt</option><option value="en" ${LANG==='en'?'selected':''}>English</option><option value="zh" ${LANG==='zh'?'selected':''}>中文</option></select>
   <div class="small muted" style="margin-top:6px">${tr('Chỗ này đóng vai mục Cài đặt của ứng dụng. Hộp thoại Kết nối ứng dụng không có nút đổi ngôn ngữ.')}</div>`;
@@ -495,8 +552,8 @@ function renderPage(){const n=countOn(),t=curTpl();
   ${onSources().length?`<div class="simuse" data-testid="sim-agent-use"><div class="small muted">${tr('(bản mẫu) Cho AIVN AGENT thử dùng ứng dụng:')}</div>${['biz','excel'].filter(id=>conn(id)?.enabled).map(id=>storeActs(id).map(([tl,l,d])=>`<button class="chipq" data-testid="sim-use-${tl}" onclick="agentUse('${id}','${tl}')">${storeLogo(ST(id),14)} ${esc(tr(d))}</button>`).join('')).join('')}${onSources().filter(k=>k[0]!=='@').map(k=>`<button class="chipq" data-testid="sim-use-mcp-${esc(k)}" onclick="agentUseMcp('${esc(k)}')">${letterTile(tileKey(k),14)} ${esc(tr('Dùng “{0}”',displayName(k)))}</button>`).join('')}</div>`:!DB.master&&connectedKeys().length?`<div class="simuse small muted" data-testid="sim-master-off">${MASTER_HINT()}</div>`:''}
   ${RT.chat.map(m=>`<div class="simline">${esc(m)}</div>`).join('')}</div>`;
  $('inp').placeholder=tr('Nhắn cho AIVN AGENT…');$('sendBtn').textContent=tr('Gửi');
- const bk=[...['biz','excel'].filter(id=>conn(id)?.enabled).map(SKEY),...Object.keys(servers()).filter(k=>['on','waiting','starting','error'].includes(RT.state[k]))];
- $('mcpBadges').innerHTML=bk.map(k=>`<span class="mb" onclick="openCA({scrollTo:'${esc(k)}'})">${srcLogo(k,16)}${esc(displayName(k))}<span class="d" style="background:${st(k)==='error'?'var(--bad)':st(k)==='waiting'||st(k)==='starting'?'var(--warn)':'var(--ok)'}" title="${esc(tr(PILL[st(k)]||''))}"></span></span>`).join('');
+ const bk=[...['biz','excel'].filter(id=>conn(id)?.enabled).map(SKEY),...Object.keys(servers()).filter(k=>['on','waiting','starting','testing','error'].includes(RT.state[k]))];
+ $('mcpBadges').innerHTML=bk.map(k=>`<span class="mb" onclick="openCA({scrollTo:'${esc(k)}'})">${srcLogo(k,16)}${esc(displayName(k))}<span class="d" style="background:${st(k)==='error'?'var(--bad)':st(k)==='waiting'||st(k)==='starting'||st(k)==='testing'?'var(--warn)':'var(--ok)'}" title="${esc(tr(PILL[st(k)]||''))}"></span></span>`).join('');
  $('agentSettings').innerHTML=`<div class="small muted" style="margin:0 2px 10px;font-weight:600">${tr('Cài đặt AIVN AGENT')}</div>
   <div class="sec"><h4>🔌 ${tr('Kết nối ứng dụng')}</h4><div class="srow"><span class="badge ${n?'on':''}">${n?tr('{0} đã kết nối',n):tr('Chưa kết nối')}</span></div>
    <button class="btn sm pri" style="width:100%;justify-content:center" data-testid="connect-apps-settings" onclick="openCA({pane:'main'})">${tr('Kết nối ứng dụng')}</button>
@@ -510,7 +567,7 @@ function setLang(l){LANG=DB.lang=l;save();render();if($('tplBack').classList.con
 function toggleMaster(){DB.master=!DB.master;save();if(!DB.master){Object.keys(servers()).forEach(stop);render()}else{render();startAll(true)}}
 function startAll(onlyMcp){ // quyết định 22/10 lượt 2 (c): mọi kết nối chỉ chạy khi dùng lần đầu; máy chủ có “Luôn chạy sẵn” thì chạy ngay
  Object.keys(servers()).forEach(k=>{const m=metaOf(k),s=servers()[k];if(s.auth){RT.state[k]='error';RT.err[k]=()=>tr('AIVN chưa hỗ trợ đăng nhập OAuth (trường auth) của máy chủ "{0}".',k);return}
-  if(!m.approvedAt||s.disabled){RT.state[k]='off';return}if(!DB.master){RT.state[k]='off';return}if(m.alwaysOn)start(k);else{RT.state[k]='waiting';log(k,'lazy: waiting for first use')}});save();render()}
+  if(!m.approvedAt||s.disabled){RT.state[k]='off';return}if(!DB.master){RT.state[k]='off';return}if(m.test&&m.test.ok===false){RT.state[k]='error';RT.err[k]=()=>testMsg(m.test);return}if(m.alwaysOn)start(k);else{RT.state[k]='waiting';log(k,'lazy: waiting for first use')}});save();render()}
 function render(){renderPage();if(UI.open)renderCA()}
 $('modelSel').onchange=e=>{DB.model=e.target.value;save();renderPage()};
 $('sendBtn').onclick=()=>{if(toolCheck().block){toast(tr('Chưa gửi được: hãy tắt bớt ứng dụng trước.'));return}toast(tr('(bản mẫu) Tin nhắn không được gửi thật.'))};

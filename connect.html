@@ -1,5 +1,5 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AIVN AGENT · Kết nối ứng dụng v4.4 (bản nháp)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
+<title>AIVN AGENT · Kết nối ứng dụng v4.5 (bản nháp)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
 <style>
 /* Màu & hình theo F-PLUGINS mục 3.5 (accent #D7263D, nút bo 10, thẻ bo 14, hộp thoại bo 16 + cạnh trên 4px accent) */
 :root{--acc:#D7263D;--acc2:#b51d31;--accbg:rgba(215,38,61,.13);--card:#1a1e29}
@@ -113,6 +113,13 @@
 .emptybox .ei{font-size:30px;line-height:1;margin-bottom:10px}.emptybox .eh{font-weight:600;font-size:14px;color:var(--tx)}.emptybox .es{font-size:12.5px;color:var(--tx2);margin-top:6px}
 .pl .dest{color:var(--tx3);white-space:nowrap}
 .st.waiting{background:var(--okbg);color:var(--ok);opacity:.8}
+/* v4.5: chạy thử + đổi tên hiển thị */
+.st.testing{background:var(--warnbg);color:var(--warn)}
+.tst{margin-top:6px;font-size:12px}.tst.ok{color:var(--ok)}.tst.run{color:var(--warn);display:flex;align-items:center;gap:8px}
+.tst .bar{flex:1;max-width:160px;height:4px;background:var(--panel2);border-radius:4px;overflow:hidden}.tst .bar i{display:block;height:100%;background:var(--warn);transition:width .2s}
+.tst.bad{background:var(--badbg);border-radius:8px;padding:8px 10px;color:var(--tx);cursor:default}.tst.bad b{color:var(--bad)}.tst .fix{color:var(--tx2);margin-top:3px}
+.tst pre.log{white-space:pre-wrap;margin:0;font-size:11px}.tst .apdet{margin-top:6px}
+.rn{display:flex;gap:6px;flex:1;align-items:center;min-width:0}.rn .inp{flex:1;min-width:60px;padding:4px 8px;font-size:13px}
 .gl.ok{color:var(--ok)}
 .detail{max-width:760px}.detail .dh{display:flex;align-items:center;gap:14px}.detail h3{margin:0 0 4px;font-size:17px}
 .detail .dl{font-size:13.5px;color:var(--tx);margin:12px 0 4px;line-height:1.5}.dline{font-size:13px;color:var(--tx2);margin:2px 2px 4px}
@@ -137,7 +144,7 @@
 </style></head><body>
 <div class="app"><nav class="rail"></nav>
 <div class="main">
-  <div class="draft" style="position:relative"><span id="o_draft"></span><a href="connect-v4.3.html" id="o_v43" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.2.html" id="o_v42" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.1.html" id="o_v41" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><span style="flex:1"></span>
+  <div class="draft" style="position:relative"><span id="o_draft"></span><a href="connect-v4.4.html" id="o_v44" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.3.html" id="o_v43" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.2.html" id="o_v42" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.1.html" id="o_v41" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><span style="flex:1"></span>
     <span style="font-weight:400;color:var(--tx3)">Ctrl+K</span><button class="btn sm ghost" id="o_restart" data-testid="sim-restart"></button><button class="btn sm ghost" id="o_set" data-testid="mock-settings-btn"></button><button class="btn sm ghost" id="o_reset"></button>
     <div id="setPop" data-testid="mock-settings"></div></div>
   <div class="body">
