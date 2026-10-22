@@ -36,6 +36,16 @@ Dữ liệu mẫu lưu trong localStorage (aivn.downloaded, aivn.biz). Nút "Đ�
 - §17.5: so khớp URL sau khi chuẩn hoá (bỏ '/' cuối, host không phân biệt hoa thường, path phân biệt). Gói so khớp bỏ qua phiên bản. Chỉ trùng tên → Của tôi.
 - Ảnh: `shots/8*.png`, chạy lại bằng `tools/shots8.py` (in kiểm tra chữ kỹ thuật trên màn hình chính, thanh agent và bảng bên).
 
+## connect.html v4.10 (góp ý QA bản 4.9, lượt 8)
+- Bản 4.9 giữ nguyên ở `connect-v4.9.html` (JS riêng `assets/connect-v49.js`, `assets/connect-i18n-v49.js`, khoá lưu `aivn.plugins.v49`). Bản 4.10 dùng khoá `aivn.plugins.v410`.
+- P49-2 (khoá): dò khoá ở mọi chỗ trong mcp.json — giá trị env có tên *_KEY/*_TOKEN/*_SECRET/*_APPID/*PASSWORD*…, tham số `--api-key X`, `--token=X`, `-k X`, URL `?api_key=/token=/key=/access_token=/auth=`, tiêu đề Authorization/Bearer, chuỗi trông như khoá (sk-, ghp_, github_pat_, hf_, xox*, AIza, base64/hex dài ≥20). Áp dụng khi nhập, khi lưu trong trình sửa, khi Thêm (Nâng cao). Thẻ xin phép liệt kê từng khoá đã che + vị trí, chọn từng mục; sau khi chuyển, mcp.json có `${secret:…}` (URL chỉ thay giá trị tham số). Từ chối → máy chủ không được lưu với khoá lộ. Kho khoá trong bản mẫu chỉ là mục giả lập đã làm rối (`sim1:`); ứng dụng thật dùng kho khoá của hệ điều hành. Lưu trong trình sửa là nguyên khối: còn một máy chủ bị chặn thì cả tệp không lưu; nhập thì chặn từng máy chủ. Bản nháp trình sửa chỉ giữ trong bộ nhớ, không ghi xuống.
+- P49-1: dưới `@media (pointer: coarse)` mọi vùng chạm ≥ 44×44 px.
+- P49-3: trùng tên (nhập, trình sửa, Thêm): Giữ cả hai (đổi tên mới thành …-2) / Thay thế (qua thẻ xin phép) / Bỏ qua.
+- Theo trả lời của quản lý: “Của tôi” chỉ gồm mục tự thêm; thẻ Lưu mcp.json có bản so sánh ngắn (khoá đã che); thẻ lọc riêng “Đã kết nối” (huy hiệu mở cùng bộ lọc); mô tả EN/ZH rút ngắn, không bị cắt ở 1280/1024/390 (chú thích rê chuột giữ câu đầy đủ).
+- Lỗi nhỏ P49-4..10: Bỏ thay đổi hoàn tác được (Ctrl+Z một bước + thông báo “Hoàn tác”); bỏ BOM khi nhập/dán; Esc/✕ hỏi khi còn sửa dở; công tắc dòng lỗi bật/đỏ “Đang lỗi, bấm để thử lại”; dưới 400px mô tả 2 dòng, nhãn “Tự thêm” thành biểu tượng có aria-label; dải thẻ lọc mờ dần ở mép; thẻ nhập nhiều máy chủ giới hạn danh sách + “+N máy chủ nữa”. Tô màu cú pháp nhẹ cho trình sửa mcp.json (bộ tách từ riêng, lớp phủ, giữ số dòng và “Đến chỗ lỗi”).
+- Kiểm tự động: `node tools/secret-scan-test.js`, `python tools/touch-check.py`, `python tools/trunc-check.py`, `python tools/p49-small-checks.py` (chạy bằng /home/box/pwenv/bin/python).
+- Ảnh: `shots/15*.png`, `shots/16*.png` (`tools/shots15.py`), so sánh 4.9 | 4.10 ở `shots/cmp410/` (`tools/compare410.py`).
+
 ## connect.html v4.9 (góp ý QA bản 4.8, lượt 7)
 - Bản 4.8 giữ nguyên ở `connect-v4.8.html` (JS riêng `assets/connect-v48.js`, `assets/connect-i18n-v48.js`, khoá lưu `aivn.plugins.v48`). Bản 4.9 dùng khoá `aivn.plugins.v49`.
 - Hướng LM Studio: mỗi dòng có công tắc bật/tắt (`role="switch"`, `aria-checked`, Space/Enter), bật/tắt vẫn qua thẻ xin phép như đã thống nhất; nút “⋯” trên dòng và ở bảng phải thay hàng 5 nút (Mở chi tiết, Kết nối lại, Chạy thử lại, Đổi tên hiển thị, Thêm khoá, Xem chi tiết kỹ thuật, Gỡ/Xoá — chỉ hiện mục áp dụng được). Bảng phải còn một nút chính lớn.
