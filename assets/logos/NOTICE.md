@@ -10,10 +10,10 @@ Tên và logo Excel, Microsoft Excel, Gmail, Google Drive, Google Calendar, Goog
 | Ô | Tệp | Nguồn | Giấy phép tệp | Ghi chú |
 |---|---|---|---|---|
 | AIVN Kinh doanh (`biz`) | aivn-app.svg | Biểu tượng của chính ứng dụng AIVN, chép nguyên từ `src/renderer/logo-tile.svg` của mã AIVN (chỉ đọc, không sửa nguồn) | Thuộc dự án AIVN | Mục 5.4: biz dùng biểu tượng của AIVN |
-| Excel (`excel`) | microsoftexcel.svg | simple-icons@12.4.0 | **Giấy phép riêng của Microsoft** (https://aka.ms/fluentui-assets-license), không phải CC0 | Cần duyệt điều khoản trước khi phát hành, hoặc thay bằng biểu tượng bảng tính trung tính |
+| Excel (`excel`) | microsoftexcel.svg (giữ nguyên tệp, không đổi màu hay hình; màu #217346 theo simple-icons; sha256 3392b76e2c1791f6622bc6a27bcf332ea6985cf263f8cb7153a37d43d74d2940) | simple-icons@12.4.0 (https://unpkg.com/simple-icons@12.4.0/icons/microsoftexcel.svg) | **Giấy phép riêng của Microsoft** (https://aka.ms/fluentui-assets-license), không phải CC0 | Khôi quyết định giữ logo thật (22/10/2026). Hướng dẫn nhãn hiệu Microsoft: https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks. Cần duyệt điều khoản trước khi phát hành |
 | Drive, Calendar, Gmail (Sắp có) | googledrive.svg, googlecalendar.svg, gmail.svg | simple-icons@16.35.0 | CC0 1.0 cho bộ sưu tập; nhãn hiệu thuộc Google | |
 | Notion, Zalo (Sắp có) | notion.svg, zalo.svg | simple-icons@16.35.0 | CC0 1.0 cho bộ sưu tập; nhãn hiệu thuộc chủ sở hữu | |
-| Bảy dòng Nâng cao và máy chủ trong mcp.json | không dùng tệp: ô chữ cái đầu, màu trung tính (CSS `.lt`) | — | — | Đề xuất 17.11: chưa dùng logo hãng cho tới khi có logo được duyệt. Đã bỏ ô vàng Hugging Face |
+| Năm dòng Nâng cao (Thư mục, Đọc trang web, Hugging Face, Ghi nhớ MCP, Suy nghĩ từng bước) và máy chủ trong mcp.json | không dùng tệp: ô chữ cái đầu, màu trung tính (CSS `.lt`). Chữ lấy từ id danh mục hoặc khoá mcp.json (không dịch), nên giống nhau ở cả ba ngôn ngữ | — | — | Đề xuất 17.11: chưa dùng logo hãng cho tới khi có logo được duyệt. Đã bỏ ô vàng Hugging Face. Brave và máy chủ GitHub cũ đã bỏ khỏi danh mục |
 
 `brave.svg`, `huggingface.svg`, `github.svg`, `modelcontextprotocol.svg` và các `generic-*.svg` vẫn còn trong thư mục vì bản 4.1 (`connect-v4.1.html`) và các trang khác còn dùng. Bản 4.2 không dùng chúng.
 

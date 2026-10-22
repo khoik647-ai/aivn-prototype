@@ -20,3 +20,9 @@ Dữ liệu mẫu lưu trong localStorage (aivn.downloaded, aivn.biz). Nút "Đ�
 - Ảnh: `tools/shots6.py` → `shots/6*.png` (1280×800). Kiểm tra chữ thiếu: `node tools/i18n-missing.js`.
 - Ngôn ngữ: không có nút trong hộp thoại. Dùng nút “⚙ Cài đặt (mô phỏng)” trên dải bản nháp (`#uiLangSel`).
 - Logo: xem `assets/logos/NOTICE.md`.
+
+## connect.html v4.3 (F-PLUGINS bản 2 + quyết định ngày 22/10)
+- connect.html = bản 4.3. Mã: `assets/connect.js`; chữ: `assets/connect-i18n.js` (khối v4.3 ở cuối tệp). localStorage `aivn.plugins.v43`.
+- Bản 4.2 giữ nguyên ở `connect-v4.2.html` (+ `assets/connect-v42.js`, `assets/connect-i18n-v42.js`); bản 4.1 ở `connect-v4.1.html`.
+- Mới: trang chi tiết ứng dụng (bấm ô), nút "Báo tôi khi có" ở ô Sắp có (chỉ lưu cờ trên máy), gợi ý "Không thấy? Thêm máy chủ MCP ở Nâng cao" khi tìm không ra, thẻ Excel chỉ hiện tên thư mục (rê chuột xem đường dẫn) + "Đổi thư mục", kết nối được nhớ khi mở lại AIVN (chạy khi AIVN AGENT dùng lần đầu; lần ghi đầu vẫn hỏi). Nút "↻ Mô phỏng mở lại AIVN" trên dải bản nháp.
+- Ảnh: `shots/7*.png`, chạy lại bằng `tools/shots7.py` (in ra cả kiểm tra chữ MCP/máy chủ/công cụ trên màn hình chính).

@@ -877,3 +877,218 @@ const STR_PR5_PROTO={
 ]
 };
 Object.assign(STR,STR_PR5_PROTO,STR_PR5_DOC);
+
+Object.assign(STR,{
+"Chưa có ứng dụng tài chính.": [
+"No finance apps yet.",
+"还没有财务应用。"
+],
+"Nhóm này sẽ có thêm ứng dụng trong các bản sau.": [
+"More apps will be added to this group in later versions.",
+"以后的版本会在这个分组里加入更多应用。"
+],
+"GitHub sẽ dùng máy chủ MCP chính thức từ xa (qua URL) trong một bản sau.": [
+"GitHub will use its official remote MCP server (by URL) in a later version.",
+"GitHub 将在以后的版本中通过 URL 使用官方的远程 MCP 服务器。"
+],
+"Nâng cao: {0}": [
+"Advanced: {0}",
+"高级：{0}"
+],
+"Máy chủ khớp một mục Nâng cao còn trống sẽ vào mục đó. Các máy chủ khác vào Của tôi.": [
+"A server that matches an empty Advanced entry takes that entry. Other servers go to Mine.",
+"与空着的“高级”条目匹配的服务器会放进该条目，其他服务器放进“我的”。"
+]
+});
+
+// ---- v4.3: quyết định ngày 22/10 (chữ bản mẫu) ----
+Object.assign(STR,{
+"Thư mục:": [
+"Folder:",
+"文件夹："
+],
+"Đổi thư mục": [
+"Change folder",
+"更换文件夹"
+],
+"Quyền": [
+"Permissions",
+"权限"
+],
+"Chỉ đọc {0} · Ghi {1} · Hỏi trước {2}": [
+"Read only {0} · Write {1} · Ask first {2}",
+"只读 {0} · 写入 {1} · 先询问 {2}"
+],
+"Kết nối được giữ khi bạn mở lại AIVN.": [
+"The connection stays when you reopen AIVN.",
+"重新打开 AIVN 后连接仍会保留。"
+],
+"{0} bắt đầu chạy (lần dùng đầu).": [
+"{0} started (first use).",
+"{0} 已启动（首次使用）。"
+],
+"AIVN AGENT muốn: {0}": [
+"AIVN AGENT wants to: {0}",
+"AIVN AGENT 想要：{0}"
+],
+"Ứng dụng": [
+"App",
+"应用"
+],
+"Lần ghi đầu tiên sau khi mở lại AIVN.": [
+"First write since AIVN was reopened.",
+"重新打开 AIVN 后的第一次写入。"
+],
+"Việc này luôn hỏi bạn mỗi lần.": [
+"This always asks you every time.",
+"这件事每次都会询问你。"
+],
+"Bạn đã từ chối: {0}": [
+"You declined: {0}",
+"你已拒绝：{0}"
+],
+"(bản mẫu) Đã mở lại AIVN. Kết nối vẫn còn; ứng dụng chạy khi AIVN AGENT dùng lần đầu.": [
+"(prototype) AIVN reopened. Connections are kept; an app starts when AIVN AGENT first uses it.",
+"（原型）已重新打开 AIVN。连接仍保留；AIVN AGENT 第一次使用时应用才启动。"
+],
+"Sẽ báo bạn": [
+"We'll tell you",
+"会通知你"
+],
+"Báo tôi khi có": [
+"Tell me when it's ready",
+"可用时通知我"
+],
+"AIVN sẽ báo bạn ngay trong ứng dụng khi có. Không gửi gì ra ngoài.": [
+"AIVN will tell you inside the app when it's ready. Nothing is sent out.",
+"可用时 AIVN 会在应用内通知你。不会向外发送任何内容。"
+],
+"Làm được {0} việc": [
+"Can do {0} things",
+"可做 {0} 件事"
+],
+"{0} việc": [
+"actions: {0}",
+"{0} 项"
+],
+"Dữ liệu nằm ở": [
+"Where the data lives",
+"数据位置"
+],
+"Nhà phát triển và phiên bản": [
+"Developer and version",
+"开发者和版本"
+],
+"bản {0} (số mẫu)": [
+"version {0} (sample number)",
+"版本 {0}（示例编号）"
+],
+"Cách chạy": [
+"How it runs",
+"运行方式"
+],
+"Trong AIVN, không có tiến trình riêng, không qua mcp.json.": [
+"Inside AIVN, no separate process, not through mcp.json.",
+"在 AIVN 内运行，没有单独进程，不经过 mcp.json。"
+],
+"Đường truyền": [
+"Transport",
+"传输方式"
+],
+"Gọi trực tiếp trong ứng dụng (không stdio, không http).": [
+"Called directly inside the app (no stdio, no http).",
+"在应用内直接调用（不用 stdio，也不用 http）。"
+],
+"Không kết nối được. Mở Nâng cao để xem.": [
+"Couldn't connect. Open Advanced to see why.",
+"无法连接。打开“高级”查看原因。"
+],
+"Bạn thêm ở Nâng cao.": [
+"You added this in Advanced.",
+"你在“高级”里添加的。"
+],
+"Không thấy? Thêm máy chủ MCP ở Nâng cao": [
+"Not here? Add an MCP server in Advanced",
+"没找到？在“高级”里添加 MCP 服务器"
+],
+"Bản nháp 4.3 theo F-PLUGINS bản 2 + quyết định ngày 22/10": [
+"Draft 4.3 following F-PLUGINS v2 + decisions of 22 Oct",
+"草稿 4.3，按 F-PLUGINS 第 2 版 + 10 月 22 日的决定"
+],
+"Bản 4.1": [
+"Version 4.1",
+"4.1 版"
+],
+"Bản 4.2": [
+"Version 4.2",
+"4.2 版"
+],
+"Mô phỏng mở lại AIVN": [
+"Simulate reopening AIVN",
+"模拟重新打开 AIVN"
+],
+"(bản mẫu) Cho AIVN AGENT thử dùng ứng dụng:": [
+"(prototype) Let AIVN AGENT try an app:",
+"（原型）让 AIVN AGENT 试用应用："
+],
+"Trên máy này (tệp crm.db).": [
+"On this computer (the crm.db file).",
+"在这台电脑上（crm.db 文件）。"
+],
+"Trên máy này, trong thư mục bạn chọn.": [
+"On this computer, in the folder you chose.",
+"在这台电脑上，你选择的文件夹里。"
+],
+"Đã kết nối · chờ dùng lần đầu": [
+"Connected · waiting for first use",
+"已连接 · 等待首次使用"
+],
+"Cho AIVN AGENT xem và cập nhật khách hàng, đơn bán, kho và hoá đơn của bạn. Mọi dữ liệu nằm trên máy này.": [
+"Lets AIVN AGENT view and update your customers, sales orders, stock and invoices. All the data stays on this computer.",
+"让 AIVN AGENT 查看并更新你的客户、销售单、库存和发票。所有数据都留在这台电脑上。"
+],
+"Cho AIVN AGENT đọc và ghi bảng tính .xlsx, .csv trong thư mục bạn chọn. Bạn không cần cài Microsoft Excel.": [
+"Lets AIVN AGENT read and write .xlsx and .csv spreadsheets in the folder you choose. You don't need Microsoft Excel installed.",
+"让 AIVN AGENT 在你选择的文件夹里读写 .xlsx、.csv 表格。不必安装 Microsoft Excel。"
+],
+"AIVN": [
+"AIVN",
+"AIVN"
+],
+"AIVN (không phải Microsoft)": [
+"AIVN (not Microsoft)",
+"AIVN（不是微软）"
+],
+"Chỉ đọc": [
+"Read only",
+"只读"
+],
+"Ghi": [
+"Write",
+"写入"
+],
+"Hỏi trước": [
+"Ask first",
+"先询问"
+],
+"Không hỏi.": [
+"Doesn't ask.",
+"不询问。"
+],
+"Hỏi bạn trước.": [
+"Asks you first.",
+"先询问你。"
+],
+"Hỏi bạn mỗi lần.": [
+"Asks you every time.",
+"每次都询问你。"
+],
+"Đọc tệp Excel": [
+"Read an Excel file",
+"读取 Excel 文件"
+],
+"Ghi tệp Excel": [
+"Write an Excel file",
+"写入 Excel 文件"
+]
+});

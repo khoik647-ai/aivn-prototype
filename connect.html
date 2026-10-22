@@ -1,5 +1,5 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AIVN AGENT · Kết nối ứng dụng v4.2 (bản nháp, F-PLUGINS bản 2)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
+<title>AIVN AGENT · Kết nối ứng dụng v4.3 (bản nháp)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
 <style>
 /* Màu & hình theo F-PLUGINS mục 3.5 (accent #D7263D, nút bo 10, thẻ bo 14, hộp thoại bo 16 + cạnh trên 4px accent) */
 :root{--acc:#D7263D;--acc2:#b51d31;--accbg:rgba(215,38,61,.13);--card:#1a1e29}
@@ -109,6 +109,19 @@
 .mf .warnline{margin:0}
 .advhead{display:flex;align-items:center;gap:10px;padding:0 18px 8px;border-bottom:1px solid var(--line)}
 .impbox{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:10px;background:var(--panel)}
+.emptybox{margin:48px auto 0;max-width:420px;text-align:center;border:1px dashed var(--line2);border-radius:14px;padding:28px 24px;background:var(--panel)}
+.emptybox .ei{font-size:30px;line-height:1;margin-bottom:10px}.emptybox .eh{font-weight:600;font-size:14px;color:var(--tx)}.emptybox .es{font-size:12.5px;color:var(--tx2);margin-top:6px}
+.pl .dest{color:var(--tx3);white-space:nowrap}
+.st.waiting{background:var(--okbg);color:var(--ok);opacity:.8}
+.gl.ok{color:var(--ok)}
+.detail{max-width:760px}.detail .dh{display:flex;align-items:center;gap:14px}.detail h3{margin:0 0 4px;font-size:17px}
+.detail .dl{font-size:13.5px;color:var(--tx);margin:12px 0 4px;line-height:1.5}.dline{font-size:13px;color:var(--tx2);margin:2px 2px 4px}
+.lvl{border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin-bottom:8px;background:var(--panel)}
+.lvl .lh{display:flex;gap:8px;align-items:baseline;margin-bottom:3px}.lvl .lb{font-weight:600;font-size:12.5px;padding:0 8px;border-radius:10px}
+.lvl-read .lb{background:var(--okbg);color:var(--ok)}.lvl-write .lb{background:var(--warnbg);color:var(--warn)}.lvl-danger .lb{background:var(--badbg);color:var(--bad)}
+.apline.fold,.detail .fold{display:flex;align-items:center;gap:8px;font-size:13px}.fold b{border-bottom:1px dotted var(--tx3);cursor:help}
+.simuse{margin:18px 0 0 44px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}.simuse .small{flex-basis:100%}
+.simline{margin:8px 0 0 44px;font-size:13px;color:var(--tx2)}
 #setPop{display:none;position:absolute;right:16px;top:34px;z-index:40;width:280px;background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:12px;box-shadow:0 16px 40px rgba(0,0,0,.45);color:var(--tx);font-weight:400;white-space:normal}
 #setPop.open{display:block}
 #approveCard{flex:0 1 auto;min-height:0;overflow:auto}.msgs{flex:1 1 0;min-height:48px}
@@ -123,8 +136,8 @@
 </style></head><body>
 <div class="app"><nav class="rail"></nav>
 <div class="main">
-  <div class="draft" style="position:relative"><span id="o_draft"></span><a href="connect-v4.1.html" id="o_v41" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><span style="flex:1"></span>
-    <span style="font-weight:400;color:var(--tx3)">Ctrl+K</span><button class="btn sm ghost" id="o_set" data-testid="mock-settings-btn"></button><button class="btn sm ghost" id="o_reset"></button>
+  <div class="draft" style="position:relative"><span id="o_draft"></span><a href="connect-v4.2.html" id="o_v42" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.1.html" id="o_v41" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><span style="flex:1"></span>
+    <span style="font-weight:400;color:var(--tx3)">Ctrl+K</span><button class="btn sm ghost" id="o_restart" data-testid="sim-restart"></button><button class="btn sm ghost" id="o_set" data-testid="mock-settings-btn"></button><button class="btn sm ghost" id="o_reset"></button>
     <div id="setPop" data-testid="mock-settings"></div></div>
   <div class="body">
     <section class="chat">
