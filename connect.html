@@ -1,5 +1,5 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AIVN AGENT · Kết nối ứng dụng v4.6 (bản nháp)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
+<title>AIVN AGENT · Kết nối ứng dụng v4.7 (bản nháp)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
 <style>
 /* Màu & hình theo F-PLUGINS mục 3.5 (accent #D7263D, nút bo 10, thẻ bo 14, hộp thoại bo 16 + cạnh trên 4px accent) */
 :root{--acc:#D7263D;--acc2:#b51d31;--accbg:rgba(215,38,61,.13);--card:#1a1e29}
@@ -48,7 +48,7 @@
 .modal-back{position:fixed;inset:0;background:rgba(6,8,12,.6);display:none;align-items:center;justify-content:center;z-index:50}
 .modal-back.open{display:flex}
 .modal{background:var(--card);border:1px solid var(--line2);border-top:4px solid var(--acc);border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden}
-.modal.wide{width:min(980px,94vw);height:min(720px,86vh)}
+.modal.wide{width:min(1160px,96vw);height:min(740px,92vh)}
 .modal.narrow{width:min(520px,92vw);max-height:86vh}
 .mh{display:flex;align-items:center;gap:10px;padding:14px 18px;flex:none}.mh h2{margin:0;font-size:16px}
 .badge{font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--panel2);color:var(--tx2)}.badge.on{background:var(--okbg);color:var(--ok)}
@@ -88,9 +88,9 @@
 .osdlg .b{display:flex;justify-content:flex-end;gap:8px;padding:10px 12px}.osdlg button{border:1px solid #9ca3af;background:#fff;color:#111;border-radius:4px;padding:4px 14px;cursor:pointer}.osdlg button.p{background:#2563eb;color:#fff;border-color:#2563eb}
 
 /* v4.2 theo F-PLUGINS bản 2 (PR #5): lưới 2 cột, .card bo 14, logo 32 bo 8 */
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:6px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:6px;align-items:start}
 @media (max-width:760px){.grid{grid-template-columns:1fr}}
-.card.tile{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:7px;min-height:112px}
+.card.tile{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:7px}
 .card.tile.clickable{cursor:pointer}.card.tile.clickable:hover{border-color:var(--line2)}
 .card.tile.on{border-color:rgba(52,211,153,.45)}.card.tile.soon{opacity:.85}
 .card.tile.wide{grid-column:1/-1}.card.tile.flash{animation:fl 1.6s}
@@ -150,10 +150,60 @@
 .twl{display:flex;flex-wrap:wrap;gap:6px;margin:7px 0}.twi{display:inline-flex;align-items:center;gap:5px;background:var(--panel);border:1px solid var(--line2);border-radius:20px;padding:2px 4px 2px 8px;font-size:12px}
 .twi:first-child{padding-right:8px}.twi .btn{padding:1px 8px;font-size:11px}
 .fnote{margin:2px 0 6px}.always b{font-weight:600}.twdet{margin:6px 0}.twdet .twl{margin-top:6px}
+
+/* ===== v4.7 (lượt 5): hai cột — danh sách gọn bên trái, chi tiết bên phải ===== */
+.ca-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:0 18px 14px;border-bottom:1px solid var(--line);flex:none}
+.ca-top .search{width:240px}.ca-top .chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip.adv{border-style:dashed}.chip.adv.on{border-style:solid}
+.ca-body{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:340px minmax(0,1fr)}
+.ca-left{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line);background:var(--bg2,transparent)}
+#caList{flex:1 1 auto;min-height:0;padding:10px 10px 16px}
+#caPanel{min-height:0;padding:24px 30px 32px}
+.lgrp{font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin:14px 10px 6px}.lsec:first-child .lgrp{margin-top:4px}
+.li{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:12px;padding:9px 10px;cursor:pointer;color:var(--tx);font:inherit;margin-bottom:2px}
+.li:hover{background:var(--panel2)}
+.li.cur{background:var(--accbg);border-color:rgba(215,38,61,.45)}
+.li.flash{animation:fl 1.6s}
+.li .lm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.li .ln{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .ls{font-size:12px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .ls.bad{color:var(--bad)}.li .ls.busy{color:#60a5fa}
+/* chấm trạng thái: xanh = đã kết nối, xám = chưa kết nối, đỏ = lỗi, vàng = sắp có, xanh dương = đang chạy */
+.sd{display:inline-grid;place-items:center;flex:none;width:18px;height:18px;border-radius:50%;font-size:11px;font-weight:800;line-height:1;box-sizing:border-box}
+.sd.ok{background:var(--ok);color:#06281c}.sd.off{border:2px solid var(--tx3);opacity:.7}.sd.bad{background:var(--bad);color:#3a0a0a}
+.sd.soon{background:var(--warn);color:#3a2a00;font-size:10px}.sd.busy{background:#3b82f6;color:#fff;animation:spin 1.4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--tx3);flex:none}
+.legend span{display:inline-flex;align-items:center;gap:6px}.legend .sd{width:14px;height:14px;font-size:9px;animation:none}
+.pill2{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--tx2);margin-top:6px}
+.pill2.ok{color:var(--ok)}.pill2.bad{color:var(--bad)}.pill2.soon{color:var(--warn)}.pill2.busy{color:#60a5fa}
+.pill2 .sd{width:16px;height:16px;font-size:10px}
+#caPanel .detail{max-width:680px}
+.ph{display:flex;align-items:center;gap:16px}.ph h3{margin:0;font-size:20px;line-height:1.25}.phm{min-width:0;flex:1}
+.ph .rn{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pact{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:20px 0 18px}
+.btn.big{padding:10px 26px;font-size:14.5px;font-weight:600;border-radius:10px;min-width:170px;justify-content:center;text-decoration:none}
+.btn.big:disabled{opacity:.65;cursor:default}
+.pdesc{font-size:14px;line-height:1.6;color:var(--tx);margin:0 0 18px;max-width:620px}
+.psec{margin:0 0 18px}.psec h5{margin:0 0 8px;font-size:12px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px}
+.psec .keybox{margin-top:0}
+.pnote{font-size:13px;color:var(--tx2);margin:0 0 10px}.pnote.ok{color:var(--ok)}
+.perr{background:var(--badbg);border:1px solid rgba(248,113,113,.35);border-radius:12px;padding:12px 14px;margin:-4px 0 18px;font-size:13.5px}
+.perr b{color:var(--bad);font-weight:600}.perr .fix{color:var(--tx);margin-top:4px;line-height:1.5}
+#caPanel .tst{margin:-6px 0 16px;font-size:13px}#caPanel .tst .bar{max-width:220px;height:5px}
+#caPanel .tst.run{color:#60a5fa}#caPanel .tst .bar i{background:#3b82f6}
+.lvls{display:flex;flex-wrap:wrap;gap:8px}.lvc{font-size:12.5px;padding:5px 11px;border-radius:20px;background:var(--panel2);color:var(--tx2)}.lvc b{color:var(--tx);font-weight:600}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;font-size:13px}.kv dt{color:var(--tx3)}.kv dd{margin:0}
+.ptech{margin-top:6px}
+.opt{font-size:11px;font-weight:600;padding:1px 8px;border-radius:20px;background:var(--panel);border:1px solid var(--line2);color:var(--tx2);margin-left:4px}
+.emptybox{text-align:center;padding:40px 16px;color:var(--tx2)}.emptybox .ei{font-size:30px}.emptybox .eh{font-weight:600;margin-top:8px}.emptybox .es{font-size:12.5px;color:var(--tx3);margin-top:4px}
+.pempty{color:var(--tx3);padding:60px 0;text-align:center}
+#caPanel textarea.code{width:100%;min-height:340px;box-sizing:border-box}
+#caPanel .impbox{margin-top:4px}
 </style></head><body>
 <div class="app"><nav class="rail"></nav>
 <div class="main">
-  <div class="draft" style="position:relative"><span id="o_draft"></span><a href="connect-v4.5.html" id="o_v45" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.4.html" id="o_v44" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.3.html" id="o_v43" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.2.html" id="o_v42" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.1.html" id="o_v41" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><span style="flex:1"></span>
+  <div class="draft" style="position:relative"><span id="o_draft"></span><a href="connect-v4.6.html" id="o_v46" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.5.html" id="o_v45" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.4.html" id="o_v44" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.3.html" id="o_v43" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.2.html" id="o_v42" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.1.html" id="o_v41" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><span style="flex:1"></span>
     <span style="font-weight:400;color:var(--tx3)">Ctrl+K</span><button class="btn sm ghost" id="o_restart" data-testid="sim-restart"></button><button class="btn sm ghost" id="o_set" data-testid="mock-settings-btn"></button><button class="btn sm ghost" id="o_reset"></button>
     <div id="setPop" data-testid="mock-settings"></div></div>
   <div class="body">

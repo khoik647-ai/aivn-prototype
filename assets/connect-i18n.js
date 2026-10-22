@@ -1235,3 +1235,48 @@ Object.assign(STR,{ // v4.6
 });
 Object.assign(STR,{"Đang cài…":["Installing…","正在安装…"]});
 Object.assign(STR,{"Lưu khoá này":["Save key","保存密钥"]});
+
+// v4.7 (lượt 5): bố cục hai cột
+Object.assign(STR,{
+'Không bắt buộc':['Optional','可选'],
+'Nhập mcp.json':['Import mcp.json','导入 mcp.json'],
+'AIVN chưa hỗ trợ cách đăng nhập mà ứng dụng này cần.':['AIVN does not support the sign-in this app needs yet.','AIVN 暂不支持此应用所需的登录方式。'],
+'Không kết nối được.':['Could not connect.','无法连接。'],
+'Mang ứng dụng từ LM Studio, Claude Desktop… sang AIVN.':['Bring apps over from LM Studio, Claude Desktop… to AIVN.','把 LM Studio、Claude Desktop… 里的应用带到 AIVN。'],
+'Sửa tay tệp cấu hình.':['Edit the configuration file by hand.','手动编辑配置文件。'],
+'Bạn thêm':['Added by you','你添加的'],
+'Tệp cấu hình':['Configuration file','配置文件'],
+'Chọn một ứng dụng bên trái để xem chi tiết.':['Pick an app on the left to see its details.','在左侧选择一个应用查看详情。'],
+'Xem từng việc':['See each action','查看每项操作'],
+'Không bắt buộc. Bỏ trống vẫn kết nối được, nhưng yêu cầu có thể bị từ chối.':['Optional. You can connect without it, but requests may be refused.','可选。留空也能连接，但请求可能被拒绝。'],
+'Hỏi người cung cấp ứng dụng xem có cách kết nối bằng khoá truy cập không.':['Ask the app provider whether it can connect with an access key.','询问应用提供方是否可以用访问密钥连接。'],
+'Bấm Thử lại. Nếu vẫn lỗi, mở Chi tiết để xem.':['Click Try again. If it still fails, open Details.','点击“重试”。如果仍然出错，请打开“详情”查看。'],
+'Khi nào chạy':['When it runs','何时运行'],
+'Chọn tệp mcp.json…':['Choose an mcp.json file…','选择 mcp.json 文件…'],
+'Mỗi mục mới được chạy thử một lần (tối đa {0} giây) để biết có dùng được không.':['Each new item gets one test run (up to {0} seconds) to see whether it works.','每个新项目会试运行一次（最多 {0} 秒），看看能否使用。'],
+'Bản nháp 4.7 theo F-PLUGINS bản 2 + quyết định ngày 22/10 (lượt 5)':['Draft 4.7 per F-PLUGINS rev. 2 + decisions of 22/10 (round 5)','草稿 4.7，依据 F-PLUGINS 第 2 版 + 10 月 22 日的决定（第 5 轮）'],
+'Bản 4.6':['Version 4.6','4.6 版'],
+'Đọc và ghi một thư mục bạn chọn.':['Read and write a folder you choose.','读写你选择的文件夹。'],
+'Cho AIVN AGENT đọc và ghi trong một thư mục bạn chọn. Khác với “Thư mục được phép” trong Cài đặt AIVN AGENT.':['Lets AIVN AGENT read and write in a folder you choose. Separate from “Allowed folders” in AIVN AGENT settings.','让 AIVN AGENT 读写你选择的文件夹。与 AIVN AGENT 设置中的“允许的文件夹”不同。'],
+'Đọc nội dung trang web.':['Read web pages.','读取网页内容。'],
+'Cho AIVN AGENT đọc nội dung trang web. Ứng dụng này tự vào mạng, kể cả khi “Cho phép truy cập mạng” đang tắt.':['Lets AIVN AGENT read web pages. This app goes online by itself, even when “Allow network access” is off.','让 AIVN AGENT 读取网页内容。即使“允许访问网络”已关闭，此应用也会自行联网。'],
+'Tìm mô hình, bộ dữ liệu và bài báo.':['Find models, datasets and papers.','查找模型、数据集和论文。'],
+'Tìm mô hình, bộ dữ liệu và bài báo trên Hugging Face. Những gì bạn tìm và kết quả được gửi tới huggingface.co.':['Find models, datasets and papers on Hugging Face. What you search for and the results are sent to huggingface.co.','在 Hugging Face 上查找模型、数据集和论文。你搜索的内容和结果会发送到 huggingface.co。'],
+'Sổ tay riêng của AIVN AGENT.':['AIVN AGENT’s own notebook.','AIVN AGENT 自己的笔记本。'],
+'Kho mã, issue và pull request trên GitHub.':['Repositories, issues and pull requests on GitHub.','GitHub 上的代码仓库、issue 和 pull request。'],
+'Kho mã, issue và pull request.':['Repositories, issues and pull requests.','代码仓库、issue 和 pull request。'],
+'Cho AIVN AGENT xem và làm việc với kho mã, issue và pull request trên GitHub. Cần khoá truy cập cá nhân của GitHub.':['Lets AIVN AGENT view and work with repositories, issues and pull requests on GitHub. Needs a GitHub personal access token.','让 AIVN AGENT 查看并处理 GitHub 上的代码仓库、issue 和 pull request。需要 GitHub 个人访问令牌。'],
+'Chạy bằng Docker trên máy này (bản chính thức của GitHub). Một bản sau có thể chuyển sang máy chủ từ xa chính thức của GitHub (qua URL), khi đó không cần Docker.':['Runs with Docker on this computer (GitHub’s official build). A later version may switch to GitHub’s official remote server (via URL), which needs no Docker.','在本机用 Docker 运行（GitHub 官方版本）。以后的版本可能改用 GitHub 官方远程服务（通过 URL），那时就不需要 Docker。'],
+'Giữ các bước suy nghĩ trung gian.':['Keeps intermediate thinking steps.','保存中间思考步骤。'],
+'Giúp AIVN AGENT ghi lại các bước suy nghĩ trung gian khi làm việc khó.':['Helps AIVN AGENT write down intermediate thinking steps on hard tasks.','帮助 AIVN AGENT 在处理难题时记下中间思考步骤。'],
+'Tìm trên mạng bằng Brave.':['Search the web with Brave.','用 Brave 搜索网络。'],
+'Ổ mạng trong nhà.':['Home network drive.','家里的网络硬盘。'],
+'Dự báo thời tiết.':['Weather forecast.','天气预报。'],
+'Máy ở ngoài mạng nội bộ.':['A computer outside your local network.','局域网外的一台电脑。'],
+'Ổ mạng trong nhà (theo tên).':['Home network drive (by name).','家里的网络硬盘（按名称）。'],
+'Đọc tệp cơ sở dữ liệu SQLite.':['Read an SQLite database file.','读取 SQLite 数据库文件。'],
+'Tìm kiếm (cần khoá).':['Search (needs a key).','搜索（需要密钥）。'],
+'Báo cáo (mẫu chạy quá giờ).':['Reports (time-out example).','报告（超时示例）。'],
+'Lịch công ty (mẫu lỗi)':['Company calendar (error example)','公司日历（错误示例）'],
+});
+Object.assign(STR,{'Suy nghĩ từng bước (qua mạng).':['Step-by-step thinking (over the network).','逐步思考（通过网络）。']});

@@ -36,6 +36,14 @@ Dữ liệu mẫu lưu trong localStorage (aivn.downloaded, aivn.biz). Nút "Đ�
 - §17.5: so khớp URL sau khi chuẩn hoá (bỏ '/' cuối, host không phân biệt hoa thường, path phân biệt). Gói so khớp bỏ qua phiên bản. Chỉ trùng tên → Của tôi.
 - Ảnh: `shots/8*.png`, chạy lại bằng `tools/shots8.py` (in kiểm tra chữ kỹ thuật trên màn hình chính, thanh agent và bảng bên).
 
+## connect.html v4.7 (quyết định ngày 22/10, lượt 5)
+Phản hồi bản 4.6: “chưa trực quan, chưa tốt như LM Studio”. Bản 4.6 giữ nguyên để so sánh: `connect-v4.6.html` (+ `assets/connect-v46.js`, `assets/connect-i18n-v46.js`, khoá `aivn.plugins.v46`/`aivn.secrets.v46`). Bản 4.7 dùng khoá `aivn.plugins.v47`/`aivn.secrets.v47`.
+- Hai cột: trái là danh sách gọn (logo lớn, tên, một dòng mô tả, chấm trạng thái), phải là chi tiết với một nút chính lớn theo trạng thái; nút phụ nhỏ hơn. Chữ kỹ thuật trong Chi tiết.
+- Thanh trên: ô tìm, các nhóm lọc, Của tôi và ⚙ Nâng cao là bộ lọc (không còn màn riêng), nút 📂 Nhập mcp.json.
+- Màu trạng thái: xanh đã kết nối, xám chưa, đỏ lỗi, vàng sắp có, xanh dương đang chạy thử/đang cài. Chú thích ở dưới danh sách.
+- Sửa của QA: khoá Hugging Face ghi “Không bắt buộc”; GitHub một mục (cách chạy bằng Docker trong Chi tiết); lich-cong-ty mô tả “(mẫu lỗi)”; ô vừa nội dung.
+- Ảnh: `shots/11*.png`; so sánh 4.6 ↔ 4.7 cùng trạng thái: `shots/cmp/c*.png` (`tools/compare47.py`). Script ảnh: `tools/shots11.py`.
+
 ## connect.html v4.6 (quyết định ngày 22/10, lượt 4)
 - connect.html = bản 4.6. Mã: `assets/connect.js`; chữ: `assets/connect-i18n.js` (khối v4.6 ở cuối tệp). localStorage `aivn.plugins.v46`; kho khoá giả lập `aivn.secrets.v46`. Bản 4.5 để so sánh: `connect-v4.5.html`.
 - (a) Chữ trên ô lấy theo TÊN HIỂN THỊ (id chỉ dùng bên trong). Đổi tên thì chữ đổi theo (vd. `thoi-tiet` → "Dự báo thời tiết" → D). "Sổ tay agent" có biểu tượng sổ tay riêng (`assets/logos/agent-notebook.svg`, tự vẽ, CC0, xem CREDITS.md).

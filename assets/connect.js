@@ -1,4 +1,4 @@
-// Bản mẫu Kết nối ứng dụng v4.6 — F-PLUGINS bản 2 (PR #5) + quyết định ngày 22/10 (lượt 4). Mô phỏng hoàn toàn trong trình duyệt.
+// Bản mẫu Kết nối ứng dụng v4.7 — F-PLUGINS bản 2 (PR #5) + quyết định ngày 22/10 (lượt 5: bố cục hai cột, danh sách gọn + bảng chi tiết). Mô phỏng hoàn toàn trong trình duyệt.
 renderRail('agent');
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -10,7 +10,8 @@ const SECRETS_SECURE=true; // v4.6: bản mẫu đóng vai máy CÓ kho khoá c�
 const AG_MODELS=[{id:'q4',name:'Qwen3-VL 4B',params:4,ctx:8192},{id:'q14',name:'Qwen3 14B',params:14,ctx:32768},{id:'gguf',name:'mo-hinh-tu-tai.gguf',params:null,ctx:4096}];
 const NATIVE_TOOLS=8,TOK_PER_TOOL=40; // giả định của bản mẫu
 const GROUPS=[['productivity','Năng suất'],['communication','Giao tiếp'],['sales','Bán hàng'],['finance','Tài chính']];
-const TABS=[['all','Tất cả'],...GROUPS,['mine','Của tôi']];
+// v4.7: “Của tôi” và “Nâng cao” là bộ lọc trên cùng thanh, không còn là màn hình riêng
+const FILTERS=[['all','Tất cả'],...GROUPS,['mine','Của tôi'],['adv','Nâng cao']];
 const STORE=[
  {id:'excel',group:'productivity',name:'Excel',logo:'microsoftexcel',ready:true,desc:'Đọc và ghi tệp Excel trong thư mục bạn chọn. Không cần cài Microsoft Excel.'},
  {id:'drive',group:'productivity',name:'Drive',logo:'googledrive',google:true,desc:'Tệp trên Google Drive.'},
@@ -35,14 +36,18 @@ const BIZ_CALLS=[
 const EXCEL_TOOLS=[['excel_read','read','Đọc tệp Excel hoặc CSV trong thư mục của Excel'],['excel_write','write','Ghi tệp Excel hoặc CSV trong thư mục của Excel (ghi đè thì hỏi kỹ hơn)']];
 const storeTools=id=>id==='biz'?BIZ_CALLS.map(([n,k,d])=>['biz_'+n,k,d]):EXCEL_TOOLS;
 const ADV=[
- {id:'filesystem',name:'Thư mục',desc:'Đọc và ghi một thư mục bạn chọn. Khác với “Thư mục được phép” của công cụ tệp AIVN.',needs:'folder',pkg:'@modelcontextprotocol/server-filesystem',ver:'2.0.0',
+ {id:'filesystem',name:'Thư mục',logo:'folder',desc:'Đọc và ghi một thư mục bạn chọn. Khác với “Thư mục được phép” của công cụ tệp AIVN.',short:'Đọc và ghi một thư mục bạn chọn.',long:'Cho AIVN AGENT đọc và ghi trong một thư mục bạn chọn. Khác với “Thư mục được phép” trong Cài đặt AIVN AGENT.',needs:'folder',pkg:'@modelcontextprotocol/server-filesystem',ver:'2.0.0',
   tools:[['read_text_file','Read the complete contents of a file as text'],['write_file','Create a new file or completely overwrite an existing file'],['list_directory','Get a detailed listing of all files and directories'],['search_files','Recursively search for files and directories matching a pattern']]},
- {id:'fetch',name:'Đọc trang web',desc:'Tiến trình này tự mở mạng, kể cả khi “Cho phép truy cập mạng” đang tắt.',needs:'none',pkg:'mcp-fetch-server',ver:'1.1.2',tools:[['fetch_html','Fetch a website and return the content as HTML'],['fetch_markdown','Fetch a website and return the content as Markdown']]},
- {id:'huggingface',name:'Hugging Face',desc:'Máy chủ từ xa của Hugging Face. Đối số công cụ và kết quả được gửi tới huggingface.co.',needs:'secret',optional:true,secretVar:'Authorization',url:'https://huggingface.co/mcp',
+ {id:'fetch',name:'Đọc trang web',logo:'fetch',desc:'Tiến trình này tự mở mạng, kể cả khi “Cho phép truy cập mạng” đang tắt.',short:'Đọc nội dung trang web.',long:'Cho AIVN AGENT đọc nội dung trang web. Ứng dụng này tự vào mạng, kể cả khi “Cho phép truy cập mạng” đang tắt.',needs:'none',pkg:'mcp-fetch-server',ver:'1.1.2',tools:[['fetch_html','Fetch a website and return the content as HTML'],['fetch_markdown','Fetch a website and return the content as Markdown']]},
+ {id:'huggingface',name:'Hugging Face',logo:'huggingface',desc:'Máy chủ từ xa của Hugging Face. Đối số công cụ và kết quả được gửi tới huggingface.co.',short:'Tìm mô hình, bộ dữ liệu và bài báo.',long:'Tìm mô hình, bộ dữ liệu và bài báo trên Hugging Face. Những gì bạn tìm và kết quả được gửi tới huggingface.co.',needs:'secret',optional:true,secretVar:'Authorization',url:'https://huggingface.co/mcp',
   tools:[['model_search','Search for ML models on the Hugging Face Hub'],['dataset_search','Search for datasets on the Hugging Face Hub'],['paper_search','Find ML research papers'],['hf_doc_search','Search the Hugging Face documentation']]},
- {id:'memory',name:'Sổ tay agent',icon:'notebook',desc:'Sổ tay riêng của AIVN AGENT, nằm trong ứng dụng này. Không phải tính năng Ghi nhớ của AIVN và không ghi vào đó.',needs:'none',pkg:'@modelcontextprotocol/server-memory',ver:'2.0.0',
+ {id:'memory',name:'Sổ tay agent',icon:'notebook',desc:'Sổ tay riêng của AIVN AGENT, nằm trong ứng dụng này. Không phải tính năng Ghi nhớ của AIVN và không ghi vào đó.',short:'Sổ tay riêng của AIVN AGENT.',needs:'none',pkg:'@modelcontextprotocol/server-memory',ver:'2.0.0',
   tools:[['create_entities','Create multiple new entities in the knowledge graph'],['create_relations','Create multiple new relations between entities'],['add_observations','Add new observations to existing entities'],['delete_entities','Delete multiple entities and their associated relations'],['delete_observations','Delete specific observations from entities'],['delete_relations','Delete multiple relations from the knowledge graph'],['read_graph','Read the entire knowledge graph'],['search_nodes','Search for nodes in the knowledge graph'],['open_nodes','Open specific nodes by their names']]},
- {id:'thinking',name:'Suy nghĩ từng bước',desc:'Máy chủ giữ các bước suy nghĩ trung gian.',needs:'none',pkg:'@modelcontextprotocol/server-sequential-thinking',ver:'2.0.0',tools:[['sequentialthinking','A detailed tool for dynamic and reflective problem-solving through thoughts']]},
+ {id:'github',name:'GitHub',logo:'github',desc:'Kho mã, issue và pull request trên GitHub.',short:'Kho mã, issue và pull request.',long:'Cho AIVN AGENT xem và làm việc với kho mã, issue và pull request trên GitHub. Cần khoá truy cập cá nhân của GitHub.',
+  needs:'secret',secretVar:'GITHUB_PERSONAL_ACCESS_TOKEN',image:'ghcr.io/github/github-mcp-server',
+  runNote:'Chạy bằng Docker trên máy này (bản chính thức của GitHub). Một bản sau có thể chuyển sang máy chủ từ xa chính thức của GitHub (qua URL), khi đó không cần Docker.',
+  tools:[['get_me','Get details of the authenticated GitHub user'],['list_issues','List issues in a GitHub repository'],['create_issue','Create a new issue in a GitHub repository'],['get_file_contents','Get the contents of a file or directory'],['create_pull_request','Create a new pull request']]},
+ {id:'thinking',name:'Suy nghĩ từng bước',logo:'thinking',desc:'Máy chủ giữ các bước suy nghĩ trung gian.',short:'Giữ các bước suy nghĩ trung gian.',long:'Giúp AIVN AGENT ghi lại các bước suy nghĩ trung gian khi làm việc khó.',needs:'none',pkg:'@modelcontextprotocol/server-sequential-thinking',ver:'2.0.0',tools:[['sequentialthinking','A detailed tool for dynamic and reflective problem-solving through thoughts']]},
 ];
 const ADVC=id=>ADV.find(c=>c.id===id);
 const pinned=c=>c.pkg+'@'+c.ver;
@@ -58,9 +63,9 @@ const BUILTIN=[
   starters:[{vi:'Liệt kê tệp trong thư mục được phép, nhóm theo loại.',en:'List the files in the allowed folder, grouped by kind.',zh:'列出允许文件夹里的文件，按类型分组。'},{vi:'Đọc bảng tính này và nói có bao nhiêu dòng.',en:'Read this spreadsheet and say how many rows it has.',zh:'读这个表格，说出有多少行。'}],suggest:['excel']},
 ];
 const L=o=>o==null?'':typeof o==='string'?o:(o[LANG]??o.vi??Object.values(o)[0]??'');
-const KEY='aivn.plugins.v46';
+const KEY='aivn.plugins.v47';
 // quyết định lượt 4 (c): khoá lưu riêng, đóng vai kho khoá của hệ điều hành (Windows Credential Manager). mcp.json chỉ giữ chỗ ${secret:…}.
-const VAULT='aivn.secrets.v46';let SEC=LS.get(VAULT,{});const saveSec=()=>LS.set(VAULT,SEC);
+const VAULT='aivn.secrets.v47';let SEC=LS.get(VAULT,{});const saveSec=()=>LS.set(VAULT,SEC);
 function seed(){const t='2026-10-01T09:00:00.000Z';return{
   mcp:{mcpServers:{'memory':{command:'npx',args:['-y',pinned(ADVC('memory'))]},'thoi-tiet':{url:'https://mcp.example.vn/weather'}}},
   meta:{v:1,connectors:{},servers:{'memory':{catalogId:'memory',approvedAt:t,alwaysOn:false},'thoi-tiet':{catalogId:null,approvedAt:t,alwaysOn:false}}},
@@ -68,7 +73,7 @@ function seed(){const t='2026-10-01T09:00:00.000Z';return{
 let DB=LS.get(KEY,null)||seed();const save=()=>LS.set(KEY,DB);
 LANG=DB.lang;
 const RT={inst:{},state:{},err:{},logs:{},listed:{},used:{},writeOk:{},testT:{},chat:[],restarted:false};
-let UI={key:null,keyHl:null,keySaved:null,rename:null,warnOpen:false,excelPick:null,open:false,pane:'main',tab:'all',q:'',expanded:{},setup:{},plan:null,advMsg:null,advText:null,flash:null};
+let UI={sel:null,key:null,keyHl:null,keySaved:null,rename:null,warnOpen:false,excelPick:null,open:false,pane:'main',tab:'all',q:'',expanded:{},setup:{},plan:null,advMsg:null,advText:null,flash:null};
 const servers=()=>DB.mcp.mcpServers;
 const conn=id=>DB.meta.connectors[id];
 const metaOf=k=>DB.meta.servers[k]||(DB.meta.servers[k]={catalogId:null,approvedAt:null,alwaysOn:false});
@@ -103,11 +108,12 @@ function redact(s){if(s.url)return s.url;return redactText([s.command,...(s.args
 const kindOf=s=>s.url?(s.type==='sse'||/\/sse$/.test(s.url)?'sse':'http'):'stdio';
 const pkgArg=s=>(s.args||[]).find(a=>!a.startsWith('-'));
 function unpinned(s){if(s.url||s.command!=='npx')return false;const p=pkgArg(s);return !p||!/^(@[^\/@]+\/)?[^@\/]+@[^@\s]+$/.test(p)}
-function inCatalog(s){if(s.url)return ADV.some(c=>urlEq(c.url,s.url));return s.command==='npx'&&ADV.some(c=>c.pkg&&(s.args||[]).includes(pinned(c)))}
+const imgMatch=(c,s)=>!!(c.image&&s.command==='docker'&&(s.args||[]).includes(c.image));
+function inCatalog(s){if(s.url)return ADV.some(c=>urlEq(c.url,s.url));if(s.command==='docker')return ADV.some(c=>imgMatch(c,s));return s.command==='npx'&&ADV.some(c=>c.pkg&&(s.args||[]).includes(pinned(c)))}
 const pkgName=a=>a&&a.replace(/^(@[^\/@]+\/[^@]+|[^@]+)@.*$/,'$1');
-function catalogMatch(s){if(s.url)return ADV.find(c=>c.url&&urlEq(c.url,s.url))||null;if(s.command!=='npx')return null;const p=pkgName(pkgArg(s));return ADV.find(c=>c.pkg&&c.pkg===p)||null}
+function catalogMatch(s){if(s.url)return ADV.find(c=>c.url&&urlEq(c.url,s.url))||null;if(s.command==='docker')return ADV.find(c=>imgMatch(c,s))||null;if(s.command!=='npx')return null;const p=pkgName(pkgArg(s));return ADV.find(c=>c.pkg&&c.pkg===p)||null}
 // mục 17.5: khoá trùng id danh mục VÀ nội dung khớp, hoặc gói (bỏ @phiên bản) / URL (đã chuẩn hoá) khớp, và chỗ đó còn trống → nhận id danh mục. Chỉ trùng khoá → Của tôi. biz/excel không bao giờ nhận từ mcp.json.
-function importSlot(k,s,taken){const c=ADVC(k)&&(ADVC(k).url?urlEq(s.url,ADVC(k).url):pkgName(pkgArg(s))===ADVC(k).pkg)?ADVC(k):catalogMatch(s);
+function importSlot(k,s,taken){const c=ADVC(k)&&(ADVC(k).url?urlEq(s.url,ADVC(k).url):ADVC(k).image?imgMatch(ADVC(k),s):pkgName(pkgArg(s))===ADVC(k).pkg)?ADVC(k):catalogMatch(s);
  if(!c||keyOfCat(c.id)||taken.has(c.id))return null;return c.id}
 const runsBundled=(c,s)=>!!(c&&c.pkg&&!s.url&&(s.args||[]).includes(pinned(c)));
 const isDanger=s=>!inCatalog(s)||unpinned(s)||(isHttp(s.url)&&netKind(s.url)==='lan');
@@ -175,23 +181,6 @@ function runTest(k){return new Promise(res=>{const s=servers()[k];if(!s)return r
   else{m.test={ok:false,code:o.code,cmd:o.cmd,var:o.var,exit:o.exit,err:o.err,stderr:redactText(o.stderr),sec:lim,at:now()};log(k,o.code==='timeout'?`test: no reply in ${TEST_LIMIT}s, killed`:`test: failed (${o.err}${o.exit!=null?', exit '+o.exit:''})`);RT.state[k]='error';RT.err[k]=()=>testMsg(m.test)}
   save();render();res(m.test)},window.FAST?120:1000)})}
 async function runTests(keys){const rs=await Promise.all(keys.map(runTest));const ok=rs.filter(r=>r&&r.ok).length,bad=rs.filter(r=>r&&!r.ok).length;if(ok+bad)toast(tr('Chạy thử xong: {0} được, {1} lỗi.',ok,bad))}
-function testLine(k){const m=DB.meta.servers[k]||{},t=m.test,s0=RT.state[k],tk=esc(k);
- if(s0==='testing'){const n=RT.testT[k]||0;return `<div class="tst run" data-testid="test-${tk}">⏳ ${tr('Đang chạy thử… {0}/{1} giây',n,TEST_LIMIT)}<span class="bar"><i style="width:${Math.round(100*n/TEST_LIMIT)}%"></i></span></div>`}
- if(!t||s0==='starting')return'';
- const s=servers()[k]||{},pi=progOf(s.command),inst=pi&&DB.installed&&DB.installed[pi];
- if(t.ok)return `<div class="tst ok" data-testid="test-${tk}">✓ ${tr('Chạy thử được · {0} chức năng',t.n)}</div>${inst?`<div class="tst ok small" data-testid="installed-${tk}">⬇ ${tr('Đã cài {0} cho AIVN',PROGS[pi].name)}</div>`:''}`;
- const ip=t.code==='notfound'&&progOf(t.cmd),I=ip&&RT.inst[ip];
- if(I)return `<div class="tst run" data-testid="install-progress-${tk}">⬇ ${I.phase==='dl'?tr('Đang tải {0}… {1}%',PROGS[ip].name,I.pct):tr('Đang cài {0}… {1}%',PROGS[ip].name,I.pct)}<span class="bar"><i style="width:${I.pct}%"></i></span></div>`;
- const ek='t:'+k;const red=/••••/.test(t.stderr||'');
- return `<div class="tst bad" data-testid="test-${tk}" onclick="event.stopPropagation()"><b>✕ ${esc(testMsg(t))}</b><div class="fix">${esc(testFix(t))}</div>${testActs(k,t)}
-  <details class="apdet" data-testid="test-details-${tk}" ${UI.expanded[ek]?'open':''} ontoggle="if(this.isConnected)UI.expanded['${esc(ek)}']=this.open"><summary onclick="UI.expanded['${esc(ek)}']=!this.parentNode.open">${tr('Chi tiết')}</summary>
-  <dl class="apf"><dt>${tr('Mã lỗi')}</dt><dd><code>${esc(t.err)}</code></dd><dt>${tr('Mã thoát')}</dt><dd>${t.exit==null?tr('không có (tiến trình không tự thoát)'):`<code>${t.exit}</code>`}</dd><dt>${tr('Thời gian')}</dt><dd>${tr('{0} giây',t.sec)}</dd><dt>stderr</dt><dd><pre class="log">${esc(redactText(t.stderr))}</pre>${red?`<div class="small muted" data-testid="redacted-note-${tk}">🔒 ${tr('Khoá đã được che (••••). AIVN không bao giờ hiện khoá trong nhật ký hay Chi tiết.')}</div>`:''}</dd></dl></details></div>`}
-function testActs(k,t){const tk=esc(k);let b='';
- if(t.code==='key'||t.code==='keybad')b+=`<button class="btn sm pri" data-testid="enter-key-${tk}" onclick="event.stopPropagation();openKey('${tk}')">🔑 ${tr('Nhập khoá')}</button>`;
- if(t.code==='notfound'){const p=progOf(t.cmd),P=p&&PROGS[p];
-  if(P&&P.auto)b+=`<button class="btn sm pri" data-testid="install-${p}-${tk}" ${RT.inst[p]||!DB.master?'disabled':''} onclick="event.stopPropagation();installProg('${p}','${tk}')">⬇ ${tr('Cài giúp tôi')}</button>`;
-  if(P)b+=`<a class="btn sm" data-testid="install-guide-${tk}" href="${P.url}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">📖 ${tr('Hướng dẫn cài')} ↗</a>`}
- return b?`<div class="tacts">${b}</div>`:''}
 // “Cài giúp tôi”: thẻ xin phép (cài gì, vào đâu, dung lượng ước tính) → tiến trình mô phỏng → tự chạy thử lại các mục đang thiếu chương trình này
 async function installProg(p,k){const P=PROGS[p];if(RT.inst[p]||!P.auto)return;
  const a=await withCard(()=>({tool:'aivn_install_program',logoHtml:letterTile(P.name,30),title:tr('Cho AIVN cài {0}?',P.name),sub:tr('Để chạy “{0}”',displayName(k)),
@@ -208,10 +197,14 @@ async function installProg(p,k){const P=PROGS[p];if(RT.inst[p]||!P.auto)return;
 const isUserSrv=k=>k[0]!=='@'&&!(DB.meta.servers[k]||{}).catalogId;
 // quyết định lượt 4 (c): ô khoá ở Nâng cao. Ẩn mặc định, có nút 👁. Lưu vào kho khoá trên máy, mcp.json chỉ giữ ${secret:…}. Khoá đã lưu không bao giờ điền lại vào ô.
 // Lưu/đổi/xoá GIÁ TRỊ khoá: người dùng tự bấm nên không qua thẻ. Thêm BIẾN khoá mới làm đổi cấu hình chạy nên qua thẻ (giống quy tắc đổi tên biến).
-function keyBox(k){const s=servers()[k];if(!s||s.auth)return'';const vs=keyVarsOf(s),user=isUserSrv(k);if(!vs.length&&!user)return'';
+// v4.7: khoá khai báo trong danh mục (vd. Hugging Face Authorization) luôn có ô, kể cả khi lúc kết nối bỏ trống
+const catOf=k=>{const m=DB.meta.servers[k];return m&&m.catalogId?ADVC(m.catalogId):null};
+function keyVarsUI(k){const s=servers()[k],vs=keyVarsOf(s),c=catOf(k);if(c&&c.secretVar&&!vs.some(x=>x[1]===c.secretVar))vs.push([s.url?'headers':'env',c.secretVar,null]);return vs}
+const optTag=(k,n)=>{const c=catOf(k);return c&&c.optional&&c.secretVar===n?` <span class="opt" data-testid="key-optional">${tr('Không bắt buộc')}</span>`:''};
+function keyBox(k){const s=servers()[k];if(!s||s.auth)return'';const vs=keyVarsUI(k),user=isUserSrv(k);if(!vs.length&&!user)return'';
  const K=UI.key&&UI.key.k===k?UI.key:null,tk=esc(k);
  const row=([f,n,v])=>{const ed=K&&!K.add&&K.n===n,tn=esc(n);
-  return `<div class="krow" data-testid="key-row-${tk}-${tn}"><span class="kl">🔑 ${tr('Khoá truy cập')} <code>${tn}</code></span>${ed?keyInput(k,K):hasKey(v)?`<span class="kok" data-testid="key-saved-${tk}">🔒 ${tr('Đã lưu')} <span aria-hidden="true">••••••••</span></span><span style="flex:1"></span><button class="btn sm ghost" data-testid="key-change-${tk}" onclick="keyEdit('${tk}','${tn}')">${tr('Thay khoá')}</button><button class="btn sm ghost" data-testid="key-del-${tk}" onclick="keyDel('${tk}','${tn}')">${tr('Xoá khoá')}</button>`:`<span class="kmiss" data-testid="key-missing-${tk}">${tr('Chưa có khoá')}</span><span style="flex:1"></span><button class="btn sm pri" data-testid="key-enter-${tk}" onclick="keyEdit('${tk}','${tn}')">${tr('Nhập khoá')}</button>`}</div>`};
+  return `<div class="krow" data-testid="key-row-${tk}-${tn}"><span class="kl">🔑 ${tr('Khoá truy cập')} <code>${tn}</code>${optTag(k,n)}</span>${ed?keyInput(k,K):hasKey(v)?`<span class="kok" data-testid="key-saved-${tk}">🔒 ${tr('Đã lưu')} <span aria-hidden="true">••••••••</span></span><span style="flex:1"></span><button class="btn sm ghost" data-testid="key-change-${tk}" onclick="keyEdit('${tk}','${tn}')">${tr('Thay khoá')}</button><button class="btn sm ghost" data-testid="key-del-${tk}" onclick="keyDel('${tk}','${tn}')">${tr('Xoá khoá')}</button>`:`<span class="kmiss" data-testid="key-missing-${tk}">${tr('Chưa có khoá')}</span><span style="flex:1"></span><button class="btn sm pri" data-testid="key-enter-${tk}" onclick="keyEdit('${tk}','${tn}')">${tr('Nhập khoá')}</button>`}</div>`};
  const ph=(vs.find(([f,n,v])=>isRef(v))||[])[2]||refFor(k,'KEY',s);
  const add=!user||K&&!K.add?'':K&&K.add?`<div class="krow" data-testid="key-add-row-${tk}"><span class="kl">🔑 ${tr('Tên khoá')}</span><input class="inp kname" id="key-name" data-testid="key-name-${tk}" maxlength="64" autocomplete="off" spellcheck="false" placeholder="API_KEY" value="${esc(K.name)}" oninput="UI.key.name=this.value" onkeydown="event.stopPropagation();if(event.key==='Escape')keyCancel()"></div><div class="krow"><span class="kl">${tr('Khoá')}</span>${keyInput(k,K)}</div>`:`<div><button class="btn sm ghost" data-testid="key-add-${tk}" onclick="keyAdd('${tk}')">＋ ${tr('Thêm khoá')}</button></div>`;
  return `<div class="keybox ${UI.keyHl===k?'hl':''}" id="keybox-${tk}" data-testid="key-box-${tk}" onclick="event.stopPropagation()">${vs.map(row).join('')}${add}${K&&K.err?`<div class="msg-bad small" data-testid="key-err">${esc(K.err)}</div>`:''}
@@ -223,11 +216,11 @@ const focusKey=id=>setTimeout(()=>{const i=$(id||'key-in');if(i){i.scrollIntoVie
 function keyEdit(k,n){UI.key={k,n,v:'',show:false,err:null,add:false,name:''};UI.keySaved=null;render();focusKey()}
 function keyAdd(k){UI.key={k,n:null,v:'',show:false,err:null,add:true,name:''};UI.keySaved=null;render();focusKey('key-name')}
 function keyCancel(){UI.key=null;UI.keyHl=null;render()}
-// nút “Nhập khoá” ở thẻ lỗi: mở thẳng Nâng cao tới ô khoá (đã chọn sẵn, tô sáng)
+// nút “Nhập khoá”: chọn mục ở danh sách và mở ô khoá trong bảng chi tiết bên phải (tô sáng, con trỏ ở sẵn)
 function openKey(k){const s=servers()[k];if(!s)return;const t=(DB.meta.servers[k]||{}).test||{},vs=keyVarsOf(s);
- const n=(vs.find(x=>x[1]===t.var)||vs.find(x=>!hasKey(x[2]))||vs[0]||[])[1];
- UI.key=n?{k,n,v:'',show:false,err:null,add:false,name:''}:{k,n:null,v:'',show:false,err:null,add:true,name:''};UI.keyHl=k;UI.keySaved=null;UI.expanded[k]=false;
- openCA({pane:'adv'});setTimeout(()=>{const b=$('keybox-'+k);b&&b.scrollIntoView({block:'center'});const i=$(n?'key-in':'key-name');i&&i.focus()},30)}
+ const n=(keyVarsUI(k).find(x=>x[1]===t.var)||keyVarsUI(k).find(x=>!hasKey(x[2]))||keyVarsUI(k)[0]||[])[1];
+ UI.key=n?{k,n,v:'',show:false,err:null,add:false,name:''}:{k,n:null,v:'',show:false,err:null,add:true,name:''};UI.keyHl=k;UI.keySaved=null;UI.sel=k;if(!UI.open)UI.tab=isUserSrv(k)?'mine':'adv';
+ if(!inList(k)){UI.q='';UI.tab='mine'}openCA({sel:k});setTimeout(()=>{const b=$('keybox-'+k);b&&b.scrollIntoView({block:'center'});const i=$(n?'key-in':'key-name');i&&i.focus()},30)}
 async function keySave(){const K=UI.key;if(!K)return;const v=K.v.trim(),k=K.k,s=servers()[k];if(!s)return keyCancel();
  const err=m=>{K.err=m;render();focusKey()};
  if(!v)return err(tr('Khoá không được để trống.'));
@@ -240,7 +233,7 @@ async function keySave(){const K=UI.key;if(!K)return;const v=K.v.trim(),k=K.k,s=
    details:[[tr('Tên gốc'),k,1],[tr('Chỗ giữ trong mcp.json'),ref,1]],danger:false,alwaysLabel:null}));
   if(!a.ok){render();return}
   s[f]=s[f]||{};s[f][n]=ref;SEC[ref]=v}
- else{const e=keyVarsOf(s).find(x=>x[1]===n);if(!e)return keyCancel();const [f,,cur]=e;const ref=isRef(cur)?cur:refFor(k,n,s);s[f][n]=ref;SEC[ref]=v}
+ else{const e=keyVarsUI(k).find(x=>x[1]===n);if(!e)return keyCancel();const [f,,cur]=e;const ref=isRef(cur)?cur:refFor(k,n,s);s[f]=s[f]||{};s[f][n]=ref;SEC[ref]=v} // khoá danh mục đã khai báo sẵn: không cần thẻ
  saveSec();save();log(k,`key: ${n} saved to secure store`);UI.key=null;UI.keyHl=null;UI.keySaved=k;render()}
 async function keyDel(k,n){const s=servers()[k],e=keyVarsOf(s).find(x=>x[1]===n);if(!e)return;
  const ok=await modalAsk(tr('Xoá khoá “{0}”?',n),tr('Khoá bị xoá khỏi máy. Chỗ giữ trong mcp.json vẫn còn; ứng dụng sẽ báo thiếu khoá cho đến khi bạn nhập lại.'),tr('Xoá khoá'));
@@ -264,12 +257,14 @@ const onSources=()=>DB.master?connectedKeys():[]; // công tắc tắt → AIVN 
 const countOn=()=>connectedKeys().length;
 // quyết định lượt 3 (4): máy chủ người dùng thêm hiện tên gốc (khoá mcp.json); có thể đổi tên hiển thị (meta.label). Tên gốc giữ trong Chi tiết.
 function displayName(k){if(k[0]==='@')return tr(ST(k.slice(1)).name);const m=DB.meta.servers[k];const c=m&&m.catalogId&&ADVC(m.catalogId);return c?tr(c.name):(m&&m.label)||k}
-const letterTile=(name,sz=32)=>`<span class="lt" style="width:${sz}px;height:${sz}px">${esc((String(name).trim()[0]||'?').toUpperCase())}</span>`;
+const letterTile=(name,sz=32)=>`<span class="lt" style="width:${sz}px;height:${sz}px;font-size:${Math.max(12,Math.round(sz*.42))}px">${esc((String(name).trim()[0]||'?').toUpperCase())}</span>`;
 // quyết định lượt 4 (a): chữ trên ô lấy từ TÊN HIỂN THỊ (id chỉ dùng bên trong). Sổ tay agent dùng biểu tượng quyển sổ tự vẽ (CC0, assets/logos/agent-notebook.svg).
 const ICON_SVG={notebook:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h11.5A1.5 1.5 0 0 1 19 4.5v15a1.5 1.5 0 0 1-1.5 1.5H6z"/><path d="M6 3v18M3.5 7H6M3.5 12H6M3.5 17H6M10 8h5.5M10 11.5h5.5"/></svg>'};
 const iconTile=(ic,sz=32)=>`<span class="lt ic" data-icon="${ic}" style="width:${sz}px;height:${sz}px">${ICON_SVG[ic]}</span>`;
-const catLogo=(c,sz=32)=>c.icon?iconTile(c.icon,sz):letterTile(tr(c.name),sz);
-const srvLogo=(k,sz=32)=>{const m=DB.meta.servers[k];const c=m&&m.catalogId&&ADVC(m.catalogId);return c?catLogo(c,sz):letterTile(displayName(k),sz)};
+const catLogo=(c,sz=32)=>c.logo?logoTile(c.logo,sz):c.icon?iconTile(c.icon,sz):letterTile(tr(c.name),sz);
+const srvLogo=(k,sz=32)=>{const m=DB.meta.servers[k];const c=m&&m.catalogId&&ADVC(m.catalogId);if(c)return catLogo(c,sz);const g=srvGuess(k);return g?logoTile(g,sz):letterTile(displayName(k),sz)};
+// v4.7: logo rõ hơn cho mục bạn thêm, đoán theo lệnh/tên (brave, sqlite, github…)
+const srvGuess=k=>{const t=(k+' '+JSON.stringify((DB.mcp&&DB.mcp.mcpServers||{})[k]||{})).toLowerCase();return ['brave','sqlite','github','notion','slack','huggingface'].find(x=>t.includes(x))||(/fetch/.test(t)?'fetch':/think/.test(t)?'thinking':'')};
 function storeLogo(a,sz=32){return a.logo==='@aivn'?`<img class="lgimg" src="assets/logos/aivn-app.svg" width="${sz}" height="${sz}" alt="">`:logoTile(a.logo,sz)}
 const srcLogo=(k,sz)=>k[0]==='@'?storeLogo(ST(k.slice(1)),sz):srvLogo(k,sz);
 function toolCheck(){const M=AG_MODELS.find(m=>m.id===DB.model)||AG_MODELS[0];const list=onSources().map(k=>({k,n:toolsOf(k).length}));
@@ -370,10 +365,10 @@ async function connectCatalog(cid){if(!DB.master)return;const c=ADVC(cid);let k=
  if(k)return connectKey(k);
  let folder=null,token=null;
  if(c.needs==='folder'){folder=await pickFolder(['D:\\DuAn\\AIVN','C:\\Users\\Khoi\\Documents','C:\\Users\\Khoi\\Desktop\\Bai tap']);if(!folder)return}
- if(c.needs==='secret'){const s0=UI.setup[cid];if(!s0){UI.setup[cid]={v:''};render();setTimeout(()=>{const i=$('sec-'+cid);i&&i.focus()},0);return}
+ if(c.needs==='secret'){const s0=UI.setup[cid];if(!s0){UI.setup[cid]={v:'',show:false};render();setTimeout(()=>{const i=$('sec-'+cid);i&&i.focus()},0);return}
   token=(s0.v||'').trim();if(!token&&!c.optional){$('sec-'+cid).focus();return}}
  k=newKeyFor(cid);
- const s=c.url?{url:c.url,timeout:120000}:{command:'npx',args:['-y',pinned(c),...(folder?[folder]:[])]};
+ const s=c.url?{url:c.url,timeout:120000}:c.image?{command:'docker',args:['run','-i','--rm','-e',c.secretVar,c.image]}:{command:'npx',args:['-y',pinned(c),...(folder?[folder]:[])]};
  if(token){const ref=refFor(k,c.secretVar,s);SEC[ref]=token;if(c.url)s.headers={[c.secretVar]:ref};else s.env={[c.secretVar]:ref}}
  const a=await withCard(mcpSpec(k,s,{folder,noToken:c.optional&&!token,title:()=>tr(c.name),test:true}));
  delete UI.setup[cid];if(!a.ok){render();return}
@@ -393,120 +388,184 @@ async function removeKey(k){const ok=await modalAsk(tr('Gỡ máy chủ “{0}�
 async function toggleAlways(k,on){ // “Luôn chạy sẵn” — mặc định tắt (thay cho tự chạy khi mở AIVN)
 const m=metaOf(k);if(!on){m.alwaysOn=false;save();return render()}
  const a=await withCard(mcpSpec(k,servers()[k],{autostartOnly:true}));if(a.ok){m.alwaysOn=true;if(!m.approvedAt)m.approvedAt=now();save()}render()}
-function openCA(o={}){UI.open=true;$('caModal').dataset.pane='';if(o.pane)UI.pane=o.pane;if(o.tab)UI.tab=o.tab;$('caBack').classList.add('open');
- if(o.scrollTo){const k=o.scrollTo;UI.q='';if(k[0]==='@'){UI.pane='detail';UI.detail=k.slice(1)}else{UI.pane='adv';UI.expanded[k]=true}UI.flash=k}
- render();setTimeout(()=>{const e=document.querySelector('#caModal .flash')||(o.section&&$(o.section));e&&e.scrollIntoView({block:'center'});if(UI.pane==='main'&&!o.scrollTo)$('caQ')&&$('caQ').focus()},0)}
+// ===== v4.7 (lượt 5): hai cột — bên trái danh sách gọn (logo, tên, một dòng, chấm trạng thái), bên phải bảng chi tiết của mục đang chọn =====
+// Mỗi bảng chi tiết có MỘT nút chính lớn theo trạng thái; việc phụ là nút nhỏ; chữ kỹ thuật nằm trong “Chi tiết” (đóng sẵn).
+function openCA(o={}){UI.open=true;if(o.pane==='adv')UI.tab='adv';else if(o.pane==='main'&&UI.tab==='adv')UI.tab='all';if(o.tab)UI.tab=o.tab;if(o.sel)UI.sel=o.sel;
+ if(o.scrollTo){const k=o.scrollTo;UI.q='';UI.sel=k;if(!inList(k))UI.tab=k[0]==='@'&&!conn(k.slice(1))?'all':'mine';UI.flash=k}
+ $('caBack').classList.add('open');render();
+ setTimeout(()=>{const e=document.querySelector('#caList .li.cur');e&&e.scrollIntoView({block:'nearest'});if(!o.scrollTo&&!o.sel&&!UI.key&&!o.noFocus)$('caQ')&&$('caQ').focus()},0)}
 function closeCA(){UI.open=false;$('caBack').classList.remove('open')}
 const PILL={waiting:'Đã kết nối · chờ dùng lần đầu',available:'Chưa kết nối',soon:'Sắp có','needs-setup':'Cần thiết lập',starting:'Đang kết nối…',testing:'Đang chạy thử…',installing:'Đang cài…',on:'Đã kết nối',off:'Đã tắt',error:'Lỗi'};
-// đang “Cài giúp tôi” thì ô hiện Đang cài…, không hiện Lỗi/Chạy thử lại
+// đang “Cài giúp tôi” thì mục hiện Đang cài…, không hiện Lỗi/Chạy thử lại
 const instOf=k=>{const t=k&&(DB.meta.servers[k]||{}).test,p=t&&t.ok===false&&t.code==='notfound'&&progOf(t.cmd);return p&&RT.inst[p]?p:null};
-const pill=s=>`<span class="st ${s}">${tr(PILL[s])}</span>`;
-const toggleExp=k=>{UI.expanded[k]=!UI.expanded[k];render()};
+// màu + biểu tượng thống nhất: xanh = đã kết nối, xám = chưa kết nối, đỏ = lỗi, vàng = sắp có (xanh dương = đang chạy thử / đang cài)
+const DOT={on:'ok',waiting:'ok',available:'off',off:'off','needs-setup':'off',error:'bad',soon:'soon',testing:'busy',starting:'busy',installing:'busy'};
+const DOT_IC={ok:'✓',off:'',bad:'!',soon:'…',busy:'⟳'};
+const dotOf=s=>DOT[s]||'off';
+const sdot=s=>{const d=dotOf(s),t=esc(tr(PILL[s]||''));return `<span class="sd ${d}" data-dot="${d}" title="${t}" role="img" aria-label="${t}">${DOT_IC[d]}</span>`};
+const pill2=s=>`<span class="pill2 ${dotOf(s)}" data-testid="ca-status">${sdot(s)}${tr(PILL[s])}</span>`;
 function storeState(a){if(!a.ready)return'soon';const c=conn(a.id);return !c?'available':!c.enabled?'off':RT.used[a.id]?'on':'waiting'}
-function storeTile(a){const s=storeState(a),k=SKEY(a.id);
- let btn='';if(s==='available'||s==='off')btn=`<button class="btn sm pri" data-testid="connect-apps-connect-${a.id}" onclick="event.stopPropagation();connectStore('${a.id}')">${tr('Kết nối')}</button>`;
- else if(s==='on'||s==='waiting')btn=`<button class="btn sm" data-testid="connect-apps-connect-${a.id}" onclick="event.stopPropagation();disconnectStore('${a.id}')">${tr('Ngắt kết nối')}</button>`;
- else if(s==='soon'){const on=DB.notify&&DB.notify[a.id];btn=`<button class="btn sm ${on?'':'ghost'}" data-testid="connect-apps-notify-${a.id}" aria-pressed="${!!on}" onclick="event.stopPropagation();toggleNotify('${a.id}')">${on?'✓ '+tr('Sẽ báo bạn'):'🔔 '+tr('Báo tôi khi có')}</button>`}
- const tid=a.ready?`connect-apps-card-${a.id}`:`connect-apps-soon-${a.id}`;const on=DB.notify&&DB.notify[a.id];
- return `<div class="card tile ${s==='on'||s==='waiting'?'on':''} ${a.ready?'clickable':'soon'} ${UI.flash===k?'flash':''}" data-testid="${tid}" ${a.ready?`onclick="openDetail('${a.id}')"`:''}>
-  <div class="t">${storeLogo(a)}<div class="nm">${esc(tr(a.name))}</div><span style="flex:1"></span>${pill(s)}</div>
-  <div class="d">${esc(tr(a.desc))}</div>${a.google?`<div class="gl">${tr('Chờ đăng nhập Google.')}</div>`:''}${on?`<div class="gl ok">${tr('AIVN sẽ báo bạn ngay trong ứng dụng khi có. Không gửi gì ra ngoài.')}</div>`:''}
-  <div class="ft">${a.ready&&(s==='on'||s==='waiting')?`<span class="muted small">${tr('Làm được {0} việc',storeTools(a.id).length)}</span>`:''}<span style="flex:1"></span>${btn}</div></div>`}
 function toggleNotify(id){DB.notify=DB.notify||{};if(DB.notify[id])delete DB.notify[id];else DB.notify[id]=now();save();render()}
-function openDetail(id){UI.detail=id;UI.pane='detail';render()}
-function detailBody(id){const a=ST(id),i=STORE_INFO[id],s=storeState(a),c=conn(id);
- const btn=s==='available'||s==='off'?`<button class="btn pri" data-testid="connect-apps-detail-connect" onclick="connectStore('${id}')">${tr('Kết nối')}</button>`:`<button class="btn" data-testid="connect-apps-detail-connect" onclick="disconnectStore('${id}')">${tr('Ngắt kết nối')}</button>`;
- const lv=LEVELS.map(([l,h,sub])=>{const ts=storeTools(id).filter(t=>t[1]===l);return ts.length?`<div class="lvl lvl-${l}"><div class="lh"><span class="lb">${tr(h)}</span><span class="muted small">${tr(sub)} · ${tr('{0} việc',ts.length)}</span></div><div class="tgl">${ts.map(t=>esc(tr(t[2]))).join(' · ')}</div></div>`:''}).join('');
- return `<div class="detail" data-testid="connect-apps-detail-${id}">
-  <div class="dh">${storeLogo(a,48)}<div><h3>${esc(tr(a.name))}</h3>${pill(s)}</div><span style="flex:1"></span>${btn}</div>
-  <p class="dl">${esc(tr(i.long))}</p>
-  <div class="grp">${tr('Quyền')}</div>${lv}
-  <div class="grp">${tr('Dữ liệu nằm ở')}</div><div class="dline">🖥 ${tr(i.where)}</div>${id==='excel'?excelFolderHtml('detail'):''}
-  <div class="grp">${tr('Nhà phát triển và phiên bản')}</div><div class="dline">${esc(tr(i.dev))} · ${tr('bản {0} (số mẫu)',i.ver)}</div>
-  ${c?`<div class="row" style="margin-top:12px"><button class="btn sm danger" onclick="removeStore('${id}')">${tr('Gỡ')}</button></div>`:''}
-  <details class="apdet" data-testid="connect-apps-detail-tech"><summary>${tr('Chi tiết')}</summary><dl class="apf">
-   <dt>${tr('Cách chạy')}</dt><dd>${tr('Trong AIVN, không có tiến trình riêng, không qua mcp.json.')}</dd>
-   <dt>${tr('Đường truyền')}</dt><dd>${tr('Gọi trực tiếp trong ứng dụng (không stdio, không http).')}</dd>
-   <dt>${tr('Công cụ')}</dt><dd>${storeTools(id).map(t=>`<code>${t[0]}</code>`).join(' ')}</dd></dl></details></div>`}
 const MASTER_HINT=()=>tr('Công tắc “Cho AIVN AGENT dùng các ứng dụng đã kết nối” đang tắt. AIVN AGENT sẽ không dùng ứng dụng nào cho đến khi bạn bật lại.');
-function mcpExpand(k){const s=servers()[k],m=DB.meta.servers[k]||{},dis=!DB.master?'disabled':'';
- return `<div class="exp" onclick="event.stopPropagation()"><div style="grid-column:1/-1" class="small"><span style="color:var(--tx3)">${tr('Tên gốc (trong mcp.json)')}:</span> <code data-testid="orig-name-${esc(k)}">${esc(k)}</code>${m.label?` · <span style="color:var(--tx3)">${tr('Tên hiển thị')}:</span> ${esc(m.label)}`:''}</div>${errText(k)&&!(m.test&&m.test.ok===false)?`<div class="msg-bad" style="grid-column:1/-1">${esc(errText(k))}</div>`:''}
-   <div class="tl"><div class="small" style="color:var(--tx3);margin-bottom:6px">${tr('Công cụ')}</div>${RT.listed[k]?toolsOf(k).map(([n,d])=>`<div><code>${esc(n)}</code> <span>— ${esc(d)}</span></div>`).join(''):`<div class="muted small">—</div>`}</div>
-   <div><div class="small" style="color:var(--tx3);margin-bottom:6px">${tr('Nhật ký (60 dòng cuối)')}</div><div class="log">${esc((RT.logs[k]||[]).join('\n'))||'—'}</div></div>
-   <div style="grid-column:1/-1"><span class="small" style="color:var(--tx3)">${s.url?tr('Địa chỉ'):tr('Lệnh')} · ${kindOf(s)}</span><div class="meta">${esc(redact(s))}</div></div>
-   <div class="row" style="grid-column:1/-1;gap:8px">${s.auth?'':`<button class="btn sm" data-testid="reconnect-${esc(k)}" ${dis} ${st(k)==='testing'?'disabled':''} onclick="connectKey('${esc(k)}')">${tr('Kết nối lại')}</button><button class="btn sm" data-testid="retest-${esc(k)}" ${dis} ${st(k)==='testing'?'disabled':''} onclick="connectKey('${esc(k)}',{retest:true})">${tr('Chạy thử lại')}</button>`}<button class="btn sm danger" onclick="removeKey('${esc(k)}')">${tr('Gỡ')}</button>
-   </div></div>`}
 function alwaysRow(k){if(!k||servers()[k].auth)return'';const m=metaOf(k);
- return `<label class="row small always" style="gap:6px;margin-top:6px" data-testid="adv-always-${esc(k)}" onclick="event.stopPropagation()"><input type="checkbox" ${m.alwaysOn?'checked':''} onchange="toggleAlways('${esc(k)}',this.checked)"> <b>${tr('Luôn chạy sẵn')}</b> <span class="muted">${m.alwaysOn?tr('Chạy ngay khi mở AIVN, tốn thêm bộ nhớ.'):tr('Tắt: chỉ chạy khi AIVN AGENT cần, đỡ tốn bộ nhớ.')}</span></label>`}
-function techDetails(id,k,meta){const ek=k||('cat:'+id);return `<details class="apdet" data-testid="adv-details-${esc(id)}" ${UI.expanded[ek]?'open':''} ontoggle="if(this.isConnected)UI.expanded['${esc(ek)}']=this.open" onclick="event.stopPropagation()"><summary onclick="UI.expanded['${esc(ek)}']=!this.parentNode.open">${tr('Chi tiết')}</summary><div class="meta">${meta}</div>${k?mcpExpand(k):''}</details>`}
-function mcpBtn(k,id){const s0=st(k),dis=!DB.master?`disabled title="${esc(MASTER_HINT())}"`:'';
- if(servers()[k].auth)return'';
- if(instOf(k))return `<button class="btn sm" disabled data-testid="connect-apps-connect-${esc(id)}">${tr('Đang cài…')}</button>`;
-  if(s0==='on'||s0==='waiting')return `<button class="btn sm" data-testid="connect-apps-connect-${esc(id)}" onclick="event.stopPropagation();disconnectKey('${esc(k)}')">${tr('Ngắt kết nối')}</button>`;
- if(s0==='starting')return `<button class="btn sm" disabled>${tr('Đang kết nối…')}</button>`;
- if(s0==='testing')return `<button class="btn sm" disabled data-testid="connect-apps-connect-${esc(id)}">${tr('Đang chạy thử…')}</button>`;
- const tf=(DB.meta.servers[k]||{}).test;
- return `<button class="btn sm ${s0==='error'?'':'pri'}" ${dis} data-testid="connect-apps-connect-${esc(id)}" onclick="event.stopPropagation();connectKey('${esc(k)}'${s0==='error'?',{retest:true}':''})">${s0==='error'?(tf&&tf.ok===false?tr('Chạy thử lại'):tr('Thử lại')):tr('Kết nối')}</button>`}
-const catDesc=k=>{const m=DB.meta.servers[k]||{};const c=m.catalogId&&ADVC(m.catalogId);return c?tr(c.desc):tr('Máy chủ MCP trong mcp.json của bạn.')};
-function mineMcpTile(k){const s0=st(k);
- return `<div class="card tile clickable ${s0==='on'||s0==='waiting'?'on':''}" data-testid="connect-apps-card-${esc(k)}" onclick="openCA({scrollTo:'${esc(k)}'})">
-  <div class="t">${srvLogo(k)}${nameOrEdit(k,'nm')}${UI.rename&&UI.rename.k===k?'':`<span style="flex:1"></span>${pill(instOf(k)?'installing':s0)}`}</div>${renameErr(k)}
-  <div class="d">${s0==='error'&&!tfail(k)?tr('Không kết nối được. Mở Nâng cao để xem.'):tr('Bạn thêm ở Nâng cao.')}</div>${testLine(k)}
-  <div class="ft">${renameBtn(k)}<span style="flex:1"></span>${mcpBtn(k,k)}</div></div>`}
-const tfail=k=>{const t=(DB.meta.servers[k]||{}).test;return t&&t.ok===false}
+ return `<label class="row small always" style="gap:6px" data-testid="adv-always-${esc(k)}"><input type="checkbox" ${m.alwaysOn?'checked':''} onchange="toggleAlways('${esc(k)}',this.checked)"> <b>${tr('Luôn chạy sẵn')}</b> <span class="muted">${m.alwaysOn?tr('Chạy ngay khi mở AIVN, tốn thêm bộ nhớ.'):tr('Tắt: chỉ chạy khi AIVN AGENT cần, đỡ tốn bộ nhớ.')}</span></label>`}
+const tfail=k=>{const t=(DB.meta.servers[k]||{}).test;return t&&t.ok===false};
 const match=(...xs)=>{const q=foldVi(UI.q.trim());return !q||foldVi(xs.join(' ')).includes(q)};
 const EMPTY_GROUP={finance:['💰','Chưa có ứng dụng tài chính.','Nhóm này sẽ có thêm ứng dụng trong các bản sau.']};
 function emptyGroup(g){const [ic,h,sub]=EMPTY_GROUP[g]||['🗂','Chưa có ứng dụng trong nhóm này.',null];
  return `<div class="emptybox" data-testid="connect-apps-group-${g}"><div class="ei" aria-hidden="true">${ic}</div><div class="eh">${tr(h)}</div>${sub?`<div class="es">${tr(sub)}</div>`:''}</div>`}
-function mainBody(){const grid=arr=>`<div class="grid">${arr.join('')}</div>`;const vis=a=>match(tr(a.name),a.name,tr(a.desc),a.desc);const none=()=>`<div class="empty">${tr('Không thấy “{0}”.',esc(UI.q.trim()))}<div style="margin-top:8px"><a href="#" data-testid="connect-apps-notfound-adv" onclick="openCA({pane:'adv'});return false">${tr('Không thấy? Thêm máy chủ MCP ở Nâng cao')}</a></div></div>`;
- if(UI.tab==='all'){let b='';for(const [g,l] of GROUPS){const its=STORE.filter(a=>a.group===g&&vis(a));if(its.length)b+=`<div class="grp" data-testid="connect-apps-group-${g}">${tr(l)}</div>`+grid(its.map(storeTile))}return b||none()}
- if(UI.tab==='mine'){const st0=['biz','excel'].filter(id=>conn(id)&&vis(ST(id))).map(id=>storeTile(ST(id)));
-  const mk=Object.keys(servers()).filter(k=>match(displayName(k),k)).map(mineMcpTile);
-  const all=[...st0,...mk];return all.length?grid(all):UI.q.trim()?none():`<div class="empty">${tr('Chưa kết nối ứng dụng nào.')}</div>`}
- const its=STORE.filter(a=>a.group===UI.tab);const shown=its.filter(vis);
- if(!its.length)return emptyGroup(UI.tab);
- return shown.length?`<div data-testid="connect-apps-group-${UI.tab}">${grid(shown.map(storeTile))}</div>`:none()}
-function renderCA(){const fid=document.activeElement&&document.activeElement.id,fpos=fid==='key-in'||fid==='key-name'?document.activeElement.selectionStart:null;const n=countOn(),M=$('caModal');const sc=$('caList')?$('caList').scrollTop:0;const samePane=M.dataset.pane===UI.pane;M.dataset.pane=UI.pane;
- const head=`<div class="mh"><h2>${tr('Kết nối ứng dụng')}</h2><span class="badge ${n?'on':''}" data-testid="connect-apps-count" aria-live="polite">${n?tr('{0} đã kết nối',n):tr('Chưa kết nối')}</span><button class="x" onclick="closeCA()" aria-label="✕">✕</button></div>`;
- if(UI.pane==='main'){
-  M.innerHTML=head+`<div class="mq"><div class="search">${ICONS.search}<input class="inp" id="caQ" data-testid="connect-apps-q" placeholder="${tr('Tìm ứng dụng…')}" value="${esc(UI.q)}"></div></div>
-   <div class="tabs">${TABS.map(([id,l])=>`<button class="tab ${UI.tab===id?'on':''}" data-testid="connect-apps-tab-${id}" onclick="UI.tab='${id}';render()">${tr(l)}</button>`).join('')}</div>
-   <div class="mlist scroll" id="caList">${mainBody()}</div>
-   <div class="mf"><button class="btn sm" data-testid="connect-apps-advanced" onclick="openCA({pane:'adv'})">⚙ ${tr('Nâng cao')}</button></div>`;
-  const q=$('caQ');q.oninput=e=>{UI.q=e.target.value;const p=e.target.selectionStart;renderCA();const n2=$('caQ');n2.focus();n2.setSelectionRange(p,p)}}
- else if(UI.pane==='detail'){M.innerHTML=head+`<div class="advhead"><button class="btn sm ghost" data-testid="connect-apps-detail-back" onclick="UI.pane='main';render()">${tr('← Quay lại')}</button></div><div class="mlist scroll" id="caList">${detailBody(UI.detail)}</div>`}
- else{M.innerHTML=head+`<div class="advhead"><button class="btn sm ghost" onclick="UI.pane='main';render()">${tr('← Quay lại')}</button><b>${tr('Nâng cao')}</b></div><div class="mlist scroll" id="caList">${advBody()}</div>
-   <div class="mf"><div class="warnline" data-testid="connect-apps-mcp-warn">${MCP_WARN()}</div></div>`}
- const L2=$('caList');if(L2&&samePane&&!UI.flash)L2.scrollTop=sc;
+// mục chọn: '@excel' (cửa hàng), 'cat:<id>' (danh mục Nâng cao), '<khoá mcp.json>' (ứng dụng đã thêm), 'x:import', 'x:json'
+function selInfo(sel){if(!sel)return null;
+ if(sel[0]==='@'){const a=ST(sel.slice(1));return a?{t:'store',a,k:sel}:null}
+ if(sel.startsWith('cat:')){const c=ADVC(sel.slice(4));if(!c)return null;const k=keyOfCat(c.id);return k?{t:'srv',k,c}:{t:'cat',c}}
+ if(sel==='x:import'||sel==='x:json')return{t:sel.slice(2)};
+ if(servers()[sel]){const m=DB.meta.servers[sel]||{};return{t:'srv',k:sel,c:m.catalogId?ADVC(m.catalogId):null}}
+ return null}
+const selKey=sel=>{const i=selInfo(sel);return i?(i.k||sel):null};
+function stateOf(i){return i.t==='store'?storeState(i.a):i.t==='cat'?(UI.setup[i.c.id]?'needs-setup':'available'):i.t==='srv'?(instOf(i.k)?'installing':st(i.k)):null}
+const itemName=i=>i.t==='store'?tr(i.a.name):i.t==='cat'?tr(i.c.name):i.t==='srv'?displayName(i.k):i.t==='import'?tr('Nhập mcp.json'):'mcp.json';
+const emojiTile=(e,sz)=>`<span class="lt" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.42)}px">${e}</span>`;
+const itemLogo=(i,sz)=>i.t==='store'?storeLogo(i.a,sz):i.t==='cat'?catLogo(i.c,sz):i.t==='srv'?srvLogo(i.k,sz):emojiTile(i.t==='import'?'📂':'{ }',sz);
+function errShort(k){const t=(DB.meta.servers[k]||{}).test;if(t&&t.ok===false)return testMsg(t);const s=servers()[k];return s&&s.auth?tr('AIVN chưa hỗ trợ cách đăng nhập mà ứng dụng này cần.'):tr('Không kết nối được.')}
+const progText=p=>{const I=RT.inst[p];return I.phase==='dl'?tr('Đang tải {0}… {1}%',PROGS[p].name,I.pct):tr('Đang cài {0}… {1}%',PROGS[p].name,I.pct)};
+const srvDesc=(k,c)=>{const m=DB.meta.servers[k]||{};return c?tr(c.short):m.sampleDesc?tr(m.sampleDesc):tr('Bạn thêm ở Nâng cao.')};
+function itemLine(i,s){
+ if(i.t==='srv'){const p=instOf(i.k);if(p)return['busy',progText(p)];if(s==='testing')return['busy',tr('Đang chạy thử… {0}/{1} giây',RT.testT[i.k]||0,TEST_LIMIT)];
+  if(s==='error')return['bad',errShort(i.k)];return['',srvDesc(i.k,i.c)]}
+ if(i.t==='store')return['',tr(i.a.desc)];
+ if(i.t==='cat')return['',tr(i.c.short)];
+ return['',i.t==='import'?tr('Mang ứng dụng từ LM Studio, Claude Desktop… sang AIVN.'):tr('Sửa tay tệp cấu hình.')]}
+function rowHtml(sel){const i=selInfo(sel);if(!i)return'';const s=stateOf(i),[c,l]=itemLine(i,s),cur=!!UI.sel&&selKey(UI.sel)===selKey(sel);
+ const tid=i.t==='store'?'app-'+i.a.id:i.t==='cat'?'cat-'+i.c.id:i.t==='srv'?i.k:sel.replace(':','-');
+ return `<button class="li ${cur?'cur':''} ${UI.flash&&UI.flash===selKey(sel)?'flash':''}" data-testid="ca-row-${esc(tid)}" data-sel="${esc(sel)}" aria-current="${cur}" onclick="selectItem(this.dataset.sel)">${itemLogo(i,36)}<span class="lm"><span class="ln">${esc(itemName(i))}</span><span class="ls ${c}">${c==='bad'?'':''}${esc(l)}</span></span>${s?sdot(s):''}</button>`}
+function listSecs(){const vis=a=>match(tr(a.name),a.name,tr(a.desc),a.desc),visS=k=>match(displayName(k),k),visC=c=>match(tr(c.name),c.name,tr(c.short),c.short);
+ if(UI.tab==='all')return GROUPS.map(([g,l])=>[tr(l),STORE.filter(a=>a.group===g&&vis(a)).map(a=>'@'+a.id),'connect-apps-group-'+g]);
+ if(UI.tab==='mine')return[[null,[...['biz','excel'].filter(id=>conn(id)&&vis(ST(id))).map(id=>'@'+id),...Object.keys(servers()).filter(visS)]]];
+ if(UI.tab==='adv'){const user=Object.keys(servers()).filter(k=>!(DB.meta.servers[k]||{}).catalogId&&visS(k));
+  const files=[['x:import',tr('Nhập mcp.json')],['x:json','mcp.json']].filter(([,n])=>match(n)).map(x=>x[0]);
+  return[[tr('Có sẵn'),ADV.filter(visC).map(c=>'cat:'+c.id)],[tr('Bạn thêm'),user],[tr('Tệp cấu hình'),files]]}
+ return[[null,STORE.filter(a=>a.group===UI.tab&&vis(a)).map(a=>'@'+a.id),'connect-apps-group-'+UI.tab]]}
+const inList=sel=>listSecs().flatMap(x=>x[1]).some(x=>selKey(x)===selKey(sel));
+function listHtml(secs){const all=secs.flatMap(x=>x[1]);
+ if(!all.length){if(GROUPS.some(g=>g[0]===UI.tab)&&!STORE.some(a=>a.group===UI.tab))return emptyGroup(UI.tab);
+  return UI.q.trim()?`<div class="empty">${tr('Không thấy “{0}”.',esc(UI.q.trim()))}<div style="margin-top:8px"><a href="#" data-testid="connect-apps-notfound-adv" onclick="setTab('adv');return false">${tr('Không thấy? Thêm máy chủ MCP ở Nâng cao')}</a></div></div>`:`<div class="empty">${tr('Chưa kết nối ứng dụng nào.')}</div>`}
+ return secs.map(([h,arr,tid])=>arr.length?`<div class="lsec" ${tid?`data-testid="${tid}"`:''}>${h?`<div class="lgrp">${esc(h)}</div>`:''}${arr.map(rowHtml).join('')}</div>`:'').join('')}
+function setTab(t){UI.tab=t;render()}
+function selectItem(sel){UI.sel=sel;if(!inList(sel)){UI.q='';if(!inList(sel)){const i=selInfo(sel);UI.tab=i&&(i.t==='cat'||i.t==='import'||i.t==='json')?'adv':i&&i.t==='store'&&!conn(i.a.id)?'all':'mine'}}
+ if(UI.key&&UI.key.k!==selKey(sel)){UI.key=null;UI.keyHl=null}
+ if(UI.rename&&UI.rename.k!==selKey(sel))UI.rename=null;
+ if(UI.open)render();else openCA({sel})}
+const legend=()=>`<div class="legend" data-testid="ca-legend">${[['on','Đã kết nối'],['available','Chưa kết nối'],['error','Lỗi'],['soon','Sắp có']].map(([s,l])=>`<span>${sdot(s)} ${tr(l)}</span>`).join('')}</div>`;
+const BIG=(cls,attrs,label)=>`<button class="btn big ${cls}" data-testid="ca-primary" ${attrs}>${label}</button>`;
+const phead=(logo,name,s,sub)=>`<div class="ph">${logo}<div class="phm"><h3>${name}</h3>${sub||''}${s?pill2(s):''}</div></div>`;
+const disM=()=>!DB.master?`disabled title="${esc(MASTER_HINT())}"`:'';
+function panelHtml(){const i=selInfo(UI.sel);if(!i)return `<div class="pempty">${tr('Chọn một ứng dụng bên trái để xem chi tiết.')}</div>`;
+ const mh=!DB.master&&i.t!=='import'&&i.t!=='json'&&!(i.t==='store'&&!i.a.ready)?`<div class="apwarn" data-testid="connect-apps-master-off" style="margin:0 0 16px">${MASTER_HINT()}</div>`:'';
+ return mh+(i.t==='store'?storePanel(i.a):i.t==='cat'?catPanel(i.c):i.t==='srv'?srvPanel(i.k):i.t==='import'?importPanel():jsonPanel())}
+function storePanel(a){const id=a.id,s=storeState(a),c=conn(id);
+ if(!a.ready){const on=DB.notify&&DB.notify[id];
+  return `<div class="detail" data-testid="connect-apps-soon-${id}">${phead(storeLogo(a,56),esc(tr(a.name)),s)}
+   <div class="pact">${BIG(on?'':'pri',`data-act="notify" aria-pressed="${!!on}" data-testid2="connect-apps-notify-${id}" onclick="toggleNotify('${id}')"`,on?'✓ '+tr('Sẽ báo bạn'):'🔔 '+tr('Báo tôi khi có'))}</div>
+   <p class="pdesc">${esc(tr(a.desc))}</p>${a.google?`<div class="pnote">${tr('Chờ đăng nhập Google.')}</div>`:''}${on?`<div class="pnote ok">${tr('AIVN sẽ báo bạn ngay trong ứng dụng khi có. Không gửi gì ra ngoài.')}</div>`:''}</div>`}
+ const i=STORE_INFO[id],cn=s==='on'||s==='waiting';
+ const P=cn?BIG('',`data-act="disconnect" onclick="disconnectStore('${id}')"`,tr('Ngắt kết nối')):BIG('pri',`data-act="connect" onclick="connectStore('${id}')"`,tr('Kết nối'));
+ const cnt=lvlCount(id);
+ const lv=LEVELS.map(([l,h,sub])=>{const ts=storeTools(id).filter(t=>t[1]===l);return ts.length?`<div class="lvl lvl-${l}"><div class="lh"><span class="lb">${tr(h)}</span><span class="muted small">${tr(sub)} · ${tr('{0} việc',ts.length)}</span></div><div class="tgl">${ts.map(t=>esc(tr(t[2]))).join(' · ')}</div></div>`:''}).join('');
+ return `<div class="detail" data-testid="connect-apps-detail-${id}">${phead(storeLogo(a,56),esc(tr(a.name)),s)}
+  <div class="pact">${P}${cn?`<span class="muted small">${tr('Làm được {0} việc',storeTools(id).length)}</span>`:''}<span style="flex:1"></span>${c?`<button class="btn sm ghost danger" data-testid="ca-remove" onclick="removeStore('${id}')">${tr('Gỡ')}</button>`:''}</div>
+  <p class="pdesc">${esc(tr(i.long))}</p>
+  ${id==='excel'?`<div class="psec">${excelFolderHtml('detail')}</div>`:''}
+  <div class="psec"><h5>${tr('Quyền')}</h5><div class="lvls">${LEVELS.map(([l,h,sub],j)=>cnt[j]?`<span class="lvc lvl-${l}"><b>${tr(h)}</b> ${tr('{0} việc',cnt[j])} · ${tr(sub)}</span>`:'').join('')}</div>
+   <details class="apdet" data-testid="perm-details" ${UI.expanded['perm:'+id]?'open':''} ontoggle="if(this.isConnected)UI.expanded['perm:${id}']=this.open"><summary onclick="UI.expanded['perm:${id}']=!this.parentNode.open">${tr('Xem từng việc')}</summary>${lv}</details></div>
+  <div class="psec"><dl class="kv"><dt>${tr('Dữ liệu nằm ở')}</dt><dd>🖥 ${tr(i.where)}</dd><dt>${tr('Nhà phát triển và phiên bản')}</dt><dd>${esc(tr(i.dev))} · ${tr('bản {0} (số mẫu)',i.ver)}</dd></dl></div>
+  <details class="apdet ptech" data-testid="connect-apps-detail-tech"><summary>${tr('Chi tiết')}</summary><dl class="apf">
+   <dt>${tr('Cách chạy')}</dt><dd>${tr('Trong AIVN, không có tiến trình riêng, không qua mcp.json.')}</dd>
+   <dt>${tr('Đường truyền')}</dt><dd>${tr('Gọi trực tiếp trong ứng dụng (không stdio, không http).')}</dd>
+   <dt>${tr('Công cụ')}</dt><dd>${storeTools(id).map(t=>`<code>${t[0]}</code>`).join(' ')}</dd></dl></details></div>`}
+const catRun=c=>c.url?esc(c.url):c.image?esc(`docker run -i --rm -e ${c.secretVar} ${c.image}`):esc(pinned(c))+' · '+tr('đóng sẵn trong bản cài');
+function catTech(c){const ek='cat:'+c.id;return `<details class="apdet ptech" data-testid="adv-details-${c.id}" ${UI.expanded[ek]?'open':''} ontoggle="if(this.isConnected)UI.expanded['${ek}']=this.open"><summary onclick="UI.expanded['${ek}']=!this.parentNode.open">${tr('Chi tiết')}</summary>
+ <dl class="apf"><dt>${c.url?tr('Địa chỉ'):tr('Lệnh')}</dt><dd><code>${catRun(c)}</code></dd>${c.runNote?`<dt>${tr('Cách chạy')}</dt><dd data-testid="run-note-${c.id}">${esc(tr(c.runNote))}</dd>`:''}
+ <dt>${tr('Công cụ')}</dt><dd>${c.tools.map(([n])=>`<code>${esc(n)}</code>`).join(' ')}</dd></dl><div class="small muted">${MCP_WARN()}</div></details>`}
+function setupBox(c){const S=UI.setup[c.id];
+ return `<div class="keybox hl" data-testid="setup-${c.id}"><div class="krow"><span class="kl">🔑 ${tr('Khoá truy cập')} <code>${esc(c.secretVar)}</code>${c.optional?` <span class="opt" data-testid="key-optional">${tr('Không bắt buộc')}</span>`:''}</span>
+  <span class="kin"><input class="inp" type="${S.show?'text':'password'}" id="sec-${c.id}" data-testid="setup-input-${c.id}" autocomplete="off" spellcheck="false" aria-label="${tr('Khoá truy cập')}" placeholder="${c.optional?'Bearer …':tr('Dán khoá vào đây')}" value="${esc(S.v)}" oninput="UI.setup['${c.id}'].v=this.value" onkeydown="event.stopPropagation();if(event.key==='Enter')connectCatalog('${c.id}')">
+  <button class="btn sm ghost eye" data-testid="setup-eye-${c.id}" aria-pressed="${!!S.show}" aria-label="${S.show?tr('Ẩn khoá'):tr('Hiện khoá')}" title="${S.show?tr('Ẩn khoá'):tr('Hiện khoá')}" onclick="UI.setup['${c.id}'].show=!UI.setup['${c.id}'].show;render();setTimeout(()=>{const i=$('sec-${c.id}');i&&i.focus()},0)">${S.show?'🙈':'👁'}</button></span></div>
+  <div class="row" style="gap:8px;margin-top:6px"><button class="btn pri" data-testid="setup-continue-${c.id}" onclick="connectCatalog('${c.id}')">${tr('Tiếp tục')}</button><button class="btn sm ghost" onclick="delete UI.setup['${c.id}'];render()">${tr('Huỷ')}</button></div>
+  <div class="small muted knote">${c.optional?tr('Không bắt buộc. Bỏ trống vẫn kết nối được, nhưng yêu cầu có thể bị từ chối.')+' ':''}🔒 ${tr('Lưu an toàn trên máy, không ghi vào mcp.json.')}</div></div>`}
+function catPanel(c){const setup=UI.setup[c.id];
+ return `<div class="detail" data-testid="connect-apps-card-${c.id}">${phead(catLogo(c,56),esc(tr(c.name)),setup?'needs-setup':'available')}
+  ${setup?`<div class="psec">${setupBox(c)}</div>`:`<div class="pact">${BIG('pri',`data-act="connect" ${disM()} onclick="connectCatalog('${c.id}')"`,tr('Kết nối'))}</div>`}
+  <p class="pdesc">${esc(tr(c.long||c.desc))}</p>
+  ${c.deprecated?`<div class="dep">${tr('Gói này trên npm đã ngừng được hỗ trợ. AIVN ghim đúng bản cuối và không tự tải bản khác.')}</div>`:''}
+  ${catTech(c)}</div>`}
+function srvTech(k){const s=servers()[k],m=DB.meta.servers[k]||{},t=m.test,c=m.catalogId&&ADVC(m.catalogId),ek='t:'+k,tk=esc(k),red=t&&/••••/.test(t.stderr||'');
+ const rows=[[tr('Tên gốc (trong mcp.json)'),`<code data-testid="orig-name-${tk}">${esc(k)}</code>`],...(m.label?[[tr('Tên hiển thị'),esc(m.label)]]:[]),
+  [(s.url?tr('Địa chỉ'):tr('Lệnh'))+' · '+kindOf(s),`<code>${esc(redact(s))}</code>`]];
+ if(c&&c.runNote)rows.push([tr('Cách chạy'),`<span data-testid="run-note-${tk}">${esc(tr(c.runNote))}</span>`]);
+ if(runsBundled(c,s))rows.push([tr('Cách chạy'),tr('Gói này nằm sẵn trong bản cài AIVN. Khi chạy, AIVN không gọi npx và không tải gì.')]);
+ if(t&&t.ok===false)rows.push([tr('Mã lỗi'),`<code>${esc(t.err)}</code>`],[tr('Mã thoát'),t.exit==null?tr('không có (tiến trình không tự thoát)'):`<code>${t.exit}</code>`],[tr('Thời gian'),tr('{0} giây',t.sec)],
+  ['stderr',`<pre class="log">${esc(redactText(t.stderr))}</pre>${red?`<div class="small muted" data-testid="redacted-note-${tk}">🔒 ${tr('Khoá đã được che (••••). AIVN không bao giờ hiện khoá trong nhật ký hay Chi tiết.')}</div>`:''}`]);
+ else if(st(k)==='error'&&errText(k))rows.push([tr('Lỗi'),esc(errText(k))]);
+ rows.push([tr('Công cụ'),RT.listed[k]?toolsOf(k).map(([n,d])=>`<div><code>${esc(n)}</code> <span class="muted">— ${esc(d)}</span></div>`).join(''):'—'],[tr('Nhật ký (60 dòng cuối)'),`<div class="log">${esc((RT.logs[k]||[]).join('\n'))||'—'}</div>`]);
+ return `<details class="apdet ptech" data-testid="test-details-${tk}" ${UI.expanded[ek]?'open':''} ontoggle="if(this.isConnected)UI.expanded['${esc(ek)}']=this.open"><summary onclick="UI.expanded['${esc(ek)}']=!this.parentNode.open">${tr('Chi tiết')}</summary><dl class="apf">${rows.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl><div class="small muted">${MCP_WARN()}</div></details>`}
+const guideA=(P,big)=>`<a class="btn ${big?'big pri':'sm'}" data-testid="${big?'ca-primary':'install-guide'}" data-act="guide" href="${P.url}" target="_blank" rel="noopener noreferrer">📖 ${tr('Hướng dẫn cài')} ↗</a>`;
+function srvPanel(k){const s=servers()[k],m=DB.meta.servers[k]||{},c=m.catalogId?ADVC(m.catalogId):null,t=m.test,tk=esc(k),p=instOf(k),s0=p?'installing':st(k),busy=s0==='testing'||s0==='starting'||!!p;
+ const sm=(tid,act,label)=>`<button class="btn sm" data-testid="${tid}" ${disM()} ${busy?'disabled':''} onclick="${act}">${label}</button>`;
+ const retest=sm('retest-'+tk,`connectKey('${tk}',{retest:true})`,tr('Chạy thử lại')),reconn=sm('reconnect-'+tk,`connectKey('${tk}')`,tr('Kết nối lại'));
+ let P='';const sec=[];
+ if(p)P=BIG('','disabled data-act="installing"','⬇ '+tr('Đang cài…'));
+ else if(s0==='testing')P=BIG('','disabled data-act="testing"',tr('Đang chạy thử…'));
+ else if(s0==='starting')P=BIG('','disabled data-act="starting"',tr('Đang kết nối…'));
+ else if(s.auth)P=BIG('',`data-act="remove" onclick="removeKey('${tk}')"`,tr('Gỡ'));
+ else if(s0==='error'&&t&&t.ok===false){
+  if(t.code==='key'||t.code==='keybad')P=BIG('pri',`data-act="key" data-testid2="enter-key-${tk}" ${disM()} onclick="openKey('${tk}')"`,'🔑 '+tr('Nhập khoá'));
+  else if(t.code==='notfound'){const pg=progOf(t.cmd),PG=pg&&PROGS[pg];
+   if(PG&&PG.auto){P=BIG('pri',`data-act="install" data-testid2="install-${pg}-${tk}" ${disM()} onclick="installProg('${pg}','${tk}')"`,'⬇ '+tr('Cài giúp tôi'));sec.push(guideA(PG))}
+   else if(PG)P=guideA(PG,true)}
+  if(!P)P=BIG('pri',`data-act="retest" ${disM()} onclick="connectKey('${tk}',{retest:true})"`,tr('Chạy thử lại'));else sec.push(retest)}
+ else if(s0==='error')P=BIG('pri',`data-act="retest" ${disM()} onclick="connectKey('${tk}',{retest:true})"`,tr('Thử lại'));
+ else if(s0==='on'||s0==='waiting'){P=BIG('',`data-act="disconnect" onclick="disconnectKey('${tk}')"`,tr('Ngắt kết nối'));sec.push(reconn,retest)}
+ else P=BIG('pri',`data-act="connect" ${disM()} onclick="connectKey('${tk}')"`,tr('Kết nối'));
+ if(isUserSrv(k)&&!(UI.rename&&UI.rename.k===k))sec.push(`<button class="btn sm ghost" data-testid="rename-${tk}" onclick="renameStart('${tk}')">✎ ${tr('Đổi tên hiển thị')}</button>`);
+ const rm=s.auth?'':`<button class="btn sm ghost danger" data-testid="ca-remove" onclick="removeKey('${tk}')">${tr('Gỡ')}</button>`;
+ // trạng thái: lỗi (một câu + cách sửa), đang cài / đang chạy thử (thanh tiến trình), hoặc chạy thử được
+ let stl='';
+ if(p){const I=RT.inst[p];stl=`<div class="tst run" data-testid="install-progress-${tk}">⬇ ${progText(p)}<span class="bar"><i style="width:${I.pct}%"></i></span></div>`}
+ else if(s0==='testing'){const n=RT.testT[k]||0;stl=`<div class="tst run" data-testid="test-${tk}">⏳ ${tr('Đang chạy thử… {0}/{1} giây',n,TEST_LIMIT)}<span class="bar"><i style="width:${Math.round(100*n/TEST_LIMIT)}%"></i></span></div>`}
+ else if(s0==='error'){const fail=t&&t.ok===false;stl=`<div class="perr" data-testid="test-${tk}"><b>✕ ${esc(fail?testMsg(t):errShort(k))}</b><div class="fix">${esc(fail?testFix(t):s.auth?tr('Hỏi người cung cấp ứng dụng xem có cách kết nối bằng khoá truy cập không.'):tr('Bấm Thử lại. Nếu vẫn lỗi, mở Chi tiết để xem.'))}</div></div>`}
+ else if(t&&t.ok){const pi=progOf(s.command),inst=pi&&DB.installed&&DB.installed[pi];stl=`<div class="tst ok" data-testid="test-${tk}">✓ ${tr('Chạy thử được · {0} chức năng',t.n)}</div>${inst?`<div class="tst ok small" data-testid="installed-${tk}">⬇ ${tr('Đã cài {0} cho AIVN',PROGS[pi].name)}</div>`:''}`}
+ const kb=keyBox(k),ar=alwaysRow(k);
+ const name=UI.rename&&UI.rename.k===k?nameOrEdit(k,'nm'):esc(displayName(k));
+ return `<div class="detail" data-testid="connect-apps-card-${tk}">${phead(srvLogo(k,56),name,s0,renameErr(k))}
+  <div class="pact">${P}${sec.join('')}<span style="flex:1"></span>${rm}</div>${stl}
+  <p class="pdesc">${esc(c?tr(c.long||c.desc):srvDesc(k,null))}</p>
+  ${kb?`<div class="psec"><h5>${tr('Khoá truy cập')}</h5>${kb}</div>`:''}
+  ${ar?`<div class="psec"><h5>${tr('Khi nào chạy')}</h5>${ar}</div>`:''}
+  ${srvTech(k)}</div>`}
+function importPanel(){return `<div class="detail" data-testid="ca-import">${phead(emojiTile('📂',56),tr('Nhập mcp.json'),null,`<div class="small muted" style="margin-top:4px">${tr('Mang ứng dụng từ LM Studio, Claude Desktop… sang AIVN.')}</div>`)}
+ <div class="pact">${BIG('pri',`data-act="pick" onclick="$('fileIn').click()"`,'📂 '+tr('Chọn tệp mcp.json…'))}<button class="btn sm" data-testid="connect-apps-sample" onclick="UI.plan=makePlan(SAMPLE,SAMPLE_NAME);render()">${tr('(bản mẫu) Dùng tệp ví dụ')}</button><span style="flex:1"></span><button class="btn sm ghost" onclick="exportJson()">${tr('Xuất mcp.json…')}</button></div>
+ <p class="pdesc">${tr('Mỗi mục mới được chạy thử một lần (tối đa {0} giây) để biết có dùng được không.',TEST_LIMIT)}</p>
+ ${importPlan()}<div class="warnline" data-testid="connect-apps-mcp-warn" style="margin-top:14px">${MCP_WARN()}</div></div>`}
+function jsonPanel(){return `<div class="detail" data-testid="ca-json">${phead(emojiTile('{ }',56),'mcp.json',null,`<div class="small muted" style="margin-top:4px">${tr('Sửa tay tệp cấu hình.')}</div>`)}
+ <textarea class="inp code" id="advTxt" data-testid="connect-apps-json" spellcheck="false" oninput="UI.advText=this.value" style="margin-top:16px">${esc(UI.advText??JSON.stringify(DB.mcp,null,2))}</textarea>
+ <div class="small muted" style="margin:6px 0" data-testid="json-secret-note">🔑 ${tr('Chỗ giữ như {0} trỏ tới khoá đã lưu an toàn trên máy. Khoá thật không bao giờ ghi vào mcp.json.','<code>${secret:tim-kiem}</code>')}</div>
+ <div class="small muted" style="margin:6px 0">ℹ️ ${tr('Đổi lệnh, đối số, địa chỉ, đầu mục hoặc tên biến thì máy chủ mất duyệt và phải qua thẻ xin phép.')}</div>
+ <div class="row"><button class="btn pri" data-testid="ca-primary" onclick="saveAdv()">${tr('Lưu & kết nối lại')}</button><span id="advMsg">${UI.advMsg||''}</span></div></div>`}
+function renderCA(){const M=$('caModal'),ae=document.activeElement,fid=ae&&ae.tagName==='INPUT'&&M.contains(ae)&&ae.id?ae.id:null;let fpos=null;try{fpos=fid?ae.selectionStart:null}catch(e){}
+ const sc=$('caList')?$('caList').scrollTop:0,sp=$('caPanel')?$('caPanel').scrollTop:0,n=countOn();
+ const secs=listSecs(),flat=secs.flatMap(x=>x[1]);if(!UI.sel||!flat.some(x=>selKey(x)===selKey(UI.sel)))UI.sel=flat[0]||null;
+ const same=M.dataset.sel===String(selKey(UI.sel));M.dataset.sel=String(selKey(UI.sel));
+ M.innerHTML=`<div class="mh"><h2>${tr('Kết nối ứng dụng')}</h2><span class="badge ${n?'on':''}" data-testid="connect-apps-count" aria-live="polite">${n?tr('{0} đã kết nối',n):tr('Chưa kết nối')}</span><button class="x" onclick="closeCA()" aria-label="✕">✕</button></div>
+  <div class="ca-top"><div class="search">${ICONS.search}<input class="inp" id="caQ" data-testid="connect-apps-q" placeholder="${tr('Tìm ứng dụng…')}" value="${esc(UI.q)}"></div>
+   <div class="chips" role="tablist">${FILTERS.map(([id,l])=>`<button class="chip ${id==='adv'?'adv':''} ${UI.tab===id?'on':''}" role="tab" aria-selected="${UI.tab===id}" data-testid="connect-apps-tab-${id}" onclick="setTab('${id}')">${id==='adv'?'⚙ ':''}${tr(l)}</button>`).join('')}</div>
+   <span style="flex:1"></span><button class="btn sm" data-testid="connect-apps-import-top" onclick="selectItem('x:import')">📂 ${tr('Nhập mcp.json')}</button></div>
+  <div class="ca-body"><div class="ca-left"><div class="scroll" id="caList">${listHtml(secs)}</div>${legend()}</div>
+   <div class="scroll" id="caPanel" data-testid="ca-panel">${panelHtml()}</div></div>`;
+ $('caQ').oninput=e=>{UI.q=e.target.value;renderCA()};
+ $('caList').scrollTop=sc;if(same)$('caPanel').scrollTop=sp;
  if(UI.flash)setTimeout(()=>{UI.flash=null},1700);
- if(UI.key&&(fid==='key-in'||fid==='key-name')&&$(fid)){const e=$(fid);e.focus();try{e.setSelectionRange(fpos??e.value.length,fpos??e.value.length)}catch(x){}}
- const ri=UI.rename&&$('rn-in');if(ri&&document.activeElement!==ri){const p=UI.rename.pos??ri.value.length;ri.focus();try{ri.setSelectionRange(p,p)}catch(e){}}}
-function advRow(c){const k=keyOfCat(c.id),s0=UI.setup[c.id]?'needs-setup':k?st(k):'available',ex=k&&UI.expanded[k],dis=!DB.master?`disabled title="${esc(MASTER_HINT())}"`:'';
- const btn=k?mcpBtn(k,c.id):s0==='needs-setup'?'':`<button class="btn sm pri" ${dis} data-testid="connect-apps-connect-${c.id}" onclick="event.stopPropagation();connectCatalog('${c.id}')">${tr('Kết nối')}</button>`;
- const setup=s0==='needs-setup'?`<div class="setup" onclick="event.stopPropagation()"><label class="small muted">${c.secretVar}</label><input class="inp" type="password" id="sec-${c.id}" autocomplete="off" placeholder="${c.optional?'Bearer …':tr('Dán khoá vào đây')}" oninput="UI.setup['${c.id}'].v=this.value">
-   <button class="btn sm pri" onclick="connectCatalog('${c.id}')">${tr('Tiếp tục')}</button><button class="btn sm ghost" onclick="delete UI.setup['${c.id}'];render()">${tr('Huỷ')}</button>
-   <div class="small muted" style="flex-basis:100%">${c.optional?tr('Tuỳ chọn: chữ “Bearer …”. Bỏ trống vẫn kết nối được, nhưng yêu cầu có thể bị từ chối.')+' ':''}${KEY_NOTE()}</div></div>`:'';
- const meta=k&&!c.url&&!runsBundled(c,servers()[k])?esc(redact(servers()[k])):c.url?esc(c.url):esc(pinned(c))+' · '+tr('đóng sẵn trong bản cài');
- return `<div class="srv ${k&&UI.flash===k?'flash':''}" id="adv-${c.id}" data-testid="connect-apps-card-${c.id}">
-  <div class="top">${catLogo(c,30)}<span class="nm">${esc(tr(c.name))}</span>${pill(instOf(k)?'installing':s0)}<span style="flex:1"></span>${btn}</div>
-  <div class="d">${esc(tr(c.desc))}</div>${s0==='error'&&!ex&&!tfail(k)?`<div class="err">${esc(errText(k))}</div>`:''}${k?testLine(k):''}${k?keyBox(k):''}${alwaysRow(k)}
-  ${c.deprecated?`<div class="dep">${tr('Gói này trên npm đã ngừng được hỗ trợ. AIVN ghim đúng bản cuối và không tự tải bản khác.')}</div>`:''}${setup}${techDetails(c.id,k,meta)}</div>`}
-function advUserRow(k){const s=servers()[k],ex=UI.expanded[k],s0=st(k);
- return `<div class="srv ${UI.flash===k?'flash':''}" id="adv-${esc(k)}" data-testid="connect-apps-card-${esc(k)}">
-  <div class="top">${srvLogo(k,30)}${UI.rename&&UI.rename.k===k?nameOrEdit(k,'nm'):`${nameOrEdit(k,'nm')}${pill(instOf(k)?'installing':s0)}<span style="flex:1"></span>${renameBtn(k)}${mcpBtn(k,k)}`}</div>${renameErr(k)}
-  <div class="d">${tr('Máy chủ MCP trong mcp.json của bạn.')}</div>${s0==='error'&&!ex&&!tfail(k)?`<div class="err">${esc(errText(k))}</div>`:''}${testLine(k)}${keyBox(k)}${alwaysRow(k)}${techDetails(k,k,esc(kindOf(s))+' · '+esc(redact(s)))}</div>`}
-function advBody(){const user=Object.keys(servers()).filter(k=>!(DB.meta.servers[k]||{}).catalogId);
- return `${!DB.master?`<div class="apwarn" data-testid="connect-apps-master-off" style="margin:0 0 12px">${MASTER_HINT()}</div>`:''}
-  <div class="grp">${tr('Máy chủ có sẵn')}</div>${ADV.map(advRow).join('')}<div class="small muted" style="margin:2px 4px 6px" data-testid="connect-apps-github-note">${tr('GitHub sẽ dùng máy chủ MCP chính thức từ xa (qua URL) trong một bản sau.')}</div>
-  ${user.length?`<div class="grp">${tr('Máy chủ khác trong mcp.json')}</div>${user.map(advUserRow).join('')}`:''}
-  <div class="grp" id="advImport">${tr('Nhập / xuất')}</div>
-  <div class="row"><button class="btn sm" data-testid="connect-apps-import" onclick="$('fileIn').click()">📂 ${tr('Nhập mcp.json…')}</button><button class="btn sm ghost" onclick="UI.plan=makePlan(SAMPLE,SAMPLE_NAME);render();setTimeout(()=>$('advImport').scrollIntoView({block:'start'}),0)">${tr('(bản mẫu) Dùng tệp ví dụ')}</button><span style="flex:1"></span><button class="btn sm" onclick="exportJson()">${tr('Xuất mcp.json…')}</button></div>
-  ${importPlan()}
-  <div class="grp" id="advJson">mcp.json</div>
-  <textarea class="inp code" id="advTxt" data-testid="connect-apps-json" spellcheck="false" oninput="UI.advText=this.value">${esc(UI.advText??JSON.stringify(DB.mcp,null,2))}</textarea>
-  <div class="small muted" style="margin:6px 0" data-testid="json-secret-note">🔑 ${tr('Chỗ giữ như {0} trỏ tới khoá đã lưu an toàn trên máy. Khoá thật không bao giờ ghi vào mcp.json.','<code>${secret:tim-kiem}</code>')}</div>
-  <div class="small muted" style="margin:6px 0">ℹ️ ${tr('Đổi lệnh, đối số, địa chỉ, đầu mục hoặc tên biến thì máy chủ mất duyệt và phải qua thẻ xin phép.')}</div>
-  <div class="row"><button class="btn pri sm" onclick="saveAdv()">${tr('Lưu & kết nối lại')}</button><span id="advMsg">${UI.advMsg||''}</span></div>`}
+ if(fid&&$(fid)){const e=$(fid);e.focus();try{const q=fpos??e.value.length;e.setSelectionRange(q,q)}catch(x){}}
+ const ri=UI.rename&&$('rn-in');if(ri&&document.activeElement!==ri){const q=UI.rename.pos??ri.value.length;ri.focus();try{ri.setSelectionRange(q,q)}catch(e){}}}
 const SAMPLE_NAME='mcp-tu-LM-Studio.json';
 const SAMPLE=JSON.stringify({mcpServers:{
  'memory':{command:'npx',args:['-y',pinned(ADVC('memory'))]},
@@ -523,6 +582,8 @@ const SAMPLE=JSON.stringify({mcpServers:{
  'bao-cao':{command:'npx',args:['-y','@vidu/mcp-bao-cao@1.0.0']},
  'github':{command:'docker',args:['run','-i','--rm','-e','GITHUB_PERSONAL_ACCESS_TOKEN','ghcr.io/github/github-mcp-server'],env:{GITHUB_PERSONAL_ACCESS_TOKEN:'ghp_mauxxxxxxxxxxxxxxxxxxxx'}},
  'lich-cong-ty':{url:'https://calendar.example.com/mcp',auth:{type:'oauth',CLIENT_SECRET:'abc123'}}}},null,2);
+// v4.7: mô tả một dòng cho các mục của tệp ví dụ (bản mẫu); lich-cong-ty cố ý là mẫu lỗi (cần OAuth)
+const SAMPLE_DESC={'brave-search':'Tìm trên mạng bằng Brave.','nas-nha':'Ổ mạng trong nhà.','thoi-tiet':'Dự báo thời tiết.','may-ngoai':'Máy ở ngoài mạng nội bộ.','nas-ten':'Ổ mạng trong nhà (theo tên).','sqlite':'Đọc tệp cơ sở dữ liệu SQLite.','thinking':'Suy nghĩ từng bước (qua mạng).','tim-kiem':'Tìm kiếm (cần khoá).','bao-cao':'Báo cáo (mẫu chạy quá giờ).','lich-cong-ty':'Lịch công ty (mẫu lỗi)'};
 function makePlan(text,file){const r=parseFile(text);if(r.fatal)return{file,fatal:r.fatal};
  const plan={file,add:[],skip:[],conflict:[],rejected:[],oauthSkipped:[],secretCount:0};const seen={},taken=new Set();
  for(const [k0,s0] of Object.entries(r.servers)){const k=k0.trim(),s=JSON.parse(JSON.stringify(s0));
@@ -553,9 +614,10 @@ async function applyImport(){const p=UI.plan;
  const a=await withCard(()=>({tool:'mcp_import',logoHtml:letterTile('M',30),title:tr('Nhập {0} máy chủ từ mcp.json?',p.add.length),sub:p.file,preview:p.add.map(x=>[x.name,x.kind+' · → '+(x.slot?tr('Nâng cao: {0}',tr(ADVC(x.slot).name)):tr('Của tôi'))+(x.danger?' · ⚠ '+whyOf(x):'')]),
   lines:[TEST_LINE(),...(p.secretCount?['🔑 '+secretLine(p.secretCount)]:[])],details:p.add.map(x=>[x.name,x.cmd,1]),warn:MCP_WARN(),danger:p.add.some(x=>x.danger),alwaysLabel:null}));
  if(!a.ok)return;
- for(const x of p.add){const s=JSON.parse(JSON.stringify(x.server));extractSecrets(x.name,s);servers()[x.name]=s;DB.meta.servers[x.name]={catalogId:x.slot||null,approvedAt:now(),alwaysOn:false}}
- for(const x of p.oauthSkipped){const s=JSON.parse(JSON.stringify(x.server));extractSecrets(x.name,s);servers()[x.name]=s;DB.meta.servers[x.name]={catalogId:null,approvedAt:null,alwaysOn:false};RT.state[x.name]='error';const nm=x.name;RT.err[nm]=()=>tr('AIVN chưa hỗ trợ đăng nhập OAuth (trường auth) của máy chủ "{0}".',nm)}
- const names=p.add.map(x=>x.name);save();UI.plan=null;UI.pane='main';UI.tab='mine';UI.q='';render();runTests(names)}
+ const sd=n=>p.file===SAMPLE_NAME&&SAMPLE_DESC[n]?{sampleDesc:SAMPLE_DESC[n]}:{};
+ for(const x of p.add){const s=JSON.parse(JSON.stringify(x.server));extractSecrets(x.name,s);servers()[x.name]=s;DB.meta.servers[x.name]={catalogId:x.slot||null,approvedAt:now(),alwaysOn:false,...sd(x.name)}}
+ for(const x of p.oauthSkipped){const s=JSON.parse(JSON.stringify(x.server));extractSecrets(x.name,s);servers()[x.name]=s;DB.meta.servers[x.name]={catalogId:null,approvedAt:null,alwaysOn:false,...sd(x.name)};RT.state[x.name]='error';const nm=x.name;RT.err[nm]=()=>tr('AIVN chưa hỗ trợ đăng nhập OAuth (trường auth) của máy chủ "{0}".',nm)}
+ const names=p.add.map(x=>x.name);save();UI.plan=null;UI.tab='mine';UI.q='';UI.sel=names[0]||UI.sel;render();runTests(names)}
 async function replaceOne(name){const x=UI.plan.conflict.find(c=>c.name===name);
  const a=await withCard(()=>({tool:'mcp_replace',logoHtml:srvLogo(name,30),title:tr('Thay thế máy chủ “{0}”?',name),sub:name,details:[[tr('Lệnh cũ'),x.old,1],[tr('Lệnh mới'),x.cmd,1]],warn:tr('Tiến trình cũ sẽ bị dừng.'),danger:true,alwaysLabel:null}));
  if(!a.ok)return;stop(name);const s=JSON.parse(JSON.stringify(x.server));extractSecrets(name,s);servers()[name]=s;const m=metaOf(name);m.approvedAt=now();m.alwaysOn=false;save();
@@ -633,8 +695,8 @@ function renderWarn(){const c=toolCheck(),el=$('toolWarn');
   ${c.block?'':`<button class="btn sm ghost" onclick="DB.warnSig='${esc(c.sig)}';save();renderPage()">${tr('Đã hiểu')}</button>`}</div></div>`}
 function renderPage(){const n=countOn(),t=curTpl();
  document.documentElement.lang=LANG==='zh'?'zh-CN':LANG;
- $('o_draft').textContent='⚠ '+tr('Bản nháp 4.6 theo F-PLUGINS bản 2 + quyết định ngày 22/10 (lượt 4)')+' · '+tr('Dữ liệu mẫu · lưu trong trình duyệt');$('o_draft').title=$('o_draft').textContent;
- $('o_v41').textContent=tr('Bản 4.1');$('o_v45').textContent=tr('Bản 4.5');$('o_v44').textContent=tr('Bản 4.4');$('o_v43').textContent=tr('Bản 4.3');$('o_v42').textContent=tr('Bản 4.2');$('o_restart').textContent='↻ '+tr('Mô phỏng mở lại AIVN');$('o_reset').textContent=tr('↺ Đặt lại');$('o_set').textContent='⚙ '+tr('Cài đặt (mô phỏng)');
+ $('o_draft').textContent='⚠ '+tr('Bản nháp 4.7 theo F-PLUGINS bản 2 + quyết định ngày 22/10 (lượt 5)')+' · '+tr('Dữ liệu mẫu · lưu trong trình duyệt');$('o_draft').title=$('o_draft').textContent;
+ $('o_v46').textContent=tr('Bản 4.6');$('o_v41').textContent=tr('Bản 4.1');$('o_v45').textContent=tr('Bản 4.5');$('o_v44').textContent=tr('Bản 4.4');$('o_v43').textContent=tr('Bản 4.3');$('o_v42').textContent=tr('Bản 4.2');$('o_restart').textContent='↻ '+tr('Mô phỏng mở lại AIVN');$('o_reset').textContent=tr('↺ Đặt lại');$('o_set').textContent='⚙ '+tr('Cài đặt (mô phỏng)');
  $('setPop').innerHTML=`<div class="small" style="font-weight:600;margin-bottom:6px">${tr('Cài đặt')} · ${tr('Giao diện')}</div><label class="small muted" for="uiLangSel">${tr('Ngôn ngữ giao diện')}</label>
   <select id="uiLangSel" class="inp" style="margin-top:4px"><option value="vi" ${LANG==='vi'?'selected':''}>Tiếng Việt</option><option value="en" ${LANG==='en'?'selected':''}>English</option><option value="zh" ${LANG==='zh'?'selected':''}>中文</option></select>
   <div class="small muted" style="margin-top:6px">${tr('Chỗ này đóng vai mục Cài đặt của ứng dụng. Hộp thoại Kết nối ứng dụng không có nút đổi ngôn ngữ.')}</div>`;
