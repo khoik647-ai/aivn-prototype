@@ -1449,4 +1449,11 @@ Object.assign(STR,{
 'Đã rút gọn tên dài hơn 64 ký tự ({0})':['Names longer than 64 characters shortened ({0})','已缩短超过 64 个字符的名称（{0}）'],
 'tên gốc {0} ký tự':['original name: {0} characters','原名称 {0} 个字符'],
 'Giá trị này sẽ được lưu trong mcp.json dưới dạng chữ thường (không che).':['This value will be stored in mcp.json as plain text (not masked).','此值将以明文形式保存在 mcp.json 中（不遮盖）。'],
+ "Bản nháp 4.12 theo F-PLUGINS bản 2 + quyết định ngày 22/10 + báo cáo QA 4.11 (lượt 10)":["Draft 4.12 per F-PLUGINS v2 + 22/10 decisions + QA report 4.11 (round 10)", "4.12 草稿：依据 F-PLUGINS 第 2 版 + 10/22 决定 + QA 报告 4.11（第 10 轮）"],
+ "Bản 4.11":["Version 4.11","4.11 版"],
+"Đã đặt lại {0} mục. Lần lưu sau AIVN sẽ hỏi lại các chuỗi này.":["Reset {0} items. AIVN will ask about these values again on the next save.","已重置 {0} 项。下次保存时 AIVN 会再次询问这些值。"],
+"lưu dạng chữ thường (bạn đã bỏ chọn)":["stored as plain text (you unticked it)","以明文保存（您已取消勾选）"],
+"{0} chuỗi được bạn đánh dấu “không phải khoá” (chỉ ở đúng máy chủ và vị trí đó).":["{0} values marked “not a key” by you (only for that server and position).","您将 {0} 个值标记为“不是密钥”（仅限该服务器和该位置）。"],
+"Đặt lại các mục “không phải khoá” ({0})":["Reset “not a key” items ({0})","重置“不是密钥”项（{0}）"],
+"{0} chuỗi bạn bỏ chọn sẽ lưu dạng chữ thường trong mcp.json: {1}.":["{0} values you unticked will be stored as plain text in mcp.json: {1}.","您取消勾选的 {0} 个值将以明文保存在 mcp.json 中：{1}。"],
 });

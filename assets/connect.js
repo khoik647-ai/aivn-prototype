@@ -1,4 +1,4 @@
-// Bản mẫu Kết nối ứng dụng v4.11 — báo cáo QA v4.10 (lượt 9: tên dài không còn treo khi “Giữ cả hai”, bắt thêm 6 loại khoá lọt — mật khẩu trong URL ở env/args, header -H "X-API-Key: …", ?access_key=, *_PASS, secret AWS dạng arg —, bỏ chọn một dòng vẫn lưu phần còn lại, JWT một khối, không gợi ý sha/digest/tên tệp, nút Kết nối trang chính ≥44px, thanh công cụ một hàng ≥1024px). Trước đó v4.10 — F-PLUGINS bản 2 (PR #5) + quyết định 22/10 + báo cáo QA v4.9 (lượt 8: dò khoá ở mọi chỗ trong mcp.json + thẻ xin phép từng khoá, vùng chạm ≥44px khi dùng tay, trùng tên máy chủ, bản so sánh khi lưu mcp.json, thẻ lọc Đã kết nối, mô tả không bị cắt, tô màu cú pháp). Mô phỏng hoàn toàn trong trình duyệt.
+// Bản mẫu Kết nối ứng dụng v4.12 — báo cáo QA v4.11 (lượt 10: quét khoá theo LUẬT — tên, args, command, URL, lồng nhau; không-phải-khoá theo từng máy chủ; một luật tên 1–64 ký tự). Trước đó: v4.11 — báo cáo QA v4.10 (lượt 9: tên dài không còn treo khi “Giữ cả hai”, bắt thêm 6 loại khoá lọt — mật khẩu trong URL ở env/args, header -H "X-API-Key: …", ?access_key=, *_PASS, secret AWS dạng arg —, bỏ chọn một dòng vẫn lưu phần còn lại, JWT một khối, không gợi ý sha/digest/tên tệp, nút Kết nối trang chính ≥44px, thanh công cụ một hàng ≥1024px). Trước đó v4.10 — F-PLUGINS bản 2 (PR #5) + quyết định 22/10 + báo cáo QA v4.9 (lượt 8: dò khoá ở mọi chỗ trong mcp.json + thẻ xin phép từng khoá, vùng chạm ≥44px khi dùng tay, trùng tên máy chủ, bản so sánh khi lưu mcp.json, thẻ lọc Đã kết nối, mô tả không bị cắt, tô màu cú pháp). Mô phỏng hoàn toàn trong trình duyệt.
 renderRail('agent');
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -64,12 +64,12 @@ const BUILTIN=[
   starters:[{vi:'Liệt kê tệp trong thư mục được phép, nhóm theo loại.',en:'List the files in the allowed folder, grouped by kind.',zh:'列出允许文件夹里的文件，按类型分组。'},{vi:'Đọc bảng tính này và nói có bao nhiêu dòng.',en:'Read this spreadsheet and say how many rows it has.',zh:'读这个表格，说出有多少行。'}],suggest:['excel']},
 ];
 const L=o=>o==null?'':typeof o==='string'?o:(o[LANG]??o.vi??Object.values(o)[0]??'');
-const KEY='aivn.plugins.v411';
+const KEY='aivn.plugins.v412';
 // quyết định lượt 4 (c): khoá lưu riêng, đóng vai kho khoá của hệ điều hành (Windows Credential Manager). mcp.json chỉ giữ chỗ ${secret:…}.
-const VAULT='aivn.secrets.v411';
+const VAULT='aivn.secrets.v412';
 // v4.10: kho khoá MÔ PHỎNG. Ứng dụng thật dùng kho khoá của hệ điều hành (Windows Credential Manager / macOS Keychain / libsecret).
 // Bản mẫu không bao giờ ghi khoá dạng chữ: localStorage chỉ giữ mục đã làm rối (XOR + base64, nhãn "sim1:"), không phải mã hoá thật.
-const VKEY='aivn-sim-vault-411';
+const VKEY='aivn-sim-vault-412';
 const obf=v=>'sim1:'+btoa(Array.from(new TextEncoder().encode(String(v)),(b,i)=>String.fromCharCode(b^VKEY.charCodeAt(i%VKEY.length))).join(''));
 const deobf=x=>{if(typeof x!=='string'||!x.startsWith('sim1:'))return x;try{const b=atob(x.slice(5));return new TextDecoder().decode(Uint8Array.from(b,(c,i)=>c.charCodeAt(0)^VKEY.charCodeAt(i%VKEY.length)))}catch{return ''}};
 let SEC=Object.fromEntries(Object.entries(LS.get(VAULT,{})||{}).map(([k,v])=>[k,deobf(v)]));
@@ -88,7 +88,10 @@ const metaOf=k=>DB.meta.servers[k]||(DB.meta.servers[k]={catalogId:null,approved
 const keyOfCat=cid=>Object.keys(servers()).find(k=>(DB.meta.servers[k]||{}).catalogId===cid);
 // v4.11 (quyết định 23/10 — quy tắc tên): tên Unicode (chữ Hán, emoji…) không gập được về a-z0-9 → thêm mã băm ngắn của cả tên, để hai tên khác nhau không bị coi là trùng
 const nameHash=k=>{let h=5381;for(const c of String(k))h=((h*33)^c.codePointAt(0))>>>0;return h.toString(36).slice(0,6)};
-const safeName=k=>{const f=foldVi(k),a=f.replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');return /[^\x00-\x7f]/.test(f)?(a.slice(0,17)+'_'+nameHash(String(k).trim())).replace(/^_/,''):a.slice(0,24)};
+// v4.12 (P411-4): tên trùng xét theo CẢ tên (sau khi bỏ khoảng trắng hai đầu, chuẩn NFC). safeName (mã nội bộ của công cụ) giờ là đơn ánh:
+// tên thuần a-z0-9 nối bằng '-' và ≤ 24 ký tự giữ nguyên (đổi '-' thành '_'); mọi tên khác = 17 ký tự gập đầu + '_' + mã băm của cả tên → hai tên khác nhau không bao giờ “trùng sau chuẩn hoá”
+const nameKey=k=>String(k??'').trim().normalize('NFC');
+const safeName=k=>{const t=nameKey(k);if(/^[a-z0-9]+(-[a-z0-9]+)*$/.test(t)&&t.length<=24)return t.replace(/-/g,'_');const a=foldVi(t).replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');return (a.slice(0,17).replace(/_$/,'')+'_'+nameHash(t)).replace(/^_/,'')};
 // MỘT quy tắc tên cho Thêm, nhập và trình sửa: 1–64 ký tự (đếm theo ký tự Unicode), không có ký tự điều khiển
 const nlen=k=>[...String(k)].length,cpSlice=(k,n)=>[...String(k)].slice(0,n).join('');
 function nameErr(k){const kt=String(k??'').trim();if(nlen(kt)<1||nlen(kt)>64)return tr('Tên máy chủ phải từ 1 đến 64 ký tự.');if(/[\u0000-\u001f\u007f]/.test(kt))return tr('Tên máy chủ không được chứa ký tự điều khiển.');return ''}
@@ -103,28 +106,56 @@ const isHttp=u=>/^http:\/\//i.test(u||'');
 function normUrl(u){const m=/^([a-z][a-z0-9+.-]*:\/\/[^\/?#]*)(.*)$/i.exec(String(u||'').trim());if(!m)return String(u||'');return m[1].toLowerCase()+m[2].replace(/\/+$/,'')}
 const urlEq=(a,b)=>!!a&&!!b&&normUrl(a)===normUrl(b);
 // ===== v4.10 (P49-2): tìm khoá ở MỌI chỗ trong mcp.json, hỏi trước khi chuyển vào kho khoá, che khoá ở mọi nơi hiển thị =====
-// v4.11 (P410-2, §1b): tên biến/cờ xét theo TỪNG ĐOẠN (DB_PASS, DB_PWD, X-API-Key, apiKey đều là khoá; MAX_TOKENS, KEYBOARD_LAYOUT, AUTHOR, TOKEN_FILE thì không)
-const NAME_SEG=new Set(['token','key','keys','secret','secrets','password','passwd','passphrase','pass','pwd','credential','credentials','auth','appid','apikey','accesskey','secretkey','privatekey','clientsecret','authtoken','accesstoken','apitoken','sessiontoken','authorization','cookie']);
-const NAME_NOT=new Set(['file','path','dir','type','length','size','count','limit','max','min','ttl','timeout','expiry','expires','url','uri','endpoint','header','prefix','name','format','layout','mode']);
-function nameSecret(n){n=String(n??'').trim();if(!n||/^pwd$/i.test(n))return false;const seg=n.split(/[^A-Za-z0-9]+|(?<=[a-z0-9])(?=[A-Z])/).filter(Boolean).map(x=>x.toLowerCase().replace(/\d+$/,''));
- if(seg.some(x=>NAME_NOT.has(x)))return false;if(seg.some(x=>NAME_SEG.has(x)))return true;return /(apikey|apitoken|authtoken|accesstoken|secretkey|accesskey|privatekey|clientsecret|password|passwd|passphrase|appid)$/.test(seg.join(''))}
+// v4.12 (P411-1/2/3): nhận diện khoá theo LUẬT, không theo danh sách tên. Tên (biến env, tiêu đề, cờ dòng lệnh, tham số URL, khoá JSON ở MỌI độ sâu)
+// được tách đoạn theo camelCase / snake_case / kebab-case / dấu chấm (đã giải mã %xx). Tên là khoá khi có một đoạn là từ khoá
+// (key, token, secret, pass, pwd, auth, bearer, jwt, session, dsn, credential, cookie, otp, pat…) hoặc đoạn ghép kết thúc bằng từ đó
+// (refreshtoken, clientsecret, apikey, dbpassword…). Đoạn phủ định (file, path, len, max, sha, id…) cho biết tên chỉ MÔ TẢ khoá, không chứa khoá.
+const NAME_SEG=new Set(['key','keys','token','tokens','secret','secrets','pass','password','passwords','passwd','passphrase','pwd','pw','auth','authorization','bearer','jwt','session','sessions','dsn','credential','credentials','cred','creds','cookie','cookies','otp','totp','hotp','pin','pat','apikey','appid','appsecret']);
+const SEG_END=/(token|tokens|secret|secrets|password|passwd|passphrase|credentials?|cookie|cookies|bearer|apikey|session|jwt)$/;
+const KEY_END=/^(api|access|secret|private|auth|client|master|encryption|enc|signing|sign|license|licence|app|session|ssh|gpg|pgp|deploy|admin|service|account|subscription|consumer|hmac|webhook|bot|sk)key$/;
+const PASS_END=/^(db|my|sql|mysql|pg|postgres|redis|admin|root|user|app|smtp|mail|ftp|ssh|vnc|login|master|wifi|basic|key|store)(pass|pwd|pw)$/;
+const NAME_NOT=new Set(['file','files','path','dir','type','length','len','size','count','limit','max','min','ttl','timeout','expiry','expires','url','uri','endpoint','header','prefix','name','format','layout','mode',
+ 'id','ids','sha','digest','hash','checksum','integrity','commit','rev','revision','version','enabled','enable','disabled','required','scheme','method','provider','env','var','policy','algorithm','alg','bits','hint','label','field','placeholder','public','pub','cache','cmd','command','helper','issuer','audience','scope','scopes','host','port','region','rotation','fingerprint']);
+const HASH_SEG=new Set(['sha','digest','hash','checksum','integrity','commit','rev','revision','etag','fingerprint']); // v4.12: “id” không còn là tên băm (OWM_ID = 32 hex vẫn là khoá); KEY_ID=k-2026-10 không bị bắt vì giá trị thấp entropy
+const pctDec=s=>String(s??'').replace(/(?:%[0-9A-Fa-f]{2})+/g,m=>{try{return decodeURIComponent(m)}catch(e){return m}});
+const nameSegs=n=>pctDec(n).split(/[^A-Za-z0-9]+|(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])/).filter(Boolean).map(x=>x.toLowerCase().replace(/\d+$/,'')).filter(Boolean);
+const nameSegs2=n=>{const a=nameSegs(n),b=pctDec(n).toLowerCase().split(/[^a-z0-9]+/).map(x=>x.replace(/\d+$/,'')).filter(Boolean);return [...new Set([...a,...b])]}; // thêm cách tách chỉ theo dấu nối (tOkEn_2, APIKEY)
+const segSecret=x=>NAME_SEG.has(x)||SEG_END.test(x)||KEY_END.test(x)||PASS_END.test(x);
+function nameSecret(n){n=String(n??'').trim().replace(/^-+/,'');if(!n||/^(PWD|OLDPWD)$/.test(n))return false;const seg=nameSegs2(n);const hit=seg.filter(segSecret);if(!hit.length)return false;
+ // “id” phủ định khoá/token (KEY_ID, TOKEN_ID) nhưng KHÔNG phủ định phiên/cookie (x-session-id, SESSION_ID là khoá phiên)
+ const soft=hit.every(x=>/(session|sessions|cookie|cookies)$/.test(x));
+ // “id” chỉ phủ định khi đứng SAU từ khoá (KEY_ID, tokenId); id_token / idToken (OIDC) vẫn là khoá
+ const fi=seg.findIndex(segSecret);
+ return !seg.some((x,i)=>NAME_NOT.has(x)&&!((x==='id'||x==='ids')&&(soft||i<fi)))}
+const hashName=n=>nameSegs2(n).some(x=>HASH_SEG.has(x));
 const SECRET_NAME={test:nameSecret};
-// giá trị không bao giờ là khoá (--auth none, TOKEN=false…)
-const NONVAL=/^(none|null|nil|false|true|off|on|no|yes|disabled|enabled|0|1|-)$/i;
-// v4.11 (P410-3): chuỗi người dùng đã xác nhận “không phải khoá” (chỉ lưu dấu băm, không lưu chuỗi)
-const NK_KEY='aivn.notkey.v411';const hashStr=v=>{let h=2166136261;for(const c of String(v))h=Math.imul(h^c.codePointAt(0),16777619)>>>0;return h.toString(36)+':'+String(v).length};
+// giá trị không bao giờ là khoá (--auth none, TOKEN=false, AUTH=oauth, ${VAR}, %VAR%, số ngắn…)
+const NONVAL=/^(none|null|nil|undefined|false|true|off|on|no|yes|disabled|enabled|0|1|-|oauth|oauth2|basic|bearer|header|query|env|auto|default|required|optional|prompt|ask|keychain|vault|stdin)$/i;
+const ENVREF=/^(\$\{?[A-Za-z_]\w*\}?|%[A-Za-z_]\w*%|\$env:[A-Za-z_]\w*)$/i;
+const PATHV=/^(~|\.{0,2}\/|[A-Za-z]:\\)/;
+const valOk=v=>{if(typeof v!=='string')return false;const t=v.trim();return !!t&&!/\$\{secret:[^}]+\}/.test(t)&&!t.includes('•')&&!NONVAL.test(t)&&!ENVREF.test(t)&&!/^\d{1,5}$/.test(t)};
+const flagValOk=v=>valOk(v)&&!v.startsWith('-')&&!PATHV.test(v)&&!/^[a-z][a-z0-9+.-]*:\/\//i.test(v);
+// v4.12 (P411-7): “không phải khoá” chỉ áp dụng cho ĐÚNG máy chủ + vị trí + chuỗi đó (chỉ lưu dấu băm); có nút đặt lại
+const NK_KEY='aivn.notkey.v412';const hashStr=v=>{let h=2166136261;for(const c of String(v))h=Math.imul(h^c.codePointAt(0),16777619)>>>0;return h.toString(36)+':'+String(v).length};
+const nkId=(name,path,val)=>hashStr(String(name)+'\u0001'+path.join('\u0001')+'\u0001'+val);
 let NOTKEY=new Set();try{NOTKEY=new Set(JSON.parse(localStorage.getItem(NK_KEY)||'[]'))}catch(e){}
-function notKeyAdd(v){NOTKEY.add(hashStr(v));try{localStorage.setItem(NK_KEY,JSON.stringify([...NOTKEY]))}catch(e){}}
+const nkSave=()=>{SCAN_MEMO.clear();try{localStorage.setItem(NK_KEY,JSON.stringify([...NOTKEY]))}catch(e){}};
+function notKeyAdd(f){NOTKEY.add(nkId(f.name,f.path,f.val));nkSave()}
+function notKeyReset(){NOTKEY.clear();nkSave()}
+function nkResetUi(){const n=NOTKEY.size;notKeyReset();UI.advMsg=`<span class="msg-ok" data-testid="notkey-reset-done">${esc(tr('Đã đặt lại {0} mục. Lần lưu sau AIVN sẽ hỏi lại các chuỗi này.',n))}</span>`;render()}
 // cờ ghi phiên bản/commit: giá trị hex sau --rev là sha git, không phải khoá (P410-5)
-const REV_FLAG=/^--?(rev|revision|commit|sha|git-?sha|ref|hash|checkout|digest)$/i;
+const REV_FLAG=/^--?(rev|revision|commit|sha|git-?sha|ref|hash|checkout|digest|integrity)$/i;
 const KEY_PFX_RE='(?:sk-(?:proj-|live-|ant-)?|sk_live_|sk_test_|rk_live_|ghp_|gho_|ghu_|ghs_|ghr_|github_pat_|hf_|xox[abposr]-|xapp-|AIza|glpat-|AKIA|ya29\\.)';
 const SECRET_VAL=new RegExp('^(Bearer\\s+\\S+|'+KEY_PFX_RE+'[A-Za-z0-9_\\-.]{6,})');
 const isSecret=(n,v)=>typeof v==='string'&&v!==''&&!isRef(v)&&(SECRET_NAME.test(n)||/^(proxy-)?authorization$/i.test(n)||SECRET_VAL.test(v));
 function secretNames(s){return [...Object.entries(s.env||{}),...Object.entries(s.headers||{})].filter(([n,v])=>isRef(v)||isSecret(n,v)).map(([n])=>n)}
-const SECRET_FLAG={test:f=>typeof f==='string'&&(/^(-k|--key)$/i.test(f)||/^--?[A-Za-z][\w-]*$/.test(f)&&nameSecret(f.replace(/^-+/,'')))};
-const SECRET_PARAM=/^(?:api[-_]?key|apikey|key|token|access[-_]?token|access[-_]?key|secret[-_]?key|private[-_]?key|api[-_]?secret|api[-_]?token|session[-_]?token|auth|auth[-_]?token|secret|client[-_]?secret|password|passwd|pass|pwd|passphrase|credential|appid|app[-_]?id|sig|signature|x-amz-signature|x-amz-credential|x-amz-security-token)$/i;
+const SECRET_FLAG={test:f=>typeof f==='string'&&(/^(-k|--key)$/i.test(f)||/^--?[A-Za-z][\w.-]*$/.test(f)&&nameSecret(f.replace(/^-+/,'')))};
+// tham số URL không theo luật tên nhưng luôn là khoá (chữ ký URL, appid)
+const SECRET_PARAM=/^(?:sig|signature|appid|app[-_]?id|x-amz-signature|x-amz-credential|x-amz-security-token|code_verifier)$/i;
+const paramSecret=n=>{const d=pctDec(n);return nameSecret(d)||SECRET_PARAM.test(d)};
 const isRef=v=>typeof v==='string'&&/^\$\{secret:[^}]+\}$/.test(v);
 const hasRefIn=v=>typeof v==='string'&&/\$\{secret:[^}]+\}/.test(v);
+const MYSQL_RE=/(?:^|[\s"'\/\\@_-])(?:mysql|mariadb|mysqldump|mysqladmin|mysqlsh|mysqlimport)(?:\.exe)?(?=[\s"',\]_=@.-]|$)/i;
 function entropy(s){const f={};for(const c of s)f[c]=(f[c]||0)+1;let e=0;for(const k in f){const p=f[k]/s.length;e-=p*Math.log2(p)}return e}
 // chuỗi "trông như khoá": tiền tố quen thuộc (chắc chắn) hoặc chuỗi base64/hex dài ≥20 ký tự, ngẫu nhiên (có thể)
 function highEntropy(t){if(t.length<20||t.length>512)return false;
@@ -134,78 +165,115 @@ function highEntropy(t){if(t.length<20||t.length>512)return false;
  if(!/\d/.test(seg)||!/[A-Za-z]/.test(seg))return false;
  if(!(/[a-z]/.test(seg)&&/[A-Z]/.test(seg))&&t.length<32)return false;
  return entropy(t)>=3.5}
-function keyLikeIn(str){const out=[];if(typeof str!=='string'||!str)return out;const s=str.replace(/\$\{secret:[^}]+\}/g,m=>' '.repeat(m.length));
+// v4.12 (P411-10): nhớ kết quả theo chuỗi — trình sửa 3000 máy chủ chỉ quét lại phần đã đổi
+const KL_MEMO=new Map();
+function keyLikeIn(str,ctx){if(typeof str!=='string'||!str)return [];const mk=(ctx&&ctx.hash?'h':'')+(ctx&&ctx.my?'m':'')+'\u0001'+str;const c=KL_MEMO.get(mk);if(c)return c.map(o=>({...o}));
+ const r=keyLikeIn0(str,ctx||{});if(KL_MEMO.size>40000)KL_MEMO.clear();KL_MEMO.set(mk,r);return r.map(o=>({...o}))}
+function keyLikeIn0(str,ctx){const out=[];const s=str.replace(/\$\{secret:[^}]+\}/g,m=>' '.repeat(m.length));
  const put=(a,b,sure,x)=>{if(b>a&&!out.some(o=>a<o.b&&b>o.a))out.push({a,b,sure,...(x||{})})};
  // v4.11 (P410-4): JWT là MỘT khoá (không tách 3 ref)
  let m;const jw=/(?<![A-Za-z0-9_\-])eyJ[A-Za-z0-9_\-]{6,}\.[A-Za-z0-9_\-]{6,}\.[A-Za-z0-9_\-]{6,}/g;while((m=jw.exec(s)))put(m.index,m.index+m[0].length,true);
  const re=new RegExp('(?<![A-Za-z0-9])'+KEY_PFX_RE+'[A-Za-z0-9_\\-.]{8,}','g');
  while((m=re.exec(s)))put(m.index,m.index+m[0].length,true);
- // v4.11 (P410-2): mật khẩu trong URL user:mật-khẩu@ ở MỌI chuỗi (env DATABASE_URL, args postgresql://…)
- const ui=/[a-z][a-z0-9+.-]*:\/\/[^\s\/?#@:"'<>]+:([^\s\/?#@"'<>]+)@/gi;while((m=ui.exec(s))){if(m[1].includes('•'))continue;const a=m.index+m[0].length-1-m[1].length;put(a,a+m[1].length,true)}
- // v4.11 (P410-2): tiêu đề dạng "X-API-Key: giá trị" (curl -H, args, env)
- const hd=/(?:^|[\s"'\[,;{])([A-Za-z][\w-]*)\s*:[ \t]*(?!\/\/)([^\s"',;\]}<>]+)/g;while((m=hd.exec(s))){const n=m[1],v=m[2];if(v.includes('•')||NONVAL.test(v)||/^(Bearer|Basic|token)$/i.test(v))continue;
-  if(nameSecret(n)||/^(proxy-)?authorization$/i.test(n)){const a=m.index+m[0].length-v.length;put(a,a+v.length,true)}}
+ // v4.12 (P411-2): userinfo của URL — user:mật-khẩu@, :mật-khẩu@ (user trống) và token@ (không có ':')
+ const ui=/([a-z][a-z0-9+.-]*):\/\/([^\s\/?#@"'<>]*)@/gi;
+ while((m=ui.exec(s))){const info=m[2],base=m.index+m[1].length+3,c=info.indexOf(':');
+  if(c>=0){const pw=info.slice(c+1);if(valOk(pctDec(pw)))put(base+c+1,base+info.length,true,{n:'url-pass'})}
+  else if(valOk(info)&&(new RegExp('^'+KEY_PFX_RE).test(info)||highEntropy(info)||info.length>=16&&/\d/.test(info)&&/[A-Za-z]/.test(info)||
+   /^(https?|wss?)$/i.test(m[1])&&pctDec(info).length>=6&&!/^(git|user|users|admin|root|anonymous|guest|ubuntu|ec2-user|postgres|deploy|test|demo|public)$/i.test(pctDec(info))))put(base,base+info.length,true,{n:'url-token'})}
+ // v4.12: webhook Slack/Discord — phần cuối đường dẫn là khoá
+ const wh=/hooks\.slack\.com\/(?:services|workflows|triggers)\/(?:[A-Za-z0-9]+\/){1,3}([A-Za-z0-9_-]{6,})|discord(?:app)?\.com\/api\/webhooks\/\d+\/([A-Za-z0-9_-]{6,})/gi;
+ while((m=wh.exec(s))){const v=m[1]||m[2],a=m.index+m[0].length-v.length;put(a,a+v.length,true,{n:'webhook'})}
+ // Bearer/Basic …
+ const bre=/\b(?:Bearer|Basic)\s+([A-Za-z0-9._~+\/\-=]{8,})/gi;while((m=bre.exec(s))){if(m[1].includes('•'))continue;const a=m.index+m[0].length-m[1].length;put(a,a+m[1].length,true,{n:'bearer'})}
+ // v4.12 (P411-1/2/3): MỘT luật gán “tên = giá trị” / “tên: giá trị” cho mọi chuỗi — env trong args (docker -e A=b, --env=A=b, "OPENAI_API_KEY=sk…"),
+ // lệnh "A=b prog", chuỗi kết nối ADO/ODBC (Password=…;), tiêu đề "X-Api-Key: …", tham số truy vấn/fragment (?api%5Fkey=, #access_token=), nhật ký lỗi
+ const as=/(?<![\w.%-])(-{0,2})([A-Za-z_%][\w.%-]*)(["']?)[ \t]*([=:])[ \t]*(?!\/\/)(["']?)([^\s"'`,;&#<>\[\]{}()|]+)/g;
+ while((m=as.exec(s))){const n=m[2],v=m[6],a=m.index+m[0].length-v.length,url=/[?&#;]$/.test(s.slice(Math.max(0,m.index-1),m.index));
+  const okName=paramSecret(n),vv=pctDec(v);
+  // dạng "tên: giá trị" trong văn bản thường: chỉ nhận giá trị trông như khoá (không phải một từ chữ thường)
+  const colonOk=m[4]==='='||m[3]||m[5]||!/^[a-z]+$/.test(v)||v.length>=12;
+  if(okName&&colonOk&&v!=='$'&&valOk(vv)&&!PATHV.test(v)){put(a,a+v.length,true,{n:pctDec(n)});as.lastIndex=a+v.length;continue}
+  // giá trị đã mã hoá %xx dưới tên thường: giải mã rồi xét như khoá
+  if(url&&v.includes('%')&&(new RegExp('^'+KEY_PFX_RE).test(vv)||highEntropy(vv)))put(a,a+v.length,false,{n:pctDec(n)});
+  as.lastIndex=a}
+ // v4.12 (P411-1): cờ tách rời: --x-token v, -k v, "--api-key", "v"; cờ tách đôi --api key v; mysql -p v / -pV
+ const T=[];const tk0=/[^\s"',\[\]]+/g;while((m=tk0.exec(s)))T.push([m.index,m[0]]);
+ const my=ctx.my||MYSQL_RE.test(s);
+ for(let i=0;i<T.length;i++){const [p,t]=T[i],nx=T[i+1],n2=T[i+2];
+  if(/^--?[A-Za-z][\w.-]*$/.test(t)){
+   if(nx&&SECRET_FLAG.test(t)&&flagValOk(nx[1])){put(nx[0],nx[0]+nx[1].length,true,{n:t.replace(/^-+/,'')});continue}
+   if(nx&&n2&&/^[A-Za-z]+$/.test(nx[1])&&NAME_SEG.has(nx[1].toLowerCase())&&!SECRET_FLAG.test(t)&&nameSecret(t.replace(/^-+/,'')+'-'+nx[1])&&flagValOk(n2[1])){put(n2[0],n2[0]+n2[1].length,true,{n:t.replace(/^-+/,'')+'-'+nx[1]});continue}
+   if(my&&t==='-p'&&nx&&flagValOk(nx[1])){put(nx[0],nx[0]+nx[1].length,true,{n:'mysql-p'});continue}}
+  if(my&&/^-p[^-]/.test(t)&&valOk(t.slice(2)))put(p+2,p+t.length,true,{n:'mysql-p'})}
+ // v4.12 (P411-8): digest/SRI (sha256:…, sha512-…) không bao giờ là khoá
+ const skip=[];const sri=/(?:sha(?:1|224|256|384|512)|md5)[-:][A-Za-z0-9+\/=_\-]{16,}/gi;while((m=sri.exec(s)))skip.push([m.index,m.index+m[0].length]);
+ const inSkip=(a,b)=>skip.some(([x,y])=>a<y&&b>x);
+ if(!ctx.hash){
  // v4.11 (P410-2): secret AWS 40 ký tự (có / hoặc +) — "có thể"; scanServer nâng thành "chắc" khi máy chủ có AKIA…
- const aw=/(?<![A-Za-z0-9+\/=])[A-Za-z0-9+\/]{30,60}(?![A-Za-z0-9+\/=])/g;while((m=aw.exec(s))){const t=m[0];if(/[\/+]/.test(t)&&/[A-Z]/.test(t)&&/[a-z]/.test(t)&&/\d/.test(t)&&!/^\//.test(t)&&!/\/$/.test(t)&&!/\/\//.test(t)&&!t.split('/').some(x=>/^[a-z]{1,12}$/.test(x))&&entropy(t)>=4)put(m.index,m.index+t.length,false,{aws:true})}
- // v4.11 (P410-2): tham số truy vấn kiểu khoá trong MỌI chuỗi (?access_key=, &password=, &sig=)
- const qp=/[?&]([\w.-]+)=([^&#\s"'<>]+)/g;while((m=qp.exec(s))){if(!SECRET_PARAM.test(m[1])||NONVAL.test(m[2])||m[2].includes('•')||!m[2].trim())continue;const a=m.index+m[0].length-m[2].length;put(a,a+m[2].length,true)}
+ const aw=/(?<![A-Za-z0-9+\/=])[A-Za-z0-9+\/]{30,60}(?![A-Za-z0-9+\/=])/g;while((m=aw.exec(s))){const t=m[0];if(inSkip(m.index,m.index+t.length))continue;if(/[\/+]/.test(t)&&/[A-Z]/.test(t)&&/[a-z]/.test(t)&&/\d/.test(t)&&!/^\//.test(t)&&!/\/$/.test(t)&&!/\/\//.test(t)&&!t.split('/').some(x=>/^[a-z]{1,12}$/.test(x))&&entropy(t)>=4)put(m.index,m.index+t.length,false,{aws:true})}
  const tk=/[A-Za-z0-9+\/_\-]{20,}={0,2}/g;
- while((m=tk.exec(s))){const a=m.index,b=a+m[0].length;if(out.some(o=>a<o.b&&b>o.a))continue;
+ while((m=tk.exec(s))){const a=m.index,b=a+m[0].length;if(out.some(o=>a<o.b&&b>o.a)||inSkip(a,b))continue;
   for(const part of m[0].split('/')){/* đường dẫn a/b/c không phải khoá: xét từng đoạn */const pa=a+m[0].indexOf(part),pb=pa+part.length;
    // v4.11 (P410-5): digest sha256:…, tên tệp (…Q4KM2025.gguf) và sha git sau --rev không phải khoá
-   if(/(?:sha(?:1|224|256|384|512)|md5):$/i.test(s.slice(Math.max(0,pa-8),pa)))continue;
+   if(/(?:sha(?:1|224|256|384|512)|md5)[:-]$/i.test(s.slice(Math.max(0,pa-8),pa)))continue;
    if(/^\.[A-Za-z][A-Za-z0-9]{0,5}(?![A-Za-z0-9])/.test(s.slice(pb,pb+8)))continue;
    if(/^[0-9a-f]{7,64}$/i.test(part)&&/--?(?:rev|revision|commit|sha|git-?sha|ref|hash|checkout)(?:=|["',\s]+)$/i.test(s.slice(Math.max(0,pa-24),pa)))continue;
-   if(highEntropy(part)&&!out.some(o=>pa<o.b&&pb>o.a))out.push({a:pa,b:pb,sure:false})}}
+   // v4.12 (P411-8): giá trị gán cho tên kiểu băm/mã (GIT_SHA=…, KEY_ID=…, "digest": …) không phải khoá
+   const asg=/([A-Za-z_][\w.-]*)["']?[ \t]*[=:][ \t]*["']?$/.exec(s.slice(Math.max(0,pa-48),pa));if(asg&&hashName(asg[1])&&!nameSecret(asg[1]))continue;
+   if(highEntropy(part)&&!out.some(o=>pa<o.b&&pb>o.a))out.push({a:pa,b:pb,sure:false})}}}
  return out.map(o=>({...o,text:str.slice(o.a,o.b)}))}
 const PFX_ONLY=new RegExp('^'+KEY_PFX_RE);
 function maskVal(v){v=String(v??'');let pre='';const b=/^(Bearer\s+|Basic\s+|token\s+)/i.exec(v);if(b){pre=b[1];v=v.slice(pre.length)}
  const p=PFX_ONLY.exec(v);const head=p?p[0]:'';const rest=v.slice(head.length);
  // v4.11 (P410-3): hiện vài ký tự đầu để người dùng biết đang xét chuỗi nào (hf_Qa••••, Tr••••); 4 ký tự cuối chỉ khi chuỗi đủ dài
  const k=rest.length>=8?2:rest.length>=6?1:0;return pre+head+rest.slice(0,k)+'••••'+(rest.length>=20?rest.slice(-4):'')}
-// URL: tách phần truy vấn ?a=b&c=d để chỉ thay GIÁ TRỊ
-function urlParts(u){const m=/^([^?#]*)(\?[^#]*)?(#.*)?$/.exec(u||'');return{base:m[1],q:(m[2]||'').slice(1),h:m[3]||''}}
-function urlParams(u){const {q}=urlParts(u);return q?q.split('&').map(p=>{const i=p.indexOf('=');return i<0?{k:p,v:''}:{k:p.slice(0,i),v:p.slice(i+1)}}):[]}
-function urlSetParam(u,k,nv){const P=urlParts(u);const q=P.q.split('&').map(p=>{const i=p.indexOf('=');return i>=0&&p.slice(0,i)===k?k+'='+nv:p}).join('&');return P.base+'?'+q+P.h}
 const getAt=(s,p)=>p.reduce((o,k)=>o==null?o:o[k],s);
 function setAt(s,p,v){const o=getAt(s,p.slice(0,-1));if(o)o[p[p.length-1]]=v}
-const FIELD_SECRET=/(^|[_\-.])(api[_-]?key|apikey|key|token|secret|password|passwd|pwd|appid|app[_-]?id|access[_-]?token|auth[_-]?token|client[_-]?secret|private[_-]?key)$/i;
-// Quét MỘT máy chủ → danh sách phát hiện {name,path,mode,val,sure,label,loc}
-function scanServer(name,s){const F=[];if(!s||typeof s!=='object')return F;const seen=new Set();
- const add=o=>{const id=o.path.join('\u0001')+'|'+o.val;if(seen.has(id)||!o.val||NOTKEY.has(hashStr(o.val)))return;seen.add(id);F.push({name,...o,masked:maskVal(o.val)})};
- const parts=(path,str,label,loc)=>{const hs=keyLikeIn(str);const bre=/\b(?:Bearer|Basic)\s+([A-Za-z0-9._~+\/\-=]{8,})/gi;let bm;
-  while((bm=bre.exec(str))){const a=bm.index+bm[0].length-bm[1].length,b=a+bm[1].length;if(!hasRefIn(bm[1])&&!hs.some(h=>a<h.b&&b>h.a))hs.push({a,b,sure:true,text:bm[1]})}
+// Quét MỘT máy chủ → danh sách phát hiện {name,path,mode,val,sure,label,loc}; nhớ theo (tên, nội dung) cho trình sửa lớn (P411-10)
+const SCAN_MEMO=new Map();let HLV=new Set();
+function scanServer(name,s){if(!s||typeof s!=='object')return [];let j;try{j=JSON.stringify(s)}catch(e){j=null}
+ const mk=j==null?null:String(name)+'\u0001'+j;if(mk&&SCAN_MEMO.has(mk))return SCAN_MEMO.get(mk).map(f=>({...f,path:[...f.path]}));
+ const F=scanServer0(name,s);if(mk){if(SCAN_MEMO.size>12000)SCAN_MEMO.clear();SCAN_MEMO.set(mk,F.map(f=>({...f,path:[...f.path]})))}return F}
+function scanServer0(name,s){const F=[];const seen=new Set();
+ const add=o=>{const id=o.path.join('\u0001')+'|'+o.val;if(seen.has(id)||!o.val||NOTKEY.has(nkId(name,o.path,o.val)))return;seen.add(id);F.push({name,...o,masked:maskVal(o.val)})};
+ const parts=(path,str,label,loc,ctx)=>{const hs=keyLikeIn(str,ctx);
   hs.forEach(h=>{if(F.some(o=>o.path.join('\u0001')===path.join('\u0001')&&o.val.includes(h.text)))return;const whole=h.a===0&&h.b===str.length||/^Bearer\s+$/i.test(str.slice(0,h.a))&&h.b===str.length;
-   add({path,mode:whole?'whole':'part',val:whole?str:h.text,sure:h.sure||/^Bearer\s+$/i.test(str.slice(0,h.a)),label,loc})})};
+   add({path,mode:whole?'whole':'part',val:whole?str:h.text,sure:h.sure||/^Bearer\s+$/i.test(str.slice(0,h.a)),label:h.n||label,loc:h.n&&h.n!==label?loc+' › '+h.n:loc})})};
+ const my=MYSQL_RE.test([s.command,...(Array.isArray(s.args)?s.args:[])].filter(x=>typeof x==='string').join(' '));
  for(const f of ['env','headers'])if(s[f]&&typeof s[f]==='object'&&!Array.isArray(s[f]))for(const [n,v] of Object.entries(s[f])){
   if(typeof v!=='string'||!v||isRef(v))continue;
-  const byName=(SECRET_NAME.test(n)||(f==='headers'&&/^(proxy-)?authorization$|cookie/i.test(n))||/^Bearer\s+\S/i.test(v))&&!NONVAL.test(v);
-  if(byName)add({path:[f,n],mode:'whole',val:v,sure:true,label:n,loc:f+' › '+n});else parts([f,n],v,n,f+' › '+n)}
+  const byName=(nameSecret(n)||(f==='headers'&&/^(proxy-)?authorization$/i.test(n))||/^Bearer\s+\S/i.test(v))&&valOk(v)&&!(PATHV.test(v)&&!/\s/.test(v));
+  if(byName&&!hasRefIn(v))add({path:[f,n],mode:'whole',val:v,sure:true,label:n,loc:f+' › '+n});else parts([f,n],v,n,f+' › '+n,{hash:hashName(n)&&!nameSecret(n),my})}
  if(s.auth&&typeof s.auth==='object')for(const [n,v] of Object.entries(s.auth)){if(typeof v!=='string'||!v||isRef(v))continue;
-  if(SECRET_NAME.test(n)||keyLikeIn(v).length)add({path:['auth',n],mode:'whole',val:v,sure:SECRET_NAME.test(n)||keyLikeIn(v).some(h=>h.sure),label:n,loc:'auth › '+n})}
- if(Array.isArray(s.args))s.args.forEach((a,i)=>{if(typeof a!=='string'||!a||isRef(a))return;
-  const eq=/^(--?[A-Za-z][\w-]*)=(.+)$/.exec(a);
-  if(eq&&SECRET_FLAG.test(eq[1])&&!hasRefIn(eq[2])&&!NONVAL.test(eq[2])){add({path:['args',i],mode:'eq',val:eq[2],sure:true,label:eq[1].replace(/^-+/,''),loc:'args › '+eq[1]+'='});return}
-  const prev=s.args[i-1];
-  if(i>0&&typeof prev==='string'&&REV_FLAG.test(prev)&&/^[0-9a-f]{7,64}$/i.test(a))return;
-  if(i>0&&typeof prev==='string'&&SECRET_FLAG.test(prev)&&!a.startsWith('-')&&!NONVAL.test(a)&&!/^(~|\.{0,2}\/|[A-Za-z]:\\)/.test(a)){add({path:['args',i],mode:'whole',val:a,sure:true,label:prev.replace(/^-+/,''),loc:'args › '+prev});return}
-  parts(['args',i],a,'arg'+i,'args['+i+']')});
- if(typeof s.url==='string'&&s.url){
-  const ui=/^[a-z][a-z0-9+.-]*:\/\/([^\/?#@]*)@/i.exec(s.url);
-  if(ui&&ui[1].includes(':')){const pw=ui[1].slice(ui[1].indexOf(':')+1);if(pw&&!hasRefIn(pw))add({path:['url'],mode:'part',val:pw,sure:true,label:'url-pass',loc:'url › user:••••@'})}
-  for(const {k,v} of urlParams(s.url)){if(!v||hasRefIn(v))continue;
-   if(SECRET_PARAM.test(k))add({path:['url'],mode:'query',param:k,val:v,sure:true,label:k,loc:'url › ?'+k+'='});
-   else{const h=keyLikeIn(v);if(h.length)add({path:['url'],mode:'query',param:k,val:v,sure:h.some(x=>x.sure),label:k,loc:'url › ?'+k+'='})}}
-  const {base}=urlParts(s.url);parts(['url'],base.replace(/^[^@]*@/,''),'url','url')}
- // mọi chuỗi khác (command, cwd, khoá lạ, đối tượng lồng nhau)
- const walk=(o,path)=>{if(typeof o==='string'){if(isRef(o)||!o)return;const kn=path[path.length-1];
-   if(typeof kn==='string'&&FIELD_SECRET.test(kn)&&!hasRefIn(o)){add({path,mode:'whole',val:o,sure:true,label:kn,loc:path.join(' › ')});return}
-   parts(path,o,path.join('.'),path.join(' › '));return}
+  if(nameSecret(n)&&valOk(v)&&!hasRefIn(v))add({path:['auth',n],mode:'whole',val:v,sure:true,label:n,loc:'auth › '+n});else parts(['auth',n],v,n,'auth › '+n)}
+ if(Array.isArray(s.args)){const A=s.args;A.forEach((a,i)=>{if(typeof a!=='string'||!a||isRef(a))return;const prev=A[i-1],pp=A[i-2];
+  // --cờ=giá-trị
+  const eq=/^(--?[A-Za-z][\w.-]*)=([\s\S]+)$/.exec(a);
+  if(eq&&SECRET_FLAG.test(eq[1])&&flagValOk(eq[2])&&!hasRefIn(eq[2])){add({path:['args',i],mode:'tail',pre:eq[1]+'=',val:eq[2],sure:true,label:eq[1].replace(/^-+/,''),loc:'args › '+eq[1]+'='});return}
+  // TÊN=giá-trị (docker -e, --env TÊN=…, --env=TÊN=…, "OPENAI_API_KEY=sk-…")
+  const nv=/^(?:--?[A-Za-z][\w-]*=)?([A-Za-z_][\w.-]*)=([\s\S]+)$/.exec(a);
+  if(nv&&nameSecret(nv[1])&&valOk(nv[2])&&!PATHV.test(nv[2])&&!hasRefIn(nv[2])){add({path:['args',i],mode:'tail',pre:a.slice(0,a.length-nv[2].length),val:nv[2],sure:true,label:nv[1],loc:'args › '+nv[1]+'='});return}
+  if(typeof prev==='string'){
+   if(REV_FLAG.test(prev)&&/^[0-9a-f]{7,64}$/i.test(a))return;
+   if(/^--?[A-Za-z][\w.-]*$/.test(prev)&&SECRET_FLAG.test(prev)&&(flagValOk(a)||/^-[^-\s]{5,}$/.test(a)&&valOk(a))&&!hasRefIn(a)){add({path:['args',i],mode:'whole',val:a,sure:true,label:prev.replace(/^-+/,''),loc:'args › '+prev});return}
+   if(my&&prev==='-p'&&flagValOk(a)&&!hasRefIn(a)){add({path:['args',i],mode:'whole',val:a,sure:true,label:'mysql-p',loc:'args › -p'});return}
+   // cờ tách đôi: --api key GIÁ-TRỊ
+   if(typeof pp==='string'&&/^--?[A-Za-z][\w-]*$/.test(pp)&&/^[A-Za-z]+$/.test(prev)&&NAME_SEG.has(prev.toLowerCase())&&!SECRET_FLAG.test(pp)&&nameSecret(pp.replace(/^-+/,'')+'-'+prev)&&flagValOk(a)&&!hasRefIn(a)){
+    add({path:['args',i],mode:'whole',val:a,sure:true,label:pp.replace(/^-+/,'')+'-'+prev,loc:'args › '+pp+' '+prev});return}}
+  if(my&&/^-p[^-]/.test(a)&&valOk(a.slice(2))&&!hasRefIn(a)){add({path:['args',i],mode:'tail',pre:'-p',val:a.slice(2),sure:true,label:'mysql-p',loc:'args › -p'});return}
+  parts(['args',i],a,'arg'+i,'args['+i+']',{my})})}
+ // v4.12 (P411-2): URL — xét MỌI phần (userinfo, truy vấn, fragment, %xx) bằng cùng luật
+ if(typeof s.url==='string'&&s.url)parts(['url'],s.url,'url','url');
+ // mọi chuỗi khác (command, cwd, khoá lạ, đối tượng lồng nhau ở mọi độ sâu) — tên theo cùng luật (P411-3: refreshToken, clientSecret…)
+ const walk=(o,path)=>{if(typeof o==='string'){if(isRef(o)||!o)return;const kn=[...path].reverse().find(x=>typeof x==='string'&&!/^\d+$/.test(x));
+   if(kn&&path.length>1&&nameSecret(kn)&&valOk(o)&&!PATHV.test(o)&&!hasRefIn(o)){add({path,mode:'whole',val:o,sure:true,label:kn,loc:path.join(' › ')});return}
+   parts(path,o,kn||path.join('.'),path.join(' › '),{hash:!!kn&&hashName(kn)&&!nameSecret(kn),my});return}
   if(o&&typeof o==='object')for(const [k,v] of Object.entries(o))walk(v,[...path,k])};
  // v4.11 (P410-2): cùng máy chủ có AKIA… → chuỗi 40 ký tự kiểu secret AWS là "chắc chắn"
  const akia=()=>/(?<![A-Z0-9])A[KS]IA[0-9A-Z]{12,}/.test(JSON.stringify(s));
  for(const [k,v] of Object.entries(s))if(!['env','headers','auth','args','url'].includes(k))walk(v,[k]);
- if(s.env&&typeof s.env==='object')for(const [k,v] of Object.entries(s.env))if(v&&typeof v==='object')walk(v,['env',k]);
+ for(const f of ['env','headers','auth'])if(s[f]&&typeof s[f]==='object')for(const [k,v] of Object.entries(s[f]))if(v&&typeof v==='object')walk(v,[f,k]);
  if(F.some(f=>!f.sure&&/^[A-Za-z0-9+\/]{30,60}$/.test(f.val))&&akia())F.forEach(f=>{if(/^[A-Za-z0-9+\/]{30,60}$/.test(f.val)&&/[\/+]/.test(f.val))f.sure=true});
  return F}
 // chỗ giữ trong mcp.json: ${secret:<tên>} (một khoá) hoặc ${secret:<tên>:<nhãn>} (nhiều khoá)
@@ -213,11 +281,10 @@ const refBase=k=>String(k).replace(/[{}:$\s]/g,'_');
 const refLabel=l=>String(l).replace(/[{}:$\s]/g,'_').slice(0,40)||'key';
 function refFor(k,n,s){const b='${secret:'+refBase(k)+'}';const self=[s.env,s.headers,s.auth].some(o=>o&&typeof o==='object'&&o[n]===b);
  return !self&&JSON.stringify(s).includes(JSON.stringify(b).slice(1,-1))?'${secret:'+refBase(k)+':'+refLabel(n)+'}':b}
-// thay giá trị bằng chỗ giữ: URL chỉ thay giá trị truy vấn, args chỉ thay phần sau '='
+// thay giá trị bằng chỗ giữ: chỉ thay đúng phần khoá (sau '=', trong URL, trong lệnh…)
 function applyFinding(s,f,ref){const cur=getAt(s,f.path);if(typeof cur!=='string')return;
  if(f.mode==='whole')setAt(s,f.path,ref);
- else if(f.mode==='eq')setAt(s,f.path,cur.replace(/=.*$/,'='+ref));
- else if(f.mode==='query')setAt(s,f.path,urlSetParam(cur,f.param,ref));
+ else if((f.mode==='tail'||f.mode==='eq')&&cur.endsWith(f.val))setAt(s,f.path,cur.slice(0,cur.length-f.val.length)+ref);
  else setAt(s,f.path,cur.split(f.val).join(ref))}
 function assignRefs(name,s,list){const base='${secret:'+refBase(name)+'}';const j=JSON.stringify(s);const used=new Set((j.match(/\$\{secret:[^}]+\}/g)||[]));
  const single=list.length===1&&!used.has(base);
@@ -227,18 +294,18 @@ function placeholderEmpty(key,s){for(const f of ['env','headers'])if(s[f]&&typeo
 const allRefs=s=>[...new Set((JSON.stringify(s||{}).match(/\$\{secret:[^}]+\}/g)||[]))];
 const keyVarsOf=s=>['env','headers'].flatMap(f=>Object.entries(s[f]||{}).filter(([n,v])=>isRef(v)||(typeof v==='string'&&SECRET_NAME.test(n))).map(([n,v])=>[f,n,v]));
 const hasKey=v=>isRef(v)&&!!SEC[v];
-// che khoá: giá trị trong kho, khoá quen thuộc, tham số URL và cờ dòng lệnh không bao giờ hiện trong nhật ký, stderr, Chi tiết, diff hay thông báo
+// che khoá: giá trị trong kho + CÙNG luật với scanServer (tên theo luật, URL mọi phần, cờ, gán TÊN=giá-trị) cho nhật ký, stderr, Chi tiết, diff, thông báo
 function redactText(t){let x=String(t??'');for(const v of Object.values(SEC)){if(typeof v!=='string')continue;for(const p of [v,v.replace(/^Bearer\s+/i,'')])if(p.length>=4)x=x.split(p).join(maskVal(p))}
- // v4.11 (P410-2): cùng quy tắc tên với scanServer (tham số URL, cờ dòng lệnh, khoá JSON) — không còn danh sách cứng riêng
- x=x.replace(/([?&]([\w.-]+)=)(?!\$\{secret)([^&#\s"'<]+)/g,(m,a,n,v)=>!SECRET_PARAM.test(n)||NONVAL.test(v)||v.includes('••••')?m:a+maskVal(v));
- x=x.replace(/((?:^|[\s"'\[,])(--?[A-Za-z][\w-]*)(?![\w-])(?:=|"?\s*,\s*"?|"?\s+"?))(?!\$\{secret|-)([^\s"',\]]+)/g,(m,a,f,v)=>!SECRET_FLAG.test(f)||NONVAL.test(v)||v.includes('••••')||/^(~|\.{0,2}\/|[A-Za-z]:\\)/.test(v)?m:a+maskVal(v));
- x=x.replace(/("([\w-]+)"\s*:\s*")(?!\$\{secret)([^"]+)"/g,(m,a,n,v)=>!(nameSecret(n)||FIELD_SECRET.test(n))||NONVAL.test(v)||v.includes('••••')?m:a+maskVal(v)+'"');
- x=x.replace(/(:\/\/[^\/\s:@"']+:)([^@\s\/"']+)@/g,(m,a,v)=>a+(v.includes('••••')?v:'••••')+'@');
+ x=x.replace(/((?:^|[\s"'\[,])(--?[A-Za-z][\w.-]*)(?![\w.-])(?:"?\s*,\s*"?|"?\s+"?))(?!\$\{secret|--)([^\s"',\]]+)/g,(m,a,f,v)=>!SECRET_FLAG.test(f)||!(flagValOk(v)||/^-[^-\s]{5,}$/.test(v)&&valOk(v))?m:a+maskVal(v));
+ if(MYSQL_RE.test(x)){x=x.replace(/((?:^|[\s"'\[,])-p(?:"?\s*,\s*"?|"?\s+"?))(?!-|\$\{secret)([^\s"',\]]+)/g,(m,a,v)=>flagValOk(v)?a+maskVal(v):m);
+  x=x.replace(/((?:^|[\s"'\[,])-p)([^\s"',\]\-•][^\s"',\]]*)/g,(m,a,v)=>valOk(v)&&!v.includes('••••')?a+maskVal(v):m)}
+ x=x.replace(/("([^"\\]+)"\s*:\s*")(?!\$\{secret)([^"]+)"/g,(m,a,n,v)=>!nameSecret(n)||!valOk(v)?m:a+maskVal(v)+'"');
+ x=x.replace(/(:\/\/:?[^\/\s:@"']*:)([^@\s\/"']+)@/g,(m,a,v)=>a+(v.includes('••••')?v:'••••')+'@');
  x=x.replace(/(Bearer\s+)(?![^\s"']*••••)[^\s"']+/gi,(m,a,v)=>a+maskVal(m.slice(a.length)));
  for(const h of keyLikeIn(x).sort((p,q)=>q.a-p.a))x=x.slice(0,h.a)+maskVal(h.text)+x.slice(h.b);
  return x}
 function maskServer(name,s){const c=JSON.parse(JSON.stringify(s||{}));for(const f of scanServer(name,c)){const cur=getAt(c,f.path);if(typeof cur!=='string')continue;
-  if(f.mode==='query')setAt(c,f.path,urlSetParam(cur,f.param,maskVal(f.val)));else setAt(c,f.path,cur.split(f.val).join(maskVal(f.val)))}return c}
+  setAt(c,f.path,f.mode==='whole'?maskVal(f.val):cur.split(f.val).join(maskVal(f.val)))}return c}
 function redact(s){const m=maskServer('',s);if(m.url)return redactText(m.url);return redactText([m.command,...(m.args||[])].join(' '))}
 const kindOf=s=>s.url?(s.type==='sse'||/\/sse$/.test(s.url)?'sse':'http'):'stdio';
 const pkgArg=s=>(s.args||[]).find(a=>!a.startsWith('-'));
@@ -383,7 +450,7 @@ function renameSave(){const r=UI.rename;if(!r)return;const v=r.v.trim();if(!v){r
 function renameReset(){const r=UI.rename;if(!r)return;delete metaOf(r.k).label;UI.rename=null;save();render()}
 function renameBtn(k){return isUserSrv(k)&&!(UI.rename&&UI.rename.k===k)?`<button class="btn sm ghost" data-testid="rename-${esc(k)}" onclick="event.stopPropagation();renameStart('${esc(k)}')">✎ ${tr('Đổi tên hiển thị')}</button>`:''}
 function nameOrEdit(k,cls){const r=UI.rename;if(!r||r.k!==k)return `<span class="${cls}">${esc(displayName(k))}</span>`;const lb=(DB.meta.servers[k]||{}).label;
- return `<span class="rn" onclick="event.stopPropagation()"><input class="inp" id="rn-in" data-testid="rename-input-${esc(k)}" maxlength="64" value="${esc(r.v)}" aria-label="${tr('Tên hiển thị')}" oninput="UI.rename.v=this.value;UI.rename.pos=this.selectionStart" onkeydown="event.stopPropagation();if(event.key==='Enter')renameSave();if(event.key==='Escape')renameCancel()">
+ return `<span class="rn" onclick="event.stopPropagation()"><input class="inp" id="rn-in" data-testid="rename-input-${esc(k)}" value="${esc(r.v)}" aria-label="${tr('Tên hiển thị')}" oninput="UI.rename.v=this.value;UI.rename.pos=this.selectionStart" onkeydown="event.stopPropagation();if(event.key==='Enter')renameSave();if(event.key==='Escape')renameCancel()">
   <button class="btn sm pri" data-testid="rename-save" onclick="renameSave()">${tr('Lưu')}</button><button class="btn sm ghost" data-testid="rename-cancel" onclick="renameCancel()">${tr('Huỷ')}</button>${lb?`<button class="btn sm ghost" data-testid="rename-reset" onclick="renameReset()">${tr('Dùng tên gốc')}</button>`:''}</span>`}
 const renameErr=k=>UI.rename&&UI.rename.k===k&&UI.rename.err?`<div class="msg-bad small" data-testid="rename-err" style="margin-top:4px">${esc(UI.rename.err)}</div>`:'';
 const errText=k=>{const e=RT.err[k];return typeof e==='function'?(e()||''):(e||'')};
@@ -468,21 +535,21 @@ let SCARD=null;
 function secretCardSpec(){return()=>{const S=SCARD;if(!S)return{title:'',lines:[]};const its=S.items,nSrv=new Set(its.map(f=>f.name)).size,sel=S.ch.filter(Boolean).length;
  const rows=its.map((f,i)=>{const on=S.ch[i];const note=on?'':tr('Không chuyển → giữ nguyên chuỗi này (bạn xác nhận đây không phải khoá).');
   return `<label class="skrow ${on?'':'off'}" data-testid="secret-item-${i}"><input type="checkbox" id="sk${i}" ${on?'checked':''} onchange="skToggle(${i},this.checked)"><span class="skm"><code class="skv" data-testid="secret-masked">${esc(f.masked)}</code><span class="sktag ${f.sure?'sure':''}">${f.sure?tr('khoá'):tr('có thể là khoá')}</span><span class="skl">${esc(f.name)} › ${esc(f.loc)}</span>${note?`<span class="sknote">${esc(note)}</span><span class="skwarn" role="note" data-testid="secret-plain-warn-${i}">⚠ ${esc(tr('Giá trị này sẽ được lưu trong mcp.json dưới dạng chữ thường (không che).'))}</span>`:''}</span></label>`}).join('');
- return{tool:'secret_move',logoHtml:emojiTile('🔑',30),title:tr('Chuyển {0} khoá vào kho khoá an toàn?',its.length),sub:S.ctx+' · '+tr('{0} máy chủ',nSrv)+' · '+tr('Bước {0}/{1}',1,2),
+ return{tool:'secret_move',logoHtml:emojiTile('🔑',30),title:tr('Chuyển {0} khoá vào kho khoá an toàn?',sel),sub:S.ctx+' · '+tr('{0} máy chủ',nSrv)+' · '+tr('Bước {0}/{1}',1,2),
   extraHtml:`<div class="sklist" data-testid="secret-card-list">${rows}</div><div class="small muted" style="margin:4px 0 6px">${tr('Đã chọn {0}/{1}. Bỏ chọn một mục nếu đó không phải khoá.',sel,its.length)} ${tr('Bỏ chọn chỉ ảnh hưởng dòng đó: các khoá và máy chủ khác vẫn được lưu.')}</div>`,
   lines:[tr('Cho phép: chuyển các khoá đã chọn vào kho khoá; mcp.json chỉ giữ {0}.','${secret:…}'),tr('Từ chối: máy chủ có khoá sẽ không được lưu. Không khoá nào được ghi dạng chữ.'),tr('Sau thẻ này là thẻ lưu (bước 2/2).')],
   warn:tr('Bản mẫu: kho khoá chỉ là mô phỏng (đã làm rối, không ghi dạng chữ). Ứng dụng thật dùng kho khoá của hệ điều hành.'),details:[],danger:false,alwaysLabel:null}}}
 function skToggle(i,v){if(!SCARD)return;SCARD.ch[i]=v;if(apCur)drawCard();const e=$('sk'+i);e&&e.focus()}
 // trả về {ok, blocked:[tên không được lưu], moves:[[ref, khoá]] (chỉ ghi vào kho sau khi thẻ lưu được cho phép), count}
 async function secretGate(map,ctx){const items=[];for(const [k,s] of Object.entries(map))items.push(...scanServer(k,s));
- if(!items.length)return{ok:true,blocked:[],moves:[],count:0,items};
+ if(!items.length)return{ok:true,blocked:[],moves:[],count:0,items,plain:[]};
  SCARD={items,ch:items.map(()=>true),ctx};const a=await withCard(secretCardSpec());const ch=SCARD?SCARD.ch:items.map(()=>false);SCARD=null;
- const blocked=new Set();if(!a.ok){items.forEach(f=>blocked.add(f.name));return{ok:false,blocked:[...blocked],moves:[],count:0,items}}
+ const blocked=new Set();if(!a.ok){items.forEach(f=>blocked.add(f.name));return{ok:false,blocked:[...blocked],moves:[],count:0,items,plain:[]}}
  // v4.11 (P410-3): bỏ chọn một dòng = “không phải khoá” → giữ nguyên chuỗi đó, KHÔNG huỷ cả lần lưu; nhớ lựa chọn để lần sau không hỏi lại
- items.forEach((f,i)=>{if(!ch[i])notKeyAdd(f.val)});
+ const plain=items.filter((f,i)=>!ch[i]);plain.forEach(notKeyAdd);
  const moves=[];for(const [k,s] of Object.entries(map)){if(blocked.has(k))continue;const L=items.filter((f,i)=>f.name===k&&ch[i]);if(!L.length)continue;
   const refs=assignRefs(k,s,L);L.forEach((f,i)=>{moves.push([refs[i],f.val]);applyFinding(s,f,refs[i])})}
- return{ok:true,blocked:[...blocked],moves,count:moves.length,items}}
+ return{ok:true,blocked:[...blocked],moves,count:moves.length,items,plain}}
 const commitMoves=m=>{for(const [r,v] of m)SEC[r]=v;saveSec()};
 const blockMsg=b=>tr('Chưa lưu “{0}”: tệp còn khoá viết thẳng mà bạn chưa cho chuyển vào kho khoá. AIVN không bao giờ lưu khoá dạng chữ. Hãy làm lại và chọn Cho phép, hoặc xoá khoá khỏi tệp rồi nhập ở mục Khoá truy cập.',b.join(', '));
 // v4.10 (P49-10): thẻ liệt kê tối đa 12 mục, phần còn lại gộp thành một dòng
@@ -495,11 +562,11 @@ function lineDiff(a,b){const A=a.split('\n'),B=b.split('\n');let p=0;while(p<A.l
  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)T[i][j]=a1[i]===b1[j]?T[i+1][j+1]+1:Math.max(T[i+1][j],T[i][j+1]);
  let i=0,j=0;while(i<n||j<m){if(i<n&&j<m&&a1[i]===b1[j]){out.push(['=',a1[i]]);i++;j++}else if(j<m&&(i>=n||T[i][j+1]>=T[i+1][j])){out.push(['+',b1[j]]);j++}else{out.push(['-',a1[i]]);i++}}
  return{ops:out,at:p}}
-function diffHtml(a,b,max=16){const {ops}=lineDiff(a,b);const ch=[];let k=0;
+function diffHtml(a,b,max=16,plain){const {ops}=lineDiff(a,b);const PV=(plain||[]).map(f=>f.val).filter(Boolean);const ch=[];let k=0;
  while(k<ops.length){if(ops[k][0]==='='){k++;continue}let d=[],ad=[];while(k<ops.length&&ops[k][0]==='-')d.push(ops[k++][1]);while(k<ops.length&&ops[k][0]==='+')ad.push(ops[k++][1]);
   const pr=Math.min(d.length,ad.length);for(let x=0;x<pr;x++){ch.push(['~-',d[x]]);ch.push(['~+',ad[x]])}d.slice(pr).forEach(l=>ch.push(['-',l]));ad.slice(pr).forEach(l=>ch.push(['+',l]))}
  const nA=ch.filter(c=>c[0]==='+').length,nR=ch.filter(c=>c[0]==='-').length,nC=ch.filter(c=>c[0]==='~+').length;
- const rows=ch.slice(0,max).map(([t,l])=>`<div class="df ${t==='+'?'add':t==='-'?'rm':t==='~+'?'chg add':'chg rm'}"><span class="dfm" aria-hidden="true">${t.endsWith('+')?'+':'−'}</span><code>${esc(redactText(l).trim()||' ')}</code></div>`).join('');
+ const rows=ch.slice(0,max).map(([t,l])=>`<div class="df ${t==='+'?'add':t==='-'?'rm':t==='~+'?'chg add':'chg rm'}"><span class="dfm" aria-hidden="true">${t.endsWith('+')?'+':'−'}</span><code>${esc(redactText(l).trim()||' ')}</code>${t.endsWith('+')&&PV.some(v=>l.includes(v)||l.includes(JSON.stringify(v).slice(1,-1)))?`<span class="dfplain" data-testid="diff-plain">⚠ ${esc(tr('lưu dạng chữ thường (bạn đã bỏ chọn)'))}</span>`:''}</div>`).join('');
  return `<div class="dfbox" data-testid="save-diff"><div class="dfh">${tr('Thay đổi: thêm {0} dòng · bớt {1} dòng · sửa {2} dòng',nA,nR,nC)}</div>${rows}${ch.length>max?`<div class="df more">${tr('+{0} dòng nữa',ch.length-max)}</div>`:''}</div>`}
 function mcpSpec(k,s,{folder,autostartOnly,noToken,title,test}={}){return()=>{const sn=[...new Set([...secretNames(s),...allRefs(s).filter(r=>!Object.values({...(s.env||{}),...(s.headers||{})}).some(v=>String(v).includes(r))).map(r=>r.slice(9,-1))])],net=s.url?netKind(s.url):null,m=DB.meta.servers[k]||{},c=m.catalogId?ADVC(m.catalogId):catalogMatch(s);
  const lines=[];if(s.url&&net!=='loop')lines.push(tr('Dữ liệu gửi tới máy chủ này rời khỏi máy bạn.'));if(s.url&&net==='lan')lines.push(tr('Địa chỉ http này nằm trong mạng nội bộ của bạn.'));
@@ -841,23 +908,22 @@ function edCheck(t0){const t=stripBom(t0),sh=t0.length-t.length,bad=(at,msg)=>{c
  if(rec.dups.length){const d=rec.dups[0],[line,col]=lineCol(t0,d.at+sh),[l0]=lineCol(t0,d.first+sh);return{ok:true,dup:{...d,line,col,l0},at:d.at+sh,line,col,members:rec.members,changes:0,raw:0}}
  const ks=Object.keys(r.servers);
  for(const k of ks){const v=validateServer(k,r.servers[k]);if(v)return bad(keyAt(t,k),v)}
- for(let a=0;a<ks.length;a++)for(let b=a+1;b<ks.length;b++)if(safeName(ks[a])===safeName(ks[b]))return bad(keyAt(t,ks[b]),tr('Tên "{0}" và "{1}" trùng nhau sau khi chuẩn hoá.',ks[a],ks[b]));
+ {const sm=new Map();for(const kb of ks){const sn=safeName(kb);if(sm.has(sn))return bad(keyAt(t,kb),tr('Tên "{0}" và "{1}" trùng nhau sau khi chuẩn hoá.',sm.get(sn),kb));sm.set(sn,kb)}} // v4.12 (P411-10): O(n) thay cho O(n²)
  const json=JSON.parse(t),{mcpServers:_a,...o1}=json,{mcpServers:_b,...o0}=DB.mcp,top=JSON.stringify(o1)!==JSON.stringify(o0);
- const raw=ks.reduce((n,k)=>n+scanServer(k,r.servers[k]).length,0)+scanServer(TOPK,o1).length;
+ const FS=[...ks.flatMap(k=>scanServer(k,r.servers[k])),...scanServer(TOPK,o1)],raw=FS.length;HLV=new Set(FS.map(f=>f.val));
  const d=edDiff(r.servers);
- return{ok:true,json,servers:r.servers,raw,diff:d,top,changes:d.add.length+d.chg.length+d.minor.length+d.rm.length+(top?1:0)+(raw?1:0)}}
+ return{ok:true,json,servers:r.servers,raw,vals:HLV,diff:d,top,changes:d.add.length+d.chg.length+d.minor.length+d.rm.length+(top?1:0)+(raw?1:0)}}
 const edBase=()=>JSON.stringify(DB.mcp,null,2);
 const gutHtml=(t,r)=>{const n=t.split('\n').length,w=r.dup?[r.dup.line,r.dup.l0]:[];let h='';for(let x=1;x<=n;x++)h+=`<div${!r.ok&&r.line===x?' class="bad"':w.includes(x)?' class="warn"':''}>${x}</div>`;return h};
 // v4.11 (P410-1): MỘT hàm đặt tên mới cho “Giữ cả hai” (nhập, trình sửa, Thêm). Luôn dừng: tối đa 1000 lần thử rồi dùng tên dự phòng.
 // Tên chuẩn hoá (safeName) chỉ giữ 24 ký tự đầu, nên với tên dài phải rút gọn phần đầu để hậu tố -N còn nằm trong 24 ký tự — nếu không mọi -N đều trùng nhau (gốc của vòng lặp vô hạn ở 4.10).
-function uniqName(k,usedArr){k=String(k??'').trim()||'srv';const used=new Set(usedArr||[]);used.add(k);const sns=new Set([...used].map(safeName));
- const ok=c=>!!c&&nlen(c)<=64&&!used.has(c)&&!sns.has(safeName(c));
- const m=/^(.*\S)-(\d{1,2})$/.exec(k);const base0=cpSlice(m?m[1]:k,60);let i=m?Math.min(+m[2]+1,9000):2;
- for(let n=0;n<1000;n++,i++){const suf='-'+i;let b=cpSlice(base0,64-suf.length);
-  for(let g=0;g<=base0.length;g++){const sn=safeName(b+suf);if(!sns.has(sn))break;b=[...b].slice(0,-1).join('').replace(/[\s\-_.]+$/,'')}
-  const c=(b||'srv')+suf;if(ok(c))return c}
+// v4.12 (P411-5): tên mới = tên gốc + '-N'; chỉ cắt phần gốc (theo ký tự Unicode) khi tổng vượt 64 — không còn rút gọn theo safeName
+function uniqName(k,usedArr){k=nameKey(k)||'srv';const used=new Set([...(usedArr||[])].map(nameKey));used.add(k);
+ const ok=c=>!!c&&nlen(c)<=64&&!nameErr(c)&&!used.has(c);
+ const m=/^(.*\S)-(\d{1,2})$/.exec(k);const base0=m?m[1]:k;let i=m?+m[2]+1:2;
+ for(let n=0;n<1000;n++,i++){const suf='-'+i;const b=nlen(base0)+suf.length<=64?base0:cpSlice(base0,64-suf.length).replace(/[\s\-_.]+$/,'');const c=(b||'srv')+suf;if(ok(c))return c}
  for(let n=0;n<50;n++){const c='srv-'+Math.random().toString(36).slice(2,8);if(ok(c))return c}
- return 'srv-'+Date.now().toString(36)}
+ return 'srv-'+Date.now()}
 function dupNewName(k,ms){return uniqName(k,[...Object.keys(servers()),...(ms||[]).map(m=>m.key)])}
 function edStatus(r,dirty){if(!r.ok)return `<div class="perr ederr" data-testid="json-error"><b>✕ ${esc(tr('Dòng {0}, cột {1}: {2}',r.line,r.col,r.msg))}</b><div class="fix"><a href="#" data-testid="json-goto" onclick="edGo();return false">${tr('Đến chỗ lỗi')}</a> · ${tr('Chưa lưu được cho đến khi sửa xong.')}</div></div>`;
  if(r.dup){const d=r.dup;return `<div class="perr ederr dupbox" data-testid="json-dup"><b>⚠ ${esc(tr('Dòng {0}, cột {1}: {2}',d.line,d.col,tr('Tên “{0}” bị trùng (đã có ở dòng {1}).',d.key,d.l0)))}</b><div class="fix">${esc(tr('Chọn cách xử lý. AIVN không bao giờ ghi đè âm thầm.'))} <a href="#" data-testid="json-goto" onclick="edGo();return false">${tr('Đến chỗ trùng')}</a></div>
@@ -865,13 +931,15 @@ function edStatus(r,dirty){if(!r.ok)return `<div class="perr ederr" data-testid=
  const d=r.diff,sum=!dirty?tr('Chưa có thay đổi.'):!r.changes?tr('Chỉ đổi khoảng trắng; không có gì để lưu.'):tr('Khi lưu: thêm {0} · đổi lệnh {1} · đổi cài đặt khác {2} · gỡ {3}.',d.add.length,d.chg.length,d.minor.length+(r.top?1:0),d.rm.length);
  return `<div class="tst ok" data-testid="json-ok">✓ ${tr('JSON hợp lệ.')} ${esc(sum)}</div>${r.raw?`<div class="pnote" data-testid="json-raw-key">🔑 ${tr('Có {0} khoá viết thẳng trong tệp. Khi lưu, AIVN hỏi bạn trước khi chuyển từng khoá vào kho khoá và chỉ để lại {1}.',r.raw,'<code>${secret:…}</code>')}</div>`:''}`}
 // ===== v4.10: tô màu cú pháp (bộ tách từ riêng, lớp phủ dưới textarea trong suốt); khoá luôn bị che bằng • (giữ đúng số ký tự để thẳng hàng) =====
+// v4.12 (P411-1): lớp tô màu che thêm mọi chuỗi mà scanServer đã tìm thấy (cờ tách đôi, mysql -p, env trong args…)
 function hlMaskRanges(body,ctxKey,prevStr){const R=[];if(!body||isRef(body))return R;
+ if(HLV.size){if(HLV.has(body)){R.push([0,body.length]);return R}if(HLV.size<=400)for(const v of HLV){if(v.length<3)continue;let i=body.indexOf(v);while(i>=0){R.push([i,i+v.length]);i=body.indexOf(v,i+v.length)}}}
  if(ctxKey&&(SECRET_NAME.test(ctxKey)||/^(proxy-)?authorization$/i.test(ctxKey))&&!hasRefIn(body)&&!NONVAL.test(body)){const b=/^(Bearer\s+|Basic\s+)/i.exec(body);R.push([b?b[0].length:0,body.length]);return R}
  if(prevStr&&SECRET_FLAG.test(prevStr)&&!body.startsWith('-')&&!hasRefIn(body)&&!NONVAL.test(body)&&!/^(~|\.{0,2}\/|[A-Za-z]:\\)/.test(body)){R.push([0,body.length]);return R}
  if(prevStr&&REV_FLAG.test(prevStr)&&/^[0-9a-f]{7,64}$/i.test(body))return R;
  const eq=/^(--?[A-Za-z][\w-]*)=(.+)$/.exec(body);if(eq&&SECRET_FLAG.test(eq[1])&&!hasRefIn(eq[2])&&!NONVAL.test(eq[2])){R.push([eq[1].length+1,body.length]);return R}
  const ui=/^[a-z][a-z0-9+.-]*:\/\/[^\/?#@:]*:([^\/?#@]+)@/i.exec(body);if(ui&&!hasRefIn(ui[1])){const a=body.indexOf(ui[1]);R.push([a,a+ui[1].length])}
- const re=/[?&]([^=&#]+)=([^&#]*)/g;let m;while((m=re.exec(body))){if(m[2]&&!m[2].startsWith('${secret')&&(SECRET_PARAM.test(m[1])||keyLikeIn(m[2]).length)){const a=m.index+m[0].length-m[2].length;R.push([a,a+m[2].length])}}
+ const re=/[?&]([^=&#]+)=([^&#]*)/g;let m;while((m=re.exec(body))){if(m[2]&&!m[2].startsWith('${secret')&&(paramSecret(m[1])&&valOk(pctDec(m[2]))||keyLikeIn(m[2]).length)){const a=m.index+m[0].length-m[2].length;R.push([a,a+m[2].length])}}
  for(const h of keyLikeIn(body))R.push([h.a,h.b]);{const bre=/\b(?:Bearer|Basic)\s+([A-Za-z0-9._~+\/\-=]{8,})/gi;let bm;while((bm=bre.exec(body)))if(!hasRefIn(bm[1])){const a=bm.index+bm[0].length-bm[1].length;R.push([a,a+bm[1].length])}}return R}
 function hlJson(t){let o='',i=0,lastKey=null,prevStr=null;const n=t.length,st=[];
  const out=(c,s)=>{o+=c?`<span class="${c}">${esc(s)}</span>`:esc(s)};
@@ -897,7 +965,7 @@ function jsonPanel(){const base=edBase();if(!UI.ed)UI.ed={text:base};const t=UI.
  <div class="edbox ${r.ok?'':'bad'}"><div class="edgut" id="edGut" aria-hidden="true">${gutHtml(t,r)}</div><div class="edwrap"><pre class="edhl" id="edHl" aria-hidden="true">${hlJson(t)}</pre><textarea class="edta" id="edTxt" data-testid="connect-apps-json" spellcheck="false" wrap="off" autocomplete="off" aria-label="mcp.json" aria-describedby="edErr" aria-invalid="${!r.ok}" onbeforeinput="edHistBefore(event)" onkeydown="edHistKey(event)" oninput="edInput(this)" onscroll="edScrollSync(this)" onkeyup="edPosUpd()" onclick="edPosUpd()"></textarea></div></div>
  <div id="edErr" role="status" data-testid="json-status">${edStatus(r,dirty)}</div>
  <div id="advMsg" role="status">${UI.advMsg||''}</div>
- <div class="small muted" style="margin:6px 0" data-testid="json-secret-note">🔑 ${tr('Chỗ giữ như {0} trỏ tới khoá đã lưu an toàn trên máy. Khoá thật không bao giờ ghi vào mcp.json.','<code>${secret:tim-kiem}</code>')}</div>
+ ${NOTKEY.size?`<div class="small muted" style="margin:6px 0" data-testid="notkey-row">⚠ ${tr('{0} chuỗi được bạn đánh dấu “không phải khoá” (chỉ ở đúng máy chủ và vị trí đó).',NOTKEY.size)} <button class="btn sm ghost" data-testid="notkey-reset" onclick="nkResetUi()">${tr('Đặt lại các mục “không phải khoá” ({0})',NOTKEY.size)}</button></div>`:''}<div class="small muted" style="margin:6px 0" data-testid="json-secret-note">🔑 ${tr('Chỗ giữ như {0} trỏ tới khoá đã lưu an toàn trên máy. Khoá thật không bao giờ ghi vào mcp.json.','<code>${secret:tim-kiem}</code>')}</div>
  <div class="small muted" style="margin:6px 0" data-testid="json-rule-note">ℹ️ ${tr('Lưu luôn qua thẻ xin phép. Mục mới thêm, hoặc đổi lệnh, đối số, địa chỉ, đầu mục hay tên biến, sẽ được chạy thử ngay sau khi bạn cho phép.')}</div></div>`}
 let edTimer=null;
 function edInput(ta){UI.ed={text:ta.value};UI.advMsg=null;const m=$('advMsg');if(m)m.innerHTML='';edHlUpd();clearTimeout(edTimer);edTimer=setTimeout(edRefresh,window.FAST?0:150);edPosUpd()}
@@ -950,8 +1018,8 @@ async function edSave(){const text=$('edTxt')?$('edTxt').value:UI.ed.text;UI.ed=
  const newJson={...rest,mcpServers:ns},newText=JSON.stringify(newJson,null,2);
  const a=await withCard(()=>({tool:'mcp_json_save',logoHtml:letterTile('M',30),title:tr('Lưu thay đổi mcp.json?'),sub:'mcp.json'+(g.count?' · '+tr('Bước {0}/{1}',2,2):''),
   preview:capList([...d.add.map(k=>[k,tr('Thêm mới')+' · '+kindOf(ns[k])+(isDanger(ns[k])?' · ⚠':'')]),...d.chg.map(k=>[k,tr('Đổi lệnh hoặc địa chỉ')+(isDanger(ns[k])?' · ⚠':'')]),...d.minor.map(k=>[k,tr('Đổi cài đặt khác')]),...d.rm.map(k=>[k,'🗑 '+tr('Gỡ')]),...(r.top?[['mcp.json',tr('Đổi cài đặt khác')]]:[])]),
-  extraHtml:diffHtml(edBase(),newText),
-  lines:[...(run.length?[TEST_LINE()]:[]),...(d.rm.length?[tr('Mục bị gỡ sẽ dừng ngay và khoá đã lưu của nó bị xoá khỏi máy.')]:[]),...(g.count?['🔑 '+secretLine(g.count)]:[])],
+  extraHtml:diffHtml(edBase(),newText,16,g.plain),
+  lines:[...(run.length?[TEST_LINE()]:[]),...(d.rm.length?[tr('Mục bị gỡ sẽ dừng ngay và khoá đã lưu của nó bị xoá khỏi máy.')]:[]),...(g.count?['🔑 '+secretLine(g.count)]:[]),...(g.plain.length?['⚠ '+plainLine(g.plain)]:[])],
   details:capList(run.map(k=>[k,redact(ns[k]),1])),...(run.length?{warn:MCP_WARN()}:{}),danger:run.some(k=>isDanger(ns[k])),alwaysLabel:null}));
  if(!a.ok){UI.advMsg=`<span class="msg-bad">${esc(tr('Chưa lưu: bạn đã từ chối. Nội dung đang sửa vẫn còn.'))}</span>`;return render()}
  commitMoves(g.moves);
@@ -1043,16 +1111,16 @@ function srvDiff(a0,b0){const a=a0||{},b=b0||{},out=[];
 // v4.10 (P49-3): tên trùng — trong cùng tệp (bản sau) hoặc trùng với máy chủ đã có — không bao giờ ghi đè âm thầm: Giữ cả hai (-2) / Thay thế (qua thẻ) / Bỏ qua
 function makePlan(text0,file){const text=stripBom(text0),r=parseFile(text);if(r.fatal)return{file,fatal:r.fatal};
  const plan={file,add:[],skip:[],dup:[],rejected:[],oauthSkipped:[],renamed:[],secretCount:0};const seen={},taken=new Set(),shortOf={};
- const rec={members:[],dups:[]};let entries=Object.entries(r.servers);
+ const rec={members:[],dups:[]};let entries=Object.entries(r.servers);const SNM=new Map();for(const x of Object.keys(servers()))(SNM.get(safeName(x))||SNM.set(safeName(x),[]).get(safeName(x))).push(x);
  if(!jsonScan(text,rec)&&rec.dups.length){try{entries=rec.members.map(m=>[m.key,JSON.parse(text.slice(m.vs,m.ve))])}catch(e){}}
  const firstOf={};
- for(const [k0,s0] of entries){let k=k0.trim();const s=JSON.parse(JSON.stringify(s0));
+ for(const [k0,s0] of entries){let k=nameKey(k0);const s=JSON.parse(JSON.stringify(s0));
   // v4.11 (quyết định 23/10): tên > 64 ký tự → rút gọn khi nhập (không từ chối, không treo) và báo trong kế hoạch
   if(nlen(k)>64){if(shortOf[k])k=shortOf[k];else{let c=cpSlice(k,64).replace(/[\s\-_.]+$/,'')||'srv';const used=[...Object.keys(seen),...Object.values(shortOf)]; /* chỉ tránh trùng với tên KHÁC trong cùng tệp; trùng với máy chủ đã có thì thành dòng “Trùng tên” để người dùng chọn */
-   if(used.includes(c)||used.some(x=>safeName(x)===safeName(c)))c=uniqName(c,used);shortOf[k]=c;plan.renamed.push({from:k,to:c});k=c}}
+   if(used.includes(c))c=uniqName(c,used); /* v4.12 (P411-6): trùng với máy chủ đã có → vẫn là dòng “Trùng tên” (Giữ cả hai / Thay thế / Bỏ qua) */shortOf[k]=c;plan.renamed.push({from:k,to:c});k=c}}
   if(firstOf[k]){const e=validateServer(k,s);if(e){plan.rejected.push({name:k,error:e});continue}
    plan.dup.push({name:k,src:'file',server:s,kind:kindOf(s),cmd:redact(s),old:redact(firstOf[k]),diff:srvDiff(firstOf[k],s),danger:isDanger(s)});continue}
-  const sn=safeName(k);const clash=Object.keys(servers()).concat(Object.keys(seen)).find(x=>x!==k&&safeName(x)===sn);
+  const sn=safeName(k);const clash=(SNM.get(sn)||[]).find(x=>x!==k);(SNM.get(sn)||SNM.set(sn,[]).get(sn)).push(k);
   if(clash){plan.rejected.push({name:k,error:tr('Tên "{0}" và "{1}" trùng nhau sau khi chuẩn hoá.',clash,k)});continue}seen[k]=1;
   const e=validateServer(k,s);if(e){plan.rejected.push({name:k,error:e});continue}firstOf[k]=s;
   if(s.auth){plan.oauthSkipped.push({name:k,server:s,error:oauthMsg(k)});continue}
@@ -1065,6 +1133,8 @@ function planCount(p){p.secretCount=[...p.add,...p.oauthSkipped,...p.dup].reduce
 const WHY={lan:'Địa chỉ http này nằm trong mạng nội bộ của bạn.',pin:'Lệnh này không ghim phiên bản. npx có thể tải mã mới.',cat:'Lệnh không thuộc danh mục Nâng cao.',catUrl:'Địa chỉ không thuộc danh mục Nâng cao.'};
 const whyOf=x=>tr(WHY[x.why==='cat'&&x.kind!=='stdio'?'catUrl':x.why]||WHY.cat);
 const secretLine=n=>tr('{0} khoá được chuyển vào kho khoá; mcp.json chỉ giữ {1}.',n,'${secret:…}');
+// v4.12 (P411-7): nói rõ chuỗi bạn bỏ chọn sẽ lưu dạng chữ thường (chỉ ở đúng máy chủ và vị trí đó)
+const plainLine=pl=>tr('{0} chuỗi bạn bỏ chọn sẽ lưu dạng chữ thường trong mcp.json: {1}.',pl.length,pl.slice(0,4).map(f=>f.name+' › '+f.loc).join('; ')+(pl.length>4?' …':''));
 function uniqImport(k){const p=UI.plan;return uniqName(k,[...Object.keys(servers()),...p.add.map(x=>x.name),...p.dup.map(x=>x.name),...p.oauthSkipped.map(x=>x.name),...(p.rejected||[]).map(x=>x.name)])}
 function dupKeep(i){const p=UI.plan,x=p.dup[i];if(!x)return;const nn=uniqImport(x.name),s=x.server,taken=new Set(p.add.map(a=>a.slot).filter(Boolean));const slot=importSlot(nn,s,taken);
  p.dup.splice(i,1);p.add.push({name:nn,slot,kind:kindOf(s),cmd:redact(s),server:s,danger:isDanger(s),renamedFrom:x.name,why:s.url&&netKind(s.url)==='lan'?'lan':unpinned(s)?'pin':!inCatalog(s)?'cat':null});planCount(p);render()}
@@ -1099,7 +1169,7 @@ async function applyImport(){const p=UI.plan;if(!p||!p.add.length)return;p.msg=n
  const add=p.add.filter(x=>!g.blocked.includes(x.name)),oa=p.oauthSkipped.filter(x=>!g.blocked.includes(x.name));
  if(!add.length){p.msg=blockMsg(g.blocked);return render()}
  const a=await withCard(()=>({tool:'mcp_import',logoHtml:letterTile('M',30),title:tr('Nhập {0} máy chủ từ mcp.json?',add.length),sub:p.file+(g.count?' · '+tr('Bước {0}/{1}',2,2):''),preview:capList(add.map(x=>[x.name,x.kind+' · → '+(x.slot?tr('Nâng cao: {0}',tr(ADVC(x.slot).name)):tr('Của tôi'))+(x.danger?' · ⚠ '+whyOf(x):'')])),
-  lines:[TEST_LINE(),...(g.count?['🔑 '+secretLine(g.count)]:[]),...(g.blocked.length?['⛔ '+blockMsg(g.blocked)]:[]),...(p.dup.length?[tr('Mục trùng tên chưa chọn sẽ không được nhập.')]:[])],details:capList(add.map(x=>[x.name,redact(map[x.name]),1])),warn:MCP_WARN(),danger:add.some(x=>x.danger),alwaysLabel:null}));
+  lines:[TEST_LINE(),...(g.count?['🔑 '+secretLine(g.count)]:[]),...(g.plain&&g.plain.length?['⚠ '+plainLine(g.plain)]:[]),...(g.blocked.length?['⛔ '+blockMsg(g.blocked)]:[]),...(p.dup.length?[tr('Mục trùng tên chưa chọn sẽ không được nhập.')]:[])],details:capList(add.map(x=>[x.name,redact(map[x.name]),1])),warn:MCP_WARN(),danger:add.some(x=>x.danger),alwaysLabel:null}));
  if(!a.ok){p.msg=tr('Chưa nhập: bạn đã từ chối.');return render()}
  commitMoves(g.moves);
  const sd=n=>p.file===SAMPLE_NAME&&SAMPLE_DESC[n]?{sampleDesc:SAMPLE_DESC[n]}:{};
@@ -1112,7 +1182,7 @@ async function applyImport(){const p=UI.plan;if(!p||!p.add.length)return;p.msg=n
 async function replaceOne(name){const p=UI.plan,x=p.dup.find(c=>c.name===name&&c.src==='app');if(!x)return;const s=JSON.parse(JSON.stringify(x.server));
  const g=await secretGate({[name]:s},p.file);if(g.blocked.length){p.msg=blockMsg(g.blocked);return render()}
  const a=await withCard(()=>({tool:'mcp_replace',logoHtml:srvLogo(name,30),title:tr('Thay thế máy chủ “{0}”?',name),sub:name+(g.count?' · '+tr('Bước {0}/{1}',2,2):''),fields:[[tr('Lệnh cũ'),x.old,1],[tr('Lệnh mới'),redact(s),1]],
-  lines:[...(g.count?['🔑 '+secretLine(g.count)]:[])],warn:tr('Tiến trình cũ sẽ bị dừng.'),danger:true,alwaysLabel:null}));
+  lines:[...(g.count?['🔑 '+secretLine(g.count)]:[]),...(g.plain&&g.plain.length?['⚠ '+plainLine(g.plain)]:[])],warn:tr('Tiến trình cũ sẽ bị dừng.'),danger:true,alwaysLabel:null}));
  if(!a.ok)return render();commitMoves(g.moves);stop(name);placeholderEmpty(name,s);
  const old=servers()[name],keep=new Set(allRefs(s));allRefs(old).forEach(v=>{if(!keep.has(v))delete SEC[v]});
  servers()[name]=s;const m=metaOf(name);m.approvedAt=now();m.alwaysOn=false;saveSec();save();
@@ -1128,7 +1198,7 @@ function splitCmd(line){const out=[];let cur='',q=null,has=false;for(let i=0;i<l
  if(q)return null;if(cur||has)out.push(cur);return out}
 function addPanel(){const A=UI.add||(UI.add={name:'',line:'',env:'',err:null});
  return `<div class="detail" data-testid="ca-add">${phead(emojiTile('＋',56),tr('Thêm máy chủ'),null,`<div class="small muted" style="margin-top:4px">${tr('Nhập lệnh hoặc địa chỉ của máy chủ MCP.')}</div>`)}
- <div class="addf"><label class="flab" for="addName">${tr('Tên')}</label><input class="inp" id="addName" data-testid="add-name" maxlength="64" autocomplete="off" spellcheck="false" placeholder="thoi-tiet" oninput="UI.add.name=this.value">
+ <div class="addf"><label class="flab" for="addName">${tr('Tên')}</label><input class="inp" id="addName" data-testid="add-name" autocomplete="off" spellcheck="false" placeholder="thoi-tiet" oninput="UI.add.name=this.value">
  <label class="flab" for="addLine">${tr('Lệnh hoặc địa chỉ')}</label><input class="inp mono" id="addLine" data-testid="add-line" autocomplete="off" spellcheck="false" placeholder="npx -y @vidu/mcp@1.0.0 · https://…" oninput="UI.add.line=this.value" onkeydown="if(event.key==='Enter')addSave()">
  <label class="flab" for="addEnv">${tr('Biến môi trường, mỗi dòng KEY=VALUE (không bắt buộc)')}</label><textarea class="inp mono" id="addEnv" data-testid="add-env" rows="3" spellcheck="false" autocomplete="off" oninput="UI.add.env=this.value"></textarea></div>
  ${A.err?`<div class="msg-bad small" data-testid="add-err" style="margin:6px 0">${esc(A.err)}</div>`:''}
@@ -1155,7 +1225,7 @@ async function addSave(){const A=UI.add;if(!A)return;const err=m=>{A.err=m;rende
  const g=await secretGate({[k]:s},tr('Thêm máy chủ'));if(g.blocked.length)return err(blockMsg(g.blocked));
  const old=replace?servers()[k]:null;
  const a=await withCard(replace?()=>({tool:'mcp_replace',logoHtml:srvLogo(k,30),title:tr('Thay thế máy chủ “{0}”?',k),sub:k+(g.count?' · '+tr('Bước {0}/{1}',2,2):''),fields:[[tr('Lệnh cũ'),redact(old),1],[tr('Lệnh mới'),redact(s),1]],
-   lines:[TEST_LINE(),...(g.count?['🔑 '+secretLine(g.count)]:[])],warn:tr('Tiến trình cũ sẽ bị dừng.'),danger:true,alwaysLabel:null}):mcpSpec(k,s,{test:true}));
+   lines:[TEST_LINE(),...(g.count?['🔑 '+secretLine(g.count)]:[]),...(g.plain&&g.plain.length?['⚠ '+plainLine(g.plain)]:[])],warn:tr('Tiến trình cũ sẽ bị dừng.'),danger:true,alwaysLabel:null}):mcpSpec(k,s,{test:true}));
  if(!a.ok){A.err=tr('Chưa thêm: bạn đã từ chối.');return render()}
  commitMoves(g.moves);placeholderEmpty(k,s);
  if(replace){stop(k);const keep=new Set(allRefs(s));allRefs(old).forEach(r=>{if(!keep.has(r))delete SEC[r]});const m=metaOf(k);m.approvedAt=now();m.alwaysOn=false;delete m.test}
@@ -1224,9 +1294,9 @@ function renderPage(){const n=countOn(),t=curTpl();
  document.documentElement.lang=LANG==='zh'?'zh-CN':LANG;
  // v4.9 (P48-8): nhãn thanh bên và tiêu đề trang theo ngôn ngữ giao diện
  document.querySelectorAll('.rail a').forEach(a=>{const t=a.querySelector('.tip');if(!t)return;t.dataset.vi=t.dataset.vi||t.textContent;t.textContent=tr(t.dataset.vi);a.setAttribute('aria-label',t.textContent)});
- document.title=tr('AIVN AGENT · Kết nối ứng dụng')+' v4.11 ('+tr('bản nháp')+')';
- $('o_draft').textContent='⚠ '+tr('Bản nháp 4.11 theo F-PLUGINS bản 2 + quyết định ngày 22/10 + báo cáo QA 4.10 (lượt 9)')+' · '+tr('Dữ liệu mẫu · lưu trong trình duyệt');$('o_draft').title=$('o_draft').textContent;
- $('o_v410').textContent=tr('Bản 4.10');$('o_v49').textContent=tr('Bản 4.9');$('o_v48').textContent=tr('Bản 4.8');$('o_v47').textContent=tr('Bản 4.7');$('o_v46').textContent=tr('Bản 4.6');$('o_v41').textContent=tr('Bản 4.1');$('o_v45').textContent=tr('Bản 4.5');$('o_v44').textContent=tr('Bản 4.4');$('o_v43').textContent=tr('Bản 4.3');$('o_v42').textContent=tr('Bản 4.2');$('o_restart').textContent='↻ '+tr('Mô phỏng mở lại AIVN');$('o_reset').textContent=tr('↺ Đặt lại');$('o_set').textContent='⚙ '+tr('Cài đặt (mô phỏng)');
+ document.title=tr('AIVN AGENT · Kết nối ứng dụng')+' v4.12 ('+tr('bản nháp')+')';
+ $('o_draft').textContent='⚠ '+tr('Bản nháp 4.12 theo F-PLUGINS bản 2 + quyết định ngày 22/10 + báo cáo QA 4.11 (lượt 10)')+' · '+tr('Dữ liệu mẫu · lưu trong trình duyệt');$('o_draft').title=$('o_draft').textContent;
+ $('o_v411').textContent=tr('Bản 4.11');$('o_v410').textContent=tr('Bản 4.10');$('o_v49').textContent=tr('Bản 4.9');$('o_v48').textContent=tr('Bản 4.8');$('o_v47').textContent=tr('Bản 4.7');$('o_v46').textContent=tr('Bản 4.6');$('o_v41').textContent=tr('Bản 4.1');$('o_v45').textContent=tr('Bản 4.5');$('o_v44').textContent=tr('Bản 4.4');$('o_v43').textContent=tr('Bản 4.3');$('o_v42').textContent=tr('Bản 4.2');$('o_restart').textContent='↻ '+tr('Mô phỏng mở lại AIVN');$('o_reset').textContent=tr('↺ Đặt lại');$('o_set').textContent='⚙ '+tr('Cài đặt (mô phỏng)');
  $('setPop').innerHTML=`<div class="small" style="font-weight:600;margin-bottom:6px">${tr('Cài đặt')} · ${tr('Giao diện')}</div><label class="small muted" for="uiLangSel">${tr('Ngôn ngữ giao diện')}</label>
   <select id="uiLangSel" class="inp" style="margin-top:4px"><option value="vi" ${LANG==='vi'?'selected':''}>Tiếng Việt</option><option value="en" ${LANG==='en'?'selected':''}>English</option><option value="zh" ${LANG==='zh'?'selected':''}>中文</option></select>
   <div class="small muted" style="margin-top:6px">${tr('Chỗ này đóng vai mục Cài đặt của ứng dụng. Hộp thoại Kết nối ứng dụng không có nút đổi ngôn ngữ.')}</div>`;
