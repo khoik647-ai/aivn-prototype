@@ -907,6 +907,8 @@ function edCheck(t0){const t=stripBom(t0),sh=t0.length-t.length,bad=(at,msg)=>{c
  const r=parseFile(t);if(r.fatal)return bad(0,r.fatal);
  if(rec.dups.length){const d=rec.dups[0],[line,col]=lineCol(t0,d.at+sh),[l0]=lineCol(t0,d.first+sh);return{ok:true,dup:{...d,line,col,l0},at:d.at+sh,line,col,members:rec.members,changes:0,raw:0}}
  const ks=Object.keys(r.servers);
+ // v4.12 (P411-1): dò khoá cho lớp tô màu TRƯỚC khi xét hợp lệ — một máy chủ sai cấu trúc không được làm lộ khoá của các máy chủ khác
+ {const hv=new Set();for(const k of ks){try{for(const f of scanServer(k,r.servers[k]))hv.add(f.val)}catch(e){}}try{const{mcpServers:_m,...oT}=JSON.parse(t);for(const f of scanServer(TOPK,oT))hv.add(f.val)}catch(e){}HLV=hv}
  for(const k of ks){const v=validateServer(k,r.servers[k]);if(v)return bad(keyAt(t,k),v)}
  {const sm=new Map();for(const kb of ks){const sn=safeName(kb);if(sm.has(sn))return bad(keyAt(t,kb),tr('Tên "{0}" và "{1}" trùng nhau sau khi chuẩn hoá.',sm.get(sn),kb));sm.set(sn,kb)}} // v4.12 (P411-10): O(n) thay cho O(n²)
  const json=JSON.parse(t),{mcpServers:_a,...o1}=json,{mcpServers:_b,...o0}=DB.mcp,top=JSON.stringify(o1)!==JSON.stringify(o0);
@@ -958,7 +960,7 @@ function hlJson(t){let o='',i=0,lastKey=null,prevStr=null;const n=t.length,st=[]
   if(m){out(/^[tfn]/.test(m[0])?'hb':'hn',m[0]);i+=m[0].length;continue}
   let j=i+1;while(j<n&&!/["{}\[\]:,\-0-9tfn]/.test(t[j]))j++;out(/\s/.test(c)&&!/\S/.test(t.slice(i,j))?'':'hx',t.slice(i,j));i=j}
  return o+'\n '}
-function edHlUpd(){const ta=$('edTxt'),h=$('edHl');if(!ta||!h)return;h.innerHTML=hlJson(ta.value);h.scrollTop=ta.scrollTop;h.scrollLeft=ta.scrollLeft}
+let edHlFor=null;function edHlUpd(){const ta=$('edTxt'),h=$('edHl');if(!ta||!h)return;edHlFor=HLV;h.innerHTML=hlJson(ta.value);h.scrollTop=ta.scrollTop;h.scrollLeft=ta.scrollLeft}
 function jsonPanel(){const base=edBase();if(!UI.ed)UI.ed={text:base};const t=UI.ed.text,r=edCheck(t),dirty=t!==base;
  return `<div class="detail" data-testid="ca-json">${phead(emojiTile('{ }',56),'mcp.json',null,`<div class="small muted" style="margin-top:4px">${tr('Sửa tay tệp cấu hình.')}</div>`)}
  <div class="pact">${BIG('pri',`id="edSave" data-act="save" ${r.ok&&!r.dup&&dirty&&r.changes?'':'disabled'} onclick="edSave()"`,tr('Lưu…'))}<button class="btn sm ghost" id="edRev" data-testid="json-revert" ${dirty?'':'disabled'} onclick="edRevert()">${tr('Bỏ thay đổi')}</button><span style="flex:1"></span><span class="small muted" id="edPos"></span></div>
@@ -975,6 +977,7 @@ function edInput(ta){if(!edPend)edPend=setTimeout(edInputNow,0)}
 function edFlush(){if(edPend)edInputNow()}
 function edInputNow(){clearTimeout(edPend);edPend=0;const ta=$('edTxt');if(!ta)return;UI.ed={text:ta.value};UI.advMsg=null;const m=$('advMsg');if(m)m.innerHTML='';edHlUpd();clearTimeout(edTimer);edTimer=setTimeout(edRefresh,window.FAST?0:150);edPosUpd()}
 function edRefresh(){const ta=$('edTxt');if(!ta)return;if(edPend)return edInputNow();const t=ta.value,r=edCheck(t),dirty=t!==edBase();
+ /* v4.12 (P411-1): edCheck vừa dò lại khoá — nếu tập giá trị cần che đổi thì tô màu lại (lần tô ở edInputNow dùng tập cũ) */if(HLV!==edHlFor&&!(edHlFor&&edHlFor.size===HLV.size&&[...HLV].every(v=>edHlFor.has(v))))edHlUpd();else edHlFor=HLV;
  $('edGut').innerHTML=gutHtml(t,r);$('edGut').scrollTop=ta.scrollTop;$('edErr').innerHTML=edStatus(r,dirty);ta.setAttribute('aria-invalid',String(!r.ok));
  ta.closest('.edbox').classList.toggle('bad',!r.ok);$('edSave').disabled=!(r.ok&&!r.dup&&dirty&&r.changes);$('edRev').disabled=!dirty}
 function edScrollSync(ta){UI.edScroll=ta.scrollTop;if(edScPend)return;edScPend=1;edScrollNow();setTimeout(()=>{edScPend=0;edScrollNow()},0)}
@@ -999,7 +1002,7 @@ function edHistBefore(e){if(EDH.mute)return;const ta=e.target,it=e.inputType||''
 function edHistSet(ta,x){ta.value=x.v;try{ta.setSelectionRange(x.a,x.b)}catch(e){}EDH.kind='';edInputNow()}
 function edUndo(){const ta=$('edTxt');if(!ta||!EDH.u.length)return;const x=EDH.u.pop();EDH.r.push({v:ta.value,a:ta.selectionStart,b:ta.selectionEnd});edHistSet(ta,x)}
 function edRedo(){const ta=$('edTxt');if(!ta||!EDH.r.length)return;const x=EDH.r.pop();EDH.u.push({v:ta.value,a:ta.selectionStart,b:ta.selectionEnd});edHistSet(ta,x)}
-function edHistKey(e){if(!(e.ctrlKey||e.metaKey)||e.altKey)return;const k=e.key.toLowerCase();
+function edHistKey(e){edBurst=0; /* v4.12 (P411-10): mỗi phím thật là một thao tác mới — chỉ các sự kiện của CÙNG một lần dán/fill (không có keydown xen giữa) mới gộp */if(!(e.ctrlKey||e.metaKey)||e.altKey)return;const k=e.key.toLowerCase();
  if(k==='z'&&!e.shiftKey){e.preventDefault();edUndo()}else if((k==='z'&&e.shiftKey)||k==='y'){e.preventDefault();edRedo()}}
 // v4.11 (P410-7): toast nhận câu dạng hàm → vẽ lại đúng ngôn ngữ khi đổi ngôn ngữ (setLang gọi t._draw)
 function undoToast(msg,fn){let t=$('uToast');if(!t){t=document.createElement('div');t.id='uToast';t.className='utoast';t.setAttribute('role','status');document.body.appendChild(t)}
