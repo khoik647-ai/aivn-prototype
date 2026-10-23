@@ -301,6 +301,19 @@ button.badge{border:1px solid transparent;cursor:pointer;font-family:inherit}but
 .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 /* v4.11 (P410-8): nút Kết nối trên trang chính ≥ 44 px cả khi không phải màn chạm */
 #caBtn{min-height:44px;min-width:44px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center}
+/* v4.12 (quy tắc min24): MỌI điều khiển, mọi khổ, cả khi dùng chuột — hộp hiển thị cao ≥ 24 px (không dùng ngoại lệ khoảng cách của WCAG).
+   Công tắc: thêm viền trong suốt trên/dưới + background-clip để hộp cao 24 px mà rãnh/nút gạt nhìn y như cũ. Màn chạm vẫn ≥ 44×44 (khối bên dưới). */
+.draft a[id^=o_v],.draft button[id^=o_]{min-height:24px;display:inline-flex;align-items:center;box-sizing:border-box}
+#caModal button,#caModal a,#caModal select,#caModal summary,#caModal input:not([type=checkbox]):not([type=radio]),#caModal [role=switch],#caModal [role=menuitem],#caModal [role=tab],#caModal [role=button],#caModal [tabindex="0"],#caModal .chip,
+#approveCard button,#approveCard a,#approveCard summary,#approveCard select,#approveCard input:not([type=checkbox]):not([type=radio]),#askModal button,#askModal a,#osDlg button,.utoast button,.utoast a,
+#caModal label:has(>input[type=checkbox]),#caModal label:has(>input[type=radio]),#approveCard label:has(>input[type=checkbox]),
+.body button,.body a,.body select,.body summary,.body input:not([type=checkbox]):not([type=radio]),.body [role=switch],.body [role=button],.body [tabindex="0"],#agentSettings label:has(>input[type=checkbox]),label.always
+ {min-height:24px;box-sizing:border-box}
+#caModal a,#approveCard a,.utoast a,#askModal a,#caModal summary,#approveCard summary,.body a,.body summary{display:inline-flex;align-items:center}
+#caModal button.badge,.body button.badge,#mcpBadges button,#caModal .chip{display:inline-flex;align-items:center;justify-content:center}
+label.always{display:flex;align-items:center}
+.swt{height:24px;border:none;border-top:2px solid transparent;border-bottom:2px solid transparent;background-clip:padding-box;border-radius:13px}
+.sw{box-sizing:content-box;border-top:3px solid transparent;border-bottom:3px solid transparent;background-clip:padding-box;border-radius:12px}
 /* P49-1: màn chạm — mọi đích bấm ≥ 44×44 px */
 @media (pointer:coarse){
  .draft a[id^=o_v],.draft button[id^=o_]{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center} /* v4.11 (P410-8): thanh nháp của prototype cũng ≥ 44 px khi chạm */
@@ -310,7 +323,7 @@ button.badge{border:1px solid transparent;cursor:pointer;font-family:inherit}but
  #caModal a,#approveCard a,#caModal summary,#approveCard summary{display:inline-flex;align-items:center}
  #caModal .chip,#caModal .btn,#approveCard .btn,#askModal .btn{padding-top:0;padding-bottom:0;display:inline-flex;align-items:center;justify-content:center}
  #caModal button.badge{display:inline-flex;align-items:center}
- .swt{width:44px;height:44px;background:transparent!important}
+ .swt{width:44px;height:44px;background:transparent!important;border:none}
  .swt::before{content:'';position:absolute;left:4px;top:12px;width:36px;height:20px;border-radius:11px;background:var(--line2)}
  .swt.on::before{background:var(--ok)}.swt.busy::before{background:#3b82f6}.swt.err::before{background:var(--bad)}
  .swt i{left:6px;top:14px;z-index:1}.swt.on i,.swt.err i{left:22px}

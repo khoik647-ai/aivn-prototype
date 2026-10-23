@@ -87,7 +87,8 @@ const conn=id=>DB.meta.connectors[id];
 const metaOf=k=>DB.meta.servers[k]||(DB.meta.servers[k]={catalogId:null,approvedAt:null,alwaysOn:false});
 const keyOfCat=cid=>Object.keys(servers()).find(k=>(DB.meta.servers[k]||{}).catalogId===cid);
 // v4.11 (quyết định 23/10 — quy tắc tên): tên Unicode (chữ Hán, emoji…) không gập được về a-z0-9 → thêm mã băm ngắn của cả tên, để hai tên khác nhau không bị coi là trùng
-const nameHash=k=>{let h=5381;for(const c of String(k))h=((h*33)^c.codePointAt(0))>>>0;return h.toString(36).slice(0,6)};
+/* v4.12 (P411-4): bản 4.11 cắt mã băm còn 6 chữ số base36 → bỏ mất chữ số thấp, nên tên chỉ khác ký tự cuối (…-3 / …-4) ra cùng safeName. Nay dùng HAI băm 32-bit độc lập, giữ đủ chữ số; edCheck vẫn chặn nếu hiếm hoi trùng */
+const nameHash=k=>{let h=5381,f=0x811c9dc5;for(const c of String(k)){const x=c.codePointAt(0);h=((h*33)^x)>>>0;f=Math.imul(f^x,16777619)>>>0}return h.toString(36).padStart(7,'0')+f.toString(36).padStart(7,'0')};
 // v4.12 (P411-4): tên trùng xét theo CẢ tên (sau khi bỏ khoảng trắng hai đầu, chuẩn NFC). safeName (mã nội bộ của công cụ) giờ là đơn ánh:
 // tên thuần a-z0-9 nối bằng '-' và ≤ 24 ký tự giữ nguyên (đổi '-' thành '_'); mọi tên khác = 17 ký tự gập đầu + '_' + mã băm của cả tên → hai tên khác nhau không bao giờ “trùng sau chuẩn hoá”
 const nameKey=k=>String(k??'').trim().normalize('NFC');
