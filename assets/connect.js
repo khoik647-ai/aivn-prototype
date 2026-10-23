@@ -968,28 +968,35 @@ function jsonPanel(){const base=edBase();if(!UI.ed)UI.ed={text:base};const t=UI.
  ${NOTKEY.size?`<div class="small muted" style="margin:6px 0" data-testid="notkey-row">⚠ ${tr('{0} chuỗi được bạn đánh dấu “không phải khoá” (chỉ ở đúng máy chủ và vị trí đó).',NOTKEY.size)} <button class="btn sm ghost" data-testid="notkey-reset" onclick="nkResetUi()">${tr('Đặt lại các mục “không phải khoá” ({0})',NOTKEY.size)}</button></div>`:''}<div class="small muted" style="margin:6px 0" data-testid="json-secret-note">🔑 ${tr('Chỗ giữ như {0} trỏ tới khoá đã lưu an toàn trên máy. Khoá thật không bao giờ ghi vào mcp.json.','<code>${secret:tim-kiem}</code>')}</div>
  <div class="small muted" style="margin:6px 0" data-testid="json-rule-note">ℹ️ ${tr('Lưu luôn qua thẻ xin phép. Mục mới thêm, hoặc đổi lệnh, đối số, địa chỉ, đầu mục hay tên biến, sẽ được chạy thử ngay sau khi bạn cho phép.')}</div></div>`}
 let edTimer=null;
-function edInput(ta){UI.ed={text:ta.value};UI.advMsg=null;const m=$('advMsg');if(m)m.innerHTML='';edHlUpd();clearTimeout(edTimer);edTimer=setTimeout(edRefresh,window.FAST?0:150);edPosUpd()}
-function edRefresh(){const ta=$('edTxt');if(!ta)return;const t=ta.value,r=edCheck(t),dirty=t!==edBase();
+// v4.12 (P411-10): dán nhiều dòng = trình duyệt bắn beforeinput/input/scroll cho TỪNG dòng; trước đây mỗi lần đều đọc lại cả văn bản, tô màu lại,
+// chụp bản hoàn tác và đồng bộ cuộn → bậc hai (138 máy chủ: 36 s). Giờ gom cả loạt sự kiện trong một tác vụ thành MỘT lần xử lý.
+let edPend=0,edBurst=0,edScPend=0;
+function edInput(ta){if(!edPend)edPend=setTimeout(edInputNow,0)}
+function edFlush(){if(edPend)edInputNow()}
+function edInputNow(){clearTimeout(edPend);edPend=0;const ta=$('edTxt');if(!ta)return;UI.ed={text:ta.value};UI.advMsg=null;const m=$('advMsg');if(m)m.innerHTML='';edHlUpd();clearTimeout(edTimer);edTimer=setTimeout(edRefresh,window.FAST?0:150);edPosUpd()}
+function edRefresh(){const ta=$('edTxt');if(!ta)return;if(edPend)return edInputNow();const t=ta.value,r=edCheck(t),dirty=t!==edBase();
  $('edGut').innerHTML=gutHtml(t,r);$('edGut').scrollTop=ta.scrollTop;$('edErr').innerHTML=edStatus(r,dirty);ta.setAttribute('aria-invalid',String(!r.ok));
  ta.closest('.edbox').classList.toggle('bad',!r.ok);$('edSave').disabled=!(r.ok&&!r.dup&&dirty&&r.changes);$('edRev').disabled=!dirty}
-function edScrollSync(ta){$('edGut').scrollTop=ta.scrollTop;const h=$('edHl');if(h){h.scrollTop=ta.scrollTop;h.scrollLeft=ta.scrollLeft}UI.edScroll=ta.scrollTop}
+function edScrollSync(ta){UI.edScroll=ta.scrollTop;if(edScPend)return;edScPend=1;edScrollNow();setTimeout(()=>{edScPend=0;edScrollNow()},0)}
+function edScrollNow(){const ta=$('edTxt');if(!ta)return;$('edGut').scrollTop=ta.scrollTop;const h=$('edHl');if(h){h.scrollTop=ta.scrollTop;h.scrollLeft=ta.scrollLeft}UI.edScroll=ta.scrollTop}
 function edPosUpd(){const ta=$('edTxt'),p=$('edPos');if(!ta||!p)return;const[l,c]=lineCol(ta.value,ta.selectionStart);p.textContent=tr('Dòng {0}, cột {1}',l,c)}
 function edGo(){const ta=$('edTxt');if(!ta)return;const r=edCheck(ta.value);if(r.ok&&!r.dup)return;ta.focus();ta.setSelectionRange(r.at,Math.min(ta.value.length,r.at+1));
  const lh=parseFloat(getComputedStyle(ta).lineHeight)||18;ta.scrollTop=Math.max(0,(r.line-4)*lh);edScrollSync(ta);edPosUpd()}
 // v4.10 (P49-4): thay cả nội dung bằng execCommand('insertText') để Ctrl+Z vẫn lùi lại được; dự phòng gán value
 function edApply(text,caret=0){const ta=$('edTxt');if(!ta){UI.ed={text};return renderCA()}if(ta.value!==text)edSnap(ta);EDH.kind='';EDH.mute=true;ta.focus();ta.setSelectionRange(0,ta.value.length);let ok=false;
  try{ok=document.execCommand('insertText',false,text)}catch(e){}if(!ok||ta.value!==text)ta.value=text;
- EDH.mute=false;try{ta.setSelectionRange(caret,caret)}catch(e){}edInput(ta);edRefresh()}
+ EDH.mute=false;try{ta.setSelectionRange(caret,caret)}catch(e){}edInputNow();edRefresh()}
 // v4.11 (P410-9): Ctrl+Z / Ctrl+Y (Ctrl+Shift+Z, ⌘Z) theo THAO TÁC chứ không theo từng ký tự: gõ liền một từ (kèm dấu cách sau nó) là một bước,
 // mỗi lần dán / cắt / xoá theo đoạn / Bỏ thay đổi / thay cả nội dung là một bước; dừng gõ > 1 giây cũng tách bước. Lịch sử giữ trong bộ nhớ (không ghi xuống).
 const EDH={u:[],r:[],last:0,kind:'',mute:false};
 function edSnap(ta){const v=ta.value;if(EDH.u.length&&EDH.u[EDH.u.length-1].v===v)return;EDH.u.push({v,a:ta.selectionStart,b:ta.selectionEnd});if(EDH.u.length>200)EDH.u.shift();EDH.r=[]}
 function edHistBefore(e){if(EDH.mute)return;const ta=e.target,it=e.inputType||'',now=Date.now();
  if(it==='historyUndo'||it==='historyRedo'){e.preventDefault();return it==='historyUndo'?edUndo():edRedo()}
+ if(edBurst)return;edBurst=1;setTimeout(()=>edBurst=0,0); // P411-10: một lần dán nhiều dòng = một bước hoàn tác, chụp một lần
  const kind=it==='insertText'?(/^\s+$/.test(e.data||'')?'space':'type'):it==='deleteContentBackward'||it==='deleteContentForward'?'del':'other';
  const sel=ta.selectionStart!==ta.selectionEnd,brk=kind==='other'||sel||now-EDH.last>1000||(kind!==EDH.kind&&!(EDH.kind==='type'&&kind==='space'));
  if(brk)edSnap(ta);else EDH.r=[];EDH.kind=kind==='other'||sel?'':kind;EDH.last=now}
-function edHistSet(ta,x){ta.value=x.v;try{ta.setSelectionRange(x.a,x.b)}catch(e){}EDH.kind='';edInput(ta)}
+function edHistSet(ta,x){ta.value=x.v;try{ta.setSelectionRange(x.a,x.b)}catch(e){}EDH.kind='';edInputNow()}
 function edUndo(){const ta=$('edTxt');if(!ta||!EDH.u.length)return;const x=EDH.u.pop();EDH.r.push({v:ta.value,a:ta.selectionStart,b:ta.selectionEnd});edHistSet(ta,x)}
 function edRedo(){const ta=$('edTxt');if(!ta||!EDH.r.length)return;const x=EDH.r.pop();EDH.u.push({v:ta.value,a:ta.selectionStart,b:ta.selectionEnd});edHistSet(ta,x)}
 function edHistKey(e){if(!(e.ctrlKey||e.metaKey)||e.altKey)return;const k=e.key.toLowerCase();
@@ -1011,7 +1018,7 @@ async function edDup(kind){const cur=()=>{const ta=$('edTxt');return ta?ta.value
   lines:[tr('Mục sau thay cho mục trước trong tệp đang sửa.'),tr('Bấm Lưu để áp dụng (vẫn qua thẻ xin phép).')],danger:true,alwaysLabel:null}));
  if(!a.ok){UI.advMsg=`<span class="msg-bad">${esc(tr('Chưa thay thế: bạn đã từ chối. Hai mục trùng tên vẫn còn.'))}</span>`;return render()}
  S=scan(cur());if(S)edApply(cutMember(S.t,S.ms,S.first),S.first.ks)}
-async function edSave(){const text=$('edTxt')?$('edTxt').value:UI.ed.text;UI.ed={text};const r=edCheck(text);if(!r.ok||r.dup||!r.changes)return edRefresh();
+async function edSave(){edFlush();const text=$('edTxt')?$('edTxt').value:UI.ed.text;UI.ed={text};const r=edCheck(text);if(!r.ok||r.dup||!r.changes)return edRefresh();
  const d=r.diff,ns=JSON.parse(JSON.stringify(r.servers)),{mcpServers:_x,...rest}=JSON.parse(JSON.stringify(r.json)),run=[...d.add,...d.chg];
  const g=await secretGate({...ns,[TOPK]:rest},'mcp.json');delete ns[TOPK];
  if(g.blocked.length){UI.advMsg=`<span class="msg-bad" data-testid="json-blocked">${esc(blockMsg(g.blocked.map(b=>b===TOPK?'mcp.json':b)))} ${esc(tr('Nội dung đang sửa vẫn còn.'))}</span>`;return render()}
@@ -1038,7 +1045,7 @@ async function edSave(){const text=$('edTxt')?$('edTxt').value:UI.ed.text;UI.ed=
  UI.advMsg=`<span class="msg-ok">${esc(tr('Đã lưu mcp.json.'))}${run.length?' '+esc(tr('Đang chạy thử {0} mục thêm hoặc đổi lệnh.',run.filter(k=>!ns[k].disabled&&!ns[k].auth).length)):''}</span>`;render();
  d.minor.forEach(k=>{if(wasOn[k]&&!ns[k].disabled)start(k)});runTests(run.filter(k=>!ns[k].disabled&&!ns[k].auth))}
 // v4.9 (P48-5): vẽ lại không làm mất focus — nhớ phần tử đang focus (id / data-testid / dòng), vị trí con trỏ, cuộn; rồi trả lại
-function renderCA(){const M=$('caModal'),ae=document.activeElement,inM=ae&&M.contains(ae);
+function renderCA(){edFlush();const M=$('caModal'),ae=document.activeElement,inM=ae&&M.contains(ae);
  const fk=inM?focusKeyOf(ae):null,frow=inM&&ae.closest('.li')?ae.closest('.li').dataset.sel:null,fpan=inM&&!!ae.closest('#caPanel');
  let fpos=null;try{fpos=fk&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA')?[ae.selectionStart,ae.selectionEnd]:null}catch(e){}
  const sc=$('caList')?$('caList').scrollTop:0,sp=$('caPanel')?$('caPanel').scrollTop:0,n=countOn();
@@ -1232,7 +1239,7 @@ async function addSave(){const A=UI.add;if(!A)return;const err=m=>{A.err=m;rende
  else DB.meta.servers[k]={catalogId:null,approvedAt:now(),alwaysOn:false};
  servers()[k]=s;saveSec();save();log(k,'added from Nâng cao');UI.add=null;UI.sel=k;UI.mpane='detail';render();runTest(k)}
 // v4.10 (P49-6): đóng khi mcp.json còn thay đổi chưa lưu → hỏi
-async function closeCAAsk(){if(UI.ed&&UI.ed.text!==edBase()){const c=await modalChoice(tr('Còn thay đổi chưa lưu trong mcp.json'),tr('Nháp được giữ đến khi bạn tải lại trang (không ghi ra máy vì có thể chứa khoá).'),[['stay',tr('Ở lại'),''],['discard',tr('Bỏ thay đổi'),'danger'],['keep',tr('Giữ nháp và đóng'),'pri']]);
+async function closeCAAsk(){edFlush();if(UI.ed&&UI.ed.text!==edBase()){const c=await modalChoice(tr('Còn thay đổi chưa lưu trong mcp.json'),tr('Nháp được giữ đến khi bạn tải lại trang (không ghi ra máy vì có thể chứa khoá).'),[['stay',tr('Ở lại'),''],['discard',tr('Bỏ thay đổi'),'danger'],['keep',tr('Giữ nháp và đóng'),'pri']]);
   if(!c)return;if(c==='discard'){UI.ed=null;UI.advMsg=null}}
  closeCA()}
 function modalAsk(title,body,okLabel){const back=focusKeyOf(document.activeElement);return new Promise(res=>{$('askModal').innerHTML=`<div class="mh"><h2>${esc(title)}</h2></div><div style="padding:0 18px 6px;color:var(--tx2)">${esc(body)}</div>
