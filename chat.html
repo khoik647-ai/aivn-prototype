@@ -51,12 +51,48 @@
 .legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;background:var(--c)}
 .adv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .loadbar{display:none;margin-top:10px}
+/* UI: vùng chạm tối thiểu 24px (D4) */
+.x{min-width:32px;min-height:32px;display:inline-grid;place-items:center}
+input[type=checkbox]{width:24px;height:24px;margin:0;flex:none;accent-color:var(--acc)}
+input[type=range]{height:24px;margin:0}
+.sec .small a{display:inline-block;min-height:24px;line-height:18px;padding:3px 0}
+.menu-btn{display:none}
+.convs-bg{display:none}
+/* UI: di động — ngăn hội thoại thành ngăn kéo (D1), vùng chạm 44px (D4) */
+@media (pointer:coarse),(max-width:767px){
+ .btn,.inp,select{min-height:44px}
+ .btn.sm{min-height:44px;padding:0 14px}
+ .sec .small a{min-height:44px;line-height:38px}
+}
+@media (max-width:767px){
+ .topbar{height:auto;min-height:52px;padding:4px 12px;gap:8px;flex-wrap:wrap}
+ .topbar .sub{display:none}
+ .topbar .sample{white-space:nowrap}
+ .menu-btn{display:inline-grid;place-items:center;width:44px;height:44px;margin-left:-6px;background:none;border:1px solid var(--line2);border-radius:10px;color:var(--tx);cursor:pointer;flex:none}
+ .menu-btn svg{width:20px;height:20px}
+ .convs{position:fixed;inset:0 auto 0 0;width:min(300px,85vw);z-index:40;transform:translateX(-100%);transition:transform .2s;visibility:hidden}
+ .convs.open{transform:none;visibility:visible}
+ .convs-bg.open{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:39}
+ .mbar{padding:8px 12px}
+ .mpick{padding:8px 12px;min-height:44px;min-width:0}
+ #mname{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .msgs{padding:16px 0}
+ .msg{padding:0 12px}
+ .welcome{margin:32px auto;padding:0 16px}
+ .sugg{grid-template-columns:1fr}
+ .composer{padding:10px 12px 14px}
+ .two,.adv{grid-template-columns:1fr;gap:0}
+ .adv label{margin-bottom:8px}
+ .modal footer{flex-wrap:wrap}
+ .modal footer #estSpd{flex-basis:100%}
+ .gpu{padding:8px 10px;gap:10px}
+}
 </style></head><body>
 <div class="app"><nav class="rail"></nav>
 <div class="main">
-  <div class="topbar"><h1>Trò chuyện</h1><span class="sub">Chạy hoàn toàn trên máy · không gửi dữ liệu ra ngoài</span><span class="grow"></span><span class="sample">Dữ liệu mẫu · phản hồi mô phỏng</span></div>
+  <div class="topbar"><button class="menu-btn" id="menuBtn" type="button" aria-label="Cuộc trò chuyện" aria-expanded="false" aria-controls="convs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><h1>Trò chuyện</h1><span class="sub">Chạy hoàn toàn trên máy · không gửi dữ liệu ra ngoài</span><span class="grow"></span><span class="sample">Dữ liệu mẫu · phản hồi mô phỏng</span></div>
   <div class="wrap">
-    <aside class="convs"><div class="hd"><button class="btn pri" style="width:100%;justify-content:center" onclick="newChat()">＋ Cuộc trò chuyện mới</button></div>
+    <div class="convs-bg" id="convsBg"></div><aside class="convs" id="convs"><div class="hd"><button class="btn pri" style="width:100%;justify-content:center" onclick="newChat()">＋ Cuộc trò chuyện mới</button></div>
       <div class="scroll" style="flex:1"><div class="grp">Hôm nay</div><div class="cv on" id="cvCur">Cuộc trò chuyện mới</div>
       <div class="grp">Tuần này</div><div class="cv">Tóm tắt báo cáo doanh thu Q3</div><div class="cv">Đọc hoá đơn từ ảnh chụp</div><div class="cv">Viết email chào hàng</div>
       <div class="grp">Trước đó</div><div class="cv">Giải thích lượng tử hoá GGUF</div><div class="cv">Lịch học tuần sau</div></div></aside>
@@ -64,7 +100,7 @@
       <div class="mbar"><div class="mpick" id="mpick"><span class="dot" id="mdot"></span><span id="mname" style="flex:1">Chọn mô hình để nạp…</span><span class="small muted" id="mmem"></span><span class="muted">▾</span></div>
         <button class="btn sm ghost" id="eject" style="display:none">⏏ Đẩy ra</button></div>
       <div class="msgs scroll" id="msgs"></div>
-      <div class="composer"><div class="cbox"><textarea id="inp" placeholder="Hãy nạp một mô hình trước khi trò chuyện" disabled></textarea>
+      <div class="composer"><div class="cbox"><textarea id="inp" aria-label="Tin nhắn" placeholder="Hãy nạp một mô hình trước khi trò chuyện" disabled></textarea>
         <div class="row"><button class="btn sm ghost" title="Đính kèm ảnh (mô hình thị giác)">📎 Ảnh</button><span class="grow" style="flex:1"></span><span class="small muted" id="ctxinfo"></span><button class="btn pri sm" id="send" disabled>Gửi ↵</button></div></div>
         <div class="hint">Enter để gửi · Shift+Enter xuống dòng · số liệu tok/s là mô phỏng theo cấu hình đã chọn</div></div>
     </section>
@@ -72,14 +108,14 @@
 </div></div>
 
 <div class="modal-bg" id="dlg"><div class="modal" style="width:720px">
-  <header><h2>Nạp mô hình</h2><button class="x" onclick="closeDlg()">×</button></header>
+  <header><h2>Nạp mô hình</h2><button class="x" type="button" aria-label="Đóng" onclick="closeDlg()">×</button></header>
   <div class="body scroll">
-    <div class="sec"><label class="f">Mô hình đã tải về</label><select class="inp" id="selM"></select>
+    <div class="sec"><label class="f">Mô hình đã tải về</label><select class="inp" id="selM" aria-label="Mô hình"></select>
       <div class="small muted" style="margin-top:5px">Thiếu mô hình? <a href="models.html">Mở Khám phá mô hình →</a></div></div>
     <div class="sec"><label class="f">Thiết bị chạy (GPU)</label><div class="gpus" id="gpus"></div><div id="gpuNote"></div></div>
-    <div class="two"><div class="sec"><div class="sl"><label class="f">Độ dài ngữ cảnh (context)</label><span class="v" id="ctxV"></span></div>
+    <div class="two"><div class="sec"><div class="sl"><label class="f" for="ctx">Độ dài ngữ cảnh (context)</label><span class="v" id="ctxV"></span></div>
       <input type="range" id="ctx" min="0" max="5" step="1"><div class="ticks"><span>2K</span><span>4K</span><span>8K</span><span>16K</span><span>32K</span><span id="ctxMaxT">64K</span></div></div>
-    <div class="sec"><div class="sl"><label class="f">Số lớp đưa lên GPU (GPU offload)</label><span class="v" id="layV"></span></div>
+    <div class="sec"><div class="sl"><label class="f" for="lay">Số lớp đưa lên GPU (GPU offload)</label><span class="v" id="layV"></span></div>
       <input type="range" id="lay" min="0" step="1"><div class="ticks"><span>0 · chỉ CPU</span><span id="layMax"></span></div></div></div>
     <div class="sec adv"><label class="row small" style="gap:6px"><input type="checkbox" id="fa" checked> Flash Attention (giảm bộ nhớ ngữ cảnh)</label><label class="row small" style="gap:6px"><input type="checkbox" checked> Giữ mô hình trong bộ nhớ (mmap)</label></div>
     <div class="card" style="padding:12px 14px;background:var(--bg2)">
@@ -185,6 +221,11 @@ function send(text){text=(text??document.getElementById('inp').value).trim();if(
       a.tps=base*(0.97+Math.random()*.06);renderMsgs();setTimeout(step,1000/base*1.4*(window.FAST?0.15:1));};step();},ttft*1000);}
 document.getElementById('send').onclick=()=>send();
 document.getElementById('inp').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}};
-function newChat(){msgs=[];updBar()}
+function newChat(){msgs=[];updBar();setConvs(false)}
+// UI: mở/đóng ngăn hội thoại trên màn hình hẹp (D1)
+function setConvs(open){document.getElementById('convs').classList.toggle('open',open);document.getElementById('convsBg').classList.toggle('open',open);document.getElementById('menuBtn').setAttribute('aria-expanded',open)}
+document.getElementById('menuBtn').onclick=()=>setConvs(!document.getElementById('convs').classList.contains('open'));
+document.getElementById('convsBg').onclick=()=>setConvs(false);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('convs').classList.contains('open'))setConvs(false)});
 updBar();if(P.get('model'))openDlg();
 </script></body></html>
