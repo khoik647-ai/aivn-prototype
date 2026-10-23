@@ -1,0 +1,138 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Khám phá mô hình · AIVN (bản mẫu)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
+<!-- BẢN CHỤP #44 (2026-10-23, trước #48) để so sánh/QA, không sửa tiếp. JS riêng: assets/models-v2-44.js, assets/models-i18n-44.js. Giống hệt models.html (#44). WIP #48: models-48.html -->
+<style>
+.topbar{gap:10px}
+.banner{font-size:11px;font-weight:600;color:#c4b5fd;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.4);padding:2px 9px;border-radius:20px;white-space:nowrap}
+.sample{white-space:nowrap}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:9px;overflow:hidden;flex:none}
+.seg button{background:transparent;border:none;border-right:1px solid var(--line2);padding:5px 10px;cursor:pointer;color:var(--tx2);font-size:12.5px}
+.seg button:last-child{border-right:none}.seg button.on{background:var(--accbg);color:var(--acc);font-weight:600}
+.mseg button{text-align:left;line-height:1.25;padding:6px 12px}.mseg button b{font-weight:600;color:var(--tx)}.mseg button.on b{color:var(--acc)}.mseg button span{font-size:11.5px;color:var(--tx3);white-space:nowrap}
+:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
+.wrap{flex:1;display:flex;min-height:0}
+.left{flex:1;display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line)}
+.filters{padding:12px 18px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:9px}
+#qhelp{font-size:11.5px;color:var(--tx3);margin-top:-3px}
+.frow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.lbl{font-size:12px;color:var(--tx2);font-weight:600;margin-right:2px}
+.chip.fc i{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+.chip.fc.ok i{background:var(--ok)}.chip.fc.chk i{background:#38bdf8}.chip.fc.warn i{background:var(--warn)}.chip.fc.bad i{background:var(--bad)}
+.chip .c{font-size:11px;opacity:.75}
+#cntrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}#cntrow .grow{flex:1}
+.sel{width:auto;padding:4px 8px;font-size:12.5px}
+.lnk{background:none;border:none;color:var(--acc);cursor:pointer;padding:2px 0;font:inherit}
+.lnk.small{font-size:12px}
+.list{flex:1;padding:6px 12px 20px}
+.gh{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;padding:12px 12px 4px}
+.m{display:flex;width:100%;text-align:left;gap:12px;align-items:center;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid transparent;background:transparent;color:inherit;font:inherit}
+.m:hover{background:var(--panel)}.m.sel{background:var(--panel);border-color:var(--acc)}
+.m.refhint{border:1px dashed var(--acc);margin:6px 0 4px;background:var(--accbg)}
+.mm{min-width:0;flex:1;display:flex;flex-direction:column}
+.m .nm{font-weight:600;overflow-wrap:anywhere;min-width:0} /* #44: tên mô hình là thông tin chính — xuống dòng thay vì cắt (#37 A2) */
+.m .meta{font-size:12px;color:var(--tx3);display:flex;gap:4px 10px;margin-top:2px;flex-wrap:wrap}
+.m .tags{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}.m .tags:empty{display:none}
+.tag.cap{color:#c7d2fe;border-color:rgba(108,140,255,.35)}
+.m .right{margin-left:auto;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none}
+.kbd{font-size:11px;border:1px solid var(--line2);border-radius:5px;padding:1px 6px;color:var(--tx2);flex:none}
+.realmk{color:#a5b4fc}.okc{color:var(--ok)}.accc{color:var(--acc)}
+/* huy hiệu mức chạy: ≈ = ước tính; "cần kiểm tra" viền đứt để thấy là chưa chắc */
+.fit2{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.fit2::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.fit2.ok{color:var(--ok);background:var(--okbg)}.fit2.warn{color:var(--warn);background:var(--warnbg)}.fit2.bad{color:var(--bad);background:var(--badbg)}
+.fit2.chk{color:#38bdf8;background:rgba(56,189,248,.12);border:1px dashed rgba(56,189,248,.7);padding:1px 8px}.fit2.unk{color:var(--tx3);background:var(--panel2)}
+.fit2.dot{padding:0;background:none;border:none}.fit2.dot::before{width:8px;height:8px}
+.fit2.big{font-size:12.5px;padding:4px 11px}
+.howpop{position:absolute;z-index:60;right:14px;top:8px;max-height:calc(100% - 16px);overflow:auto;width:min(560px,calc(100% - 28px));padding:14px 16px;background:var(--panel);border:1px solid var(--line2);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.howpop .ph2{display:flex;align-items:center}.howpop p{margin:8px 0;color:var(--tx2)}
+table.th{border-collapse:collapse;width:100%;font-size:12px;margin:6px 0}table.th td,table.th th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}table.th th{color:var(--tx3);font-weight:600}
+.detail{width:480px;flex:none;display:flex;flex-direction:column;min-height:0}
+.dh{padding:16px 20px 10px}.dh h2{margin:0 0 2px;font-size:18px;word-break:break-word}.rid{word-break:break-all}
+.row.tagrow{flex-wrap:wrap}
+.fitrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:10px}.fittxt{flex:1 1 220px;min-width:0}.hflink{flex:none;margin-left:auto;white-space:nowrap}
+.topbar h1{white-space:nowrap}
+.tabs{display:flex;gap:2px;padding:0 16px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:none;border-bottom:2px solid transparent;padding:9px 10px;cursor:pointer;color:var(--tx2);font:inherit;font-size:13px;font-weight:600}
+.tabs button.on{color:var(--tx);border-bottom-color:var(--acc)}
+.pane{flex:1;min-height:0;padding:12px 18px}
+.readme{font-size:13px;line-height:1.6;color:var(--tx);overflow-wrap:anywhere}
+.readme h3,.readme h4,.readme h5,.readme h6{margin:16px 0 6px;font-size:14.5px}.readme h3{font-size:16px}
+.readme p{margin:6px 0}.readme pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;overflow:auto;font-size:12px;white-space:pre}
+.readme code{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:var(--panel2);padding:0 4px;border-radius:4px}.readme pre code{background:none;padding:0}
+.readme .tw{overflow:auto}.readme table{border-collapse:collapse;font-size:12px;margin:6px 0}.readme td,.readme th{border:1px solid var(--line);padding:4px 7px;text-align:left}
+.readme blockquote{margin:6px 0;padding:4px 12px;border-left:3px solid var(--line2);color:var(--tx2)}
+.readme .img{font-size:12px;color:var(--tx3)}.rsrc{margin-bottom:8px}
+.asm{margin:4px 0 8px}.cached{color:#a5b4fc;white-space:nowrap}
+.qtable{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:6px 0 8px}
+.q,.qh{display:grid;grid-template-columns:16px minmax(0,1.5fr) 70px 70px 128px 52px;gap:6px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line)}
+.qh{font-size:11px;color:var(--tx3);font-weight:600;background:var(--bg2);padding:6px 10px}
+.q{cursor:pointer}.q:last-child{border-bottom:none}.q:hover{background:var(--panel)}.q.sel{background:var(--accbg)}
+.q .rad{width:14px;height:14px;border-radius:50%;border:2px solid var(--line2)}.q.sel .rad{border-color:var(--acc);background:radial-gradient(var(--acc) 40%,transparent 45%)}
+.q .qn{font-family:ui-monospace,Consolas,monospace;font-size:12px;font-weight:600;min-width:0;overflow-wrap:anywhere}
+.rec{font-size:10.5px;color:var(--ok);display:block;white-space:nowrap;font-family:'Be Vietnam Pro',system-ui,sans-serif;font-weight:500}.tps{text-align:right}
+.dfoot{padding:12px 20px;border-top:1px solid var(--line);background:var(--bg2);flex:none}.dfoot .grow{flex:1}
+.memviz{height:10px;border-radius:6px;background:var(--line);position:relative;overflow:visible;margin:8px 0 4px}
+.memviz i{position:absolute;left:0;top:0;bottom:0;border-radius:6px}.memviz b{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff;opacity:.8}
+.dlgo{width:100%;justify-content:center;padding:10px;white-space:normal}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line2);border-top-color:var(--acc);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px}@keyframes sp{to{transform:rotate(360deg)}}
+.mback{display:none}
+.dlp{position:fixed;right:498px;bottom:18px;width:400px;max-width:calc(100vw - 24px);z-index:40;box-shadow:0 20px 50px rgba(0,0,0,.5);display:none}
+.dlp.open{display:block}
+.dlp header{padding:11px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;font-weight:600}
+.dli{padding:11px 14px;border-bottom:1px solid var(--line)}.dli:last-child{border-bottom:none}
+.dli .t{display:flex;justify-content:space-between;gap:8px;font-size:13px}.dli .s{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--tx3);margin-top:5px}
+.dlbtn .n{background:var(--acc);color:#fff;border-radius:9px;font-size:10.5px;padding:0 6px;margin-left:2px}
+.leftwrap{position:relative;display:flex;flex-direction:column;min-height:0;flex:1}
+@media (max-width:1439px){.topbar .sub{display:none}}
+@media (max-width:1200px){.detail{width:430px}.dlp{right:448px}}
+@media (max-width:1000px){.topbar .sample{display:none}}
+/* điện thoại / cửa sổ hẹp: danh sách → chi tiết, có nút Quay lại (giống Connect 4.9) */
+@media (max-width:767px){
+ .rail{width:48px}.rail a{width:40px;height:40px}.rail .logo{width:34px;height:34px;font-size:11px}
+ .topbar{height:auto;flex-wrap:wrap;padding:8px 12px;gap:8px}.topbar h1{font-size:14px}.topbar .grow{display:none}.banner{order:5}
+ .dlt{display:none}.seg button{min-height:40px;padding:5px 10px}.btn{min-height:40px}
+ .wrap{flex-direction:column}.left{border-right:none}.detail{width:auto;flex:1}
+ body:not(.m-detail) .detail{display:none}body.m-detail .left{display:none}
+ .filters{padding:10px 12px}.mseg{width:100%}.mseg button{flex:1;min-height:44px;padding:5px 8px}.mseg button span{white-space:normal}.mdemo{display:none}
+ .chip{min-height:40px}.list{padding:4px 6px 20px}.m{min-height:56px;padding:9px 8px;gap:9px}.m .lg{width:32px!important;height:32px!important}
+ .mback{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--line2);border-radius:10px;color:var(--tx);font:inherit;font-size:13.5px;font-weight:600;padding:9px 14px;margin:10px 14px 0;cursor:pointer;min-height:44px;align-self:flex-start}
+ .dh{padding:12px 14px 8px}.pane{padding:10px 12px}.tabs{padding:0 8px;overflow-x:auto}.tabs button{min-height:44px;white-space:normal;flex:1 1 0;min-width:0;line-height:1.25;padding:6px 6px}
+ .q,.qh{grid-template-columns:14px minmax(0,1fr) auto;padding:8px;row-gap:4px}.qh .qlv{display:none}.q .qlv{grid-column:2/-1}.qsz,.tps{display:none}.tabs,.dh,.mback{flex:none}.q{min-height:48px}
+ .dfoot{padding:10px 12px}.dlp{right:12px;left:12px;width:auto}.howpop{position:fixed;left:8px;right:8px;top:8px;bottom:8px;width:auto;max-height:none}#cntrow .grow{display:none}.mseg button b{display:block}
+ .detail{min-height:0;overflow:auto}.pane{flex:none;overflow:visible}
+}
+@media (max-width:520px){.m{flex-wrap:wrap;row-gap:6px}.m .mm{flex:1 1 0;min-width:0}.m .right{flex-basis:calc(100% - 41px);min-width:0;flex-direction:row;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:4px 8px;margin-left:41px;text-align:left}.m.refhint .kbd{display:none}.m .right .need{white-space:normal}}
+@media (max-width:420px){.mseg button span{font-size:10.5px}.lbl{width:100%}}
+@media (pointer:coarse){
+ /* #44 / #37 A3: mọi đích chạm ≥ 44×44 px khi dùng ngón tay (kiểm bằng tools/touch-check-models.py) */
+ .main button,.main a[href]:not(.readme a),.main select,.main input,.main summary,.main [role=tab],.dlp button,.dlp a[href]{min-height:44px;min-width:44px;box-sizing:border-box}
+ .main .chip,.main .btn,.dlp .btn,.main .lnk,.dlp .lnk,.main a.hflink{display:inline-flex;align-items:center;justify-content:center;padding-top:0;padding-bottom:0}
+ .main .x,.dlp .x{width:44px;height:44px}
+ .rail a{width:44px;height:44px}
+}
+</style></head><body>
+<div class="app"><nav class="rail"></nav>
+<div class="main">
+  <div class="topbar" id="top"></div>
+  <div class="wrap">
+    <section class="left">
+      <div class="filters">
+        <div class="frow" id="machine"></div>
+        <div class="search"><span id="sic"></span><input class="inp" id="q" autocomplete="off" spellcheck="false" data-testid="q"></div>
+        <div id="qhelp"></div>
+        <div class="frow" id="caps"></div>
+        <div class="frow" id="fits"></div>
+        <div id="cntrow"></div>
+      </div>
+      <div class="leftwrap"><div class="howpop" id="howPop" role="dialog" aria-label="Cách ước tính" hidden></div>
+      <div class="list scroll" id="list" role="list"></div></div>
+    </section>
+    <aside class="detail" id="detail" aria-live="polite"></aside>
+  </div>
+</div></div>
+<div class="card dlp" id="dlp"><header><span id="dlpH">Đang tải về</span> <span class="grow" style="flex:1"></span><button class="x" id="dlClose" aria-label="×">×</button></header><div id="dll" class="scroll" style="max-height:340px"></div></div>
+<script src="assets/shell.js"></script>
+<script src="assets/data/models-hf-2026-10-23.js"></script>
+<script src="assets/models-i18n-44.js"></script>
+<script src="assets/models-v2-44.js"></script>
+</body></html>

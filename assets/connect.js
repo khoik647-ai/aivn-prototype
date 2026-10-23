@@ -1,4 +1,4 @@
-// Bản mẫu Kết nối ứng dụng v4.10 — F-PLUGINS bản 2 (PR #5) + quyết định 22/10 + báo cáo QA v4.9 (lượt 8: dò khoá ở mọi chỗ trong mcp.json + thẻ xin phép từng khoá, vùng chạm ≥44px khi dùng tay, trùng tên máy chủ, bản so sánh khi lưu mcp.json, thẻ lọc Đã kết nối, mô tả không bị cắt, tô màu cú pháp). Mô phỏng hoàn toàn trong trình duyệt.
+// Bản mẫu Kết nối ứng dụng v4.11 — báo cáo QA v4.10 (lượt 9: tên dài không còn treo khi “Giữ cả hai”, bắt thêm 6 loại khoá lọt — mật khẩu trong URL ở env/args, header -H "X-API-Key: …", ?access_key=, *_PASS, secret AWS dạng arg —, bỏ chọn một dòng vẫn lưu phần còn lại, JWT một khối, không gợi ý sha/digest/tên tệp, nút Kết nối trang chính ≥44px, thanh công cụ một hàng ≥1024px). Trước đó v4.10 — F-PLUGINS bản 2 (PR #5) + quyết định 22/10 + báo cáo QA v4.9 (lượt 8: dò khoá ở mọi chỗ trong mcp.json + thẻ xin phép từng khoá, vùng chạm ≥44px khi dùng tay, trùng tên máy chủ, bản so sánh khi lưu mcp.json, thẻ lọc Đã kết nối, mô tả không bị cắt, tô màu cú pháp). Mô phỏng hoàn toàn trong trình duyệt.
 renderRail('agent');
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -64,12 +64,12 @@ const BUILTIN=[
   starters:[{vi:'Liệt kê tệp trong thư mục được phép, nhóm theo loại.',en:'List the files in the allowed folder, grouped by kind.',zh:'列出允许文件夹里的文件，按类型分组。'},{vi:'Đọc bảng tính này và nói có bao nhiêu dòng.',en:'Read this spreadsheet and say how many rows it has.',zh:'读这个表格，说出有多少行。'}],suggest:['excel']},
 ];
 const L=o=>o==null?'':typeof o==='string'?o:(o[LANG]??o.vi??Object.values(o)[0]??'');
-const KEY='aivn.plugins.v410';
+const KEY='aivn.plugins.v411';
 // quyết định lượt 4 (c): khoá lưu riêng, đóng vai kho khoá của hệ điều hành (Windows Credential Manager). mcp.json chỉ giữ chỗ ${secret:…}.
-const VAULT='aivn.secrets.v410';
+const VAULT='aivn.secrets.v411';
 // v4.10: kho khoá MÔ PHỎNG. Ứng dụng thật dùng kho khoá của hệ điều hành (Windows Credential Manager / macOS Keychain / libsecret).
 // Bản mẫu không bao giờ ghi khoá dạng chữ: localStorage chỉ giữ mục đã làm rối (XOR + base64, nhãn "sim1:"), không phải mã hoá thật.
-const VKEY='aivn-sim-vault-410';
+const VKEY='aivn-sim-vault-411';
 const obf=v=>'sim1:'+btoa(Array.from(new TextEncoder().encode(String(v)),(b,i)=>String.fromCharCode(b^VKEY.charCodeAt(i%VKEY.length))).join(''));
 const deobf=x=>{if(typeof x!=='string'||!x.startsWith('sim1:'))return x;try{const b=atob(x.slice(5));return new TextDecoder().decode(Uint8Array.from(b,(c,i)=>c.charCodeAt(0)^VKEY.charCodeAt(i%VKEY.length)))}catch{return ''}};
 let SEC=Object.fromEntries(Object.entries(LS.get(VAULT,{})||{}).map(([k,v])=>[k,deobf(v)]));
@@ -86,7 +86,12 @@ const servers=()=>DB.mcp.mcpServers;
 const conn=id=>DB.meta.connectors[id];
 const metaOf=k=>DB.meta.servers[k]||(DB.meta.servers[k]={catalogId:null,approvedAt:null,alwaysOn:false});
 const keyOfCat=cid=>Object.keys(servers()).find(k=>(DB.meta.servers[k]||{}).catalogId===cid);
-const safeName=k=>foldVi(k).replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,24);
+// v4.11 (quyết định 23/10 — quy tắc tên): tên Unicode (chữ Hán, emoji…) không gập được về a-z0-9 → thêm mã băm ngắn của cả tên, để hai tên khác nhau không bị coi là trùng
+const nameHash=k=>{let h=5381;for(const c of String(k))h=((h*33)^c.codePointAt(0))>>>0;return h.toString(36).slice(0,6)};
+const safeName=k=>{const f=foldVi(k),a=f.replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');return /[^\x00-\x7f]/.test(f)?(a.slice(0,17)+'_'+nameHash(String(k).trim())).replace(/^_/,''):a.slice(0,24)};
+// MỘT quy tắc tên cho Thêm, nhập và trình sửa: 1–64 ký tự (đếm theo ký tự Unicode), không có ký tự điều khiển
+const nlen=k=>[...String(k)].length,cpSlice=(k,n)=>[...String(k)].slice(0,n).join('');
+function nameErr(k){const kt=String(k??'').trim();if(nlen(kt)<1||nlen(kt)>64)return tr('Tên máy chủ phải từ 1 đến 64 ký tự.');if(/[\u0000-\u001f\u007f]/.test(kt))return tr('Tên máy chủ không được chứa ký tự điều khiển.');return ''}
 const now=()=>new Date().toISOString();
 const log=(k,m)=>{(RT.logs[k]=RT.logs[k]||[]).push(new Date().toTimeString().slice(0,8)+'  '+redactText(m));RT.logs[k]=RT.logs[k].slice(-60)};
 const SKEY=id=>'@'+id;
@@ -98,13 +103,26 @@ const isHttp=u=>/^http:\/\//i.test(u||'');
 function normUrl(u){const m=/^([a-z][a-z0-9+.-]*:\/\/[^\/?#]*)(.*)$/i.exec(String(u||'').trim());if(!m)return String(u||'');return m[1].toLowerCase()+m[2].replace(/\/+$/,'')}
 const urlEq=(a,b)=>!!a&&!!b&&normUrl(a)===normUrl(b);
 // ===== v4.10 (P49-2): tìm khoá ở MỌI chỗ trong mcp.json, hỏi trước khi chuyển vào kho khoá, che khoá ở mọi nơi hiển thị =====
-const SECRET_NAME=/TOKEN|KEY|SECRET|PASSWORD|PASSWD|PASSPHRASE|CREDENTIAL|AUTH|APPID/i;
+// v4.11 (P410-2, §1b): tên biến/cờ xét theo TỪNG ĐOẠN (DB_PASS, DB_PWD, X-API-Key, apiKey đều là khoá; MAX_TOKENS, KEYBOARD_LAYOUT, AUTHOR, TOKEN_FILE thì không)
+const NAME_SEG=new Set(['token','key','keys','secret','secrets','password','passwd','passphrase','pass','pwd','credential','credentials','auth','appid','apikey','accesskey','secretkey','privatekey','clientsecret','authtoken','accesstoken','apitoken','sessiontoken','authorization','cookie']);
+const NAME_NOT=new Set(['file','path','dir','type','length','size','count','limit','max','min','ttl','timeout','expiry','expires','url','uri','endpoint','header','prefix','name','format','layout','mode']);
+function nameSecret(n){n=String(n??'').trim();if(!n||/^pwd$/i.test(n))return false;const seg=n.split(/[^A-Za-z0-9]+|(?<=[a-z0-9])(?=[A-Z])/).filter(Boolean).map(x=>x.toLowerCase().replace(/\d+$/,''));
+ if(seg.some(x=>NAME_NOT.has(x)))return false;if(seg.some(x=>NAME_SEG.has(x)))return true;return /(apikey|apitoken|authtoken|accesstoken|secretkey|accesskey|privatekey|clientsecret|password|passwd|passphrase|appid)$/.test(seg.join(''))}
+const SECRET_NAME={test:nameSecret};
+// giá trị không bao giờ là khoá (--auth none, TOKEN=false…)
+const NONVAL=/^(none|null|nil|false|true|off|on|no|yes|disabled|enabled|0|1|-)$/i;
+// v4.11 (P410-3): chuỗi người dùng đã xác nhận “không phải khoá” (chỉ lưu dấu băm, không lưu chuỗi)
+const NK_KEY='aivn.notkey.v411';const hashStr=v=>{let h=2166136261;for(const c of String(v))h=Math.imul(h^c.codePointAt(0),16777619)>>>0;return h.toString(36)+':'+String(v).length};
+let NOTKEY=new Set();try{NOTKEY=new Set(JSON.parse(localStorage.getItem(NK_KEY)||'[]'))}catch(e){}
+function notKeyAdd(v){NOTKEY.add(hashStr(v));try{localStorage.setItem(NK_KEY,JSON.stringify([...NOTKEY]))}catch(e){}}
+// cờ ghi phiên bản/commit: giá trị hex sau --rev là sha git, không phải khoá (P410-5)
+const REV_FLAG=/^--?(rev|revision|commit|sha|git-?sha|ref|hash|checkout|digest)$/i;
 const KEY_PFX_RE='(?:sk-(?:proj-|live-|ant-)?|sk_live_|sk_test_|rk_live_|ghp_|gho_|ghu_|ghs_|ghr_|github_pat_|hf_|xox[abposr]-|xapp-|AIza|glpat-|AKIA|ya29\\.)';
 const SECRET_VAL=new RegExp('^(Bearer\\s+\\S+|'+KEY_PFX_RE+'[A-Za-z0-9_\\-.]{6,})');
 const isSecret=(n,v)=>typeof v==='string'&&v!==''&&!isRef(v)&&(SECRET_NAME.test(n)||/^(proxy-)?authorization$/i.test(n)||SECRET_VAL.test(v));
 function secretNames(s){return [...Object.entries(s.env||{}),...Object.entries(s.headers||{})].filter(([n,v])=>isRef(v)||isSecret(n,v)).map(([n])=>n)}
-const SECRET_FLAG=/^(?:--?[\w-]*(?:api[-_]?key|apikey|token|secret|password|passwd|pwd|appid|app-id|auth)|-k|--key)$/i;
-const SECRET_PARAM=/^(?:api[-_]?key|apikey|key|token|access[-_]?token|auth|auth[-_]?token|secret|client[-_]?secret|password|passwd|pwd|appid|app[-_]?id|sig|signature)$/i;
+const SECRET_FLAG={test:f=>typeof f==='string'&&(/^(-k|--key)$/i.test(f)||/^--?[A-Za-z][\w-]*$/.test(f)&&nameSecret(f.replace(/^-+/,'')))};
+const SECRET_PARAM=/^(?:api[-_]?key|apikey|key|token|access[-_]?token|access[-_]?key|secret[-_]?key|private[-_]?key|api[-_]?secret|api[-_]?token|session[-_]?token|auth|auth[-_]?token|secret|client[-_]?secret|password|passwd|pass|pwd|passphrase|credential|appid|app[-_]?id|sig|signature|x-amz-signature|x-amz-credential|x-amz-security-token)$/i;
 const isRef=v=>typeof v==='string'&&/^\$\{secret:[^}]+\}$/.test(v);
 const hasRefIn=v=>typeof v==='string'&&/\$\{secret:[^}]+\}/.test(v);
 function entropy(s){const f={};for(const c of s)f[c]=(f[c]||0)+1;let e=0;for(const k in f){const p=f[k]/s.length;e-=p*Math.log2(p)}return e}
@@ -117,16 +135,34 @@ function highEntropy(t){if(t.length<20||t.length>512)return false;
  if(!(/[a-z]/.test(seg)&&/[A-Z]/.test(seg))&&t.length<32)return false;
  return entropy(t)>=3.5}
 function keyLikeIn(str){const out=[];if(typeof str!=='string'||!str)return out;const s=str.replace(/\$\{secret:[^}]+\}/g,m=>' '.repeat(m.length));
- const re=new RegExp('(?<![A-Za-z0-9])'+KEY_PFX_RE+'[A-Za-z0-9_\\-.]{8,}','g');let m;
- while((m=re.exec(s)))out.push({a:m.index,b:m.index+m[0].length,sure:true});
+ const put=(a,b,sure,x)=>{if(b>a&&!out.some(o=>a<o.b&&b>o.a))out.push({a,b,sure,...(x||{})})};
+ // v4.11 (P410-4): JWT là MỘT khoá (không tách 3 ref)
+ let m;const jw=/(?<![A-Za-z0-9_\-])eyJ[A-Za-z0-9_\-]{6,}\.[A-Za-z0-9_\-]{6,}\.[A-Za-z0-9_\-]{6,}/g;while((m=jw.exec(s)))put(m.index,m.index+m[0].length,true);
+ const re=new RegExp('(?<![A-Za-z0-9])'+KEY_PFX_RE+'[A-Za-z0-9_\\-.]{8,}','g');
+ while((m=re.exec(s)))put(m.index,m.index+m[0].length,true);
+ // v4.11 (P410-2): mật khẩu trong URL user:mật-khẩu@ ở MỌI chuỗi (env DATABASE_URL, args postgresql://…)
+ const ui=/[a-z][a-z0-9+.-]*:\/\/[^\s\/?#@:"'<>]+:([^\s\/?#@"'<>]+)@/gi;while((m=ui.exec(s))){if(m[1].includes('•'))continue;const a=m.index+m[0].length-1-m[1].length;put(a,a+m[1].length,true)}
+ // v4.11 (P410-2): tiêu đề dạng "X-API-Key: giá trị" (curl -H, args, env)
+ const hd=/(?:^|[\s"'\[,;{])([A-Za-z][\w-]*)\s*:[ \t]*(?!\/\/)([^\s"',;\]}<>]+)/g;while((m=hd.exec(s))){const n=m[1],v=m[2];if(v.includes('•')||NONVAL.test(v)||/^(Bearer|Basic|token)$/i.test(v))continue;
+  if(nameSecret(n)||/^(proxy-)?authorization$/i.test(n)){const a=m.index+m[0].length-v.length;put(a,a+v.length,true)}}
+ // v4.11 (P410-2): secret AWS 40 ký tự (có / hoặc +) — "có thể"; scanServer nâng thành "chắc" khi máy chủ có AKIA…
+ const aw=/(?<![A-Za-z0-9+\/=])[A-Za-z0-9+\/]{30,60}(?![A-Za-z0-9+\/=])/g;while((m=aw.exec(s))){const t=m[0];if(/[\/+]/.test(t)&&/[A-Z]/.test(t)&&/[a-z]/.test(t)&&/\d/.test(t)&&!/^\//.test(t)&&!/\/$/.test(t)&&!/\/\//.test(t)&&!t.split('/').some(x=>/^[a-z]{1,12}$/.test(x))&&entropy(t)>=4)put(m.index,m.index+t.length,false,{aws:true})}
+ // v4.11 (P410-2): tham số truy vấn kiểu khoá trong MỌI chuỗi (?access_key=, &password=, &sig=)
+ const qp=/[?&]([\w.-]+)=([^&#\s"'<>]+)/g;while((m=qp.exec(s))){if(!SECRET_PARAM.test(m[1])||NONVAL.test(m[2])||m[2].includes('•')||!m[2].trim())continue;const a=m.index+m[0].length-m[2].length;put(a,a+m[2].length,true)}
  const tk=/[A-Za-z0-9+\/_\-]{20,}={0,2}/g;
  while((m=tk.exec(s))){const a=m.index,b=a+m[0].length;if(out.some(o=>a<o.b&&b>o.a))continue;
-  for(const part of m[0].split('/')){/* đường dẫn a/b/c không phải khoá: xét từng đoạn */const pa=a+m[0].indexOf(part);if(highEntropy(part)&&!out.some(o=>pa<o.b&&pa+part.length>o.a))out.push({a:pa,b:pa+part.length,sure:false})}}
+  for(const part of m[0].split('/')){/* đường dẫn a/b/c không phải khoá: xét từng đoạn */const pa=a+m[0].indexOf(part),pb=pa+part.length;
+   // v4.11 (P410-5): digest sha256:…, tên tệp (…Q4KM2025.gguf) và sha git sau --rev không phải khoá
+   if(/(?:sha(?:1|224|256|384|512)|md5):$/i.test(s.slice(Math.max(0,pa-8),pa)))continue;
+   if(/^\.[A-Za-z][A-Za-z0-9]{0,5}(?![A-Za-z0-9])/.test(s.slice(pb,pb+8)))continue;
+   if(/^[0-9a-f]{7,64}$/i.test(part)&&/--?(?:rev|revision|commit|sha|git-?sha|ref|hash|checkout)(?:=|["',\s]+)$/i.test(s.slice(Math.max(0,pa-24),pa)))continue;
+   if(highEntropy(part)&&!out.some(o=>pa<o.b&&pb>o.a))out.push({a:pa,b:pb,sure:false})}}
  return out.map(o=>({...o,text:str.slice(o.a,o.b)}))}
 const PFX_ONLY=new RegExp('^'+KEY_PFX_RE);
 function maskVal(v){v=String(v??'');let pre='';const b=/^(Bearer\s+|Basic\s+|token\s+)/i.exec(v);if(b){pre=b[1];v=v.slice(pre.length)}
  const p=PFX_ONLY.exec(v);const head=p?p[0]:'';const rest=v.slice(head.length);
- return pre+head+'••••'+(rest.length>=12?rest.slice(-4):'')}
+ // v4.11 (P410-3): hiện vài ký tự đầu để người dùng biết đang xét chuỗi nào (hf_Qa••••, Tr••••); 4 ký tự cuối chỉ khi chuỗi đủ dài
+ const k=rest.length>=8?2:rest.length>=6?1:0;return pre+head+rest.slice(0,k)+'••••'+(rest.length>=20?rest.slice(-4):'')}
 // URL: tách phần truy vấn ?a=b&c=d để chỉ thay GIÁ TRỊ
 function urlParts(u){const m=/^([^?#]*)(\?[^#]*)?(#.*)?$/.exec(u||'');return{base:m[1],q:(m[2]||'').slice(1),h:m[3]||''}}
 function urlParams(u){const {q}=urlParts(u);return q?q.split('&').map(p=>{const i=p.indexOf('=');return i<0?{k:p,v:''}:{k:p.slice(0,i),v:p.slice(i+1)}}):[]}
@@ -136,22 +172,23 @@ function setAt(s,p,v){const o=getAt(s,p.slice(0,-1));if(o)o[p[p.length-1]]=v}
 const FIELD_SECRET=/(^|[_\-.])(api[_-]?key|apikey|key|token|secret|password|passwd|pwd|appid|app[_-]?id|access[_-]?token|auth[_-]?token|client[_-]?secret|private[_-]?key)$/i;
 // Quét MỘT máy chủ → danh sách phát hiện {name,path,mode,val,sure,label,loc}
 function scanServer(name,s){const F=[];if(!s||typeof s!=='object')return F;const seen=new Set();
- const add=o=>{const id=o.path.join('\u0001')+'|'+o.val;if(seen.has(id)||!o.val)return;seen.add(id);F.push({name,...o,masked:maskVal(o.val)})};
+ const add=o=>{const id=o.path.join('\u0001')+'|'+o.val;if(seen.has(id)||!o.val||NOTKEY.has(hashStr(o.val)))return;seen.add(id);F.push({name,...o,masked:maskVal(o.val)})};
  const parts=(path,str,label,loc)=>{const hs=keyLikeIn(str);const bre=/\b(?:Bearer|Basic)\s+([A-Za-z0-9._~+\/\-=]{8,})/gi;let bm;
   while((bm=bre.exec(str))){const a=bm.index+bm[0].length-bm[1].length,b=a+bm[1].length;if(!hasRefIn(bm[1])&&!hs.some(h=>a<h.b&&b>h.a))hs.push({a,b,sure:true,text:bm[1]})}
-  hs.forEach(h=>{const whole=h.a===0&&h.b===str.length||/^Bearer\s+$/i.test(str.slice(0,h.a))&&h.b===str.length;
+  hs.forEach(h=>{if(F.some(o=>o.path.join('\u0001')===path.join('\u0001')&&o.val.includes(h.text)))return;const whole=h.a===0&&h.b===str.length||/^Bearer\s+$/i.test(str.slice(0,h.a))&&h.b===str.length;
    add({path,mode:whole?'whole':'part',val:whole?str:h.text,sure:h.sure||/^Bearer\s+$/i.test(str.slice(0,h.a)),label,loc})})};
  for(const f of ['env','headers'])if(s[f]&&typeof s[f]==='object'&&!Array.isArray(s[f]))for(const [n,v] of Object.entries(s[f])){
   if(typeof v!=='string'||!v||isRef(v))continue;
-  const byName=SECRET_NAME.test(n)||(f==='headers'&&/^(proxy-)?authorization$|cookie/i.test(n))||/^Bearer\s+\S/i.test(v);
+  const byName=(SECRET_NAME.test(n)||(f==='headers'&&/^(proxy-)?authorization$|cookie/i.test(n))||/^Bearer\s+\S/i.test(v))&&!NONVAL.test(v);
   if(byName)add({path:[f,n],mode:'whole',val:v,sure:true,label:n,loc:f+' › '+n});else parts([f,n],v,n,f+' › '+n)}
  if(s.auth&&typeof s.auth==='object')for(const [n,v] of Object.entries(s.auth)){if(typeof v!=='string'||!v||isRef(v))continue;
   if(SECRET_NAME.test(n)||keyLikeIn(v).length)add({path:['auth',n],mode:'whole',val:v,sure:SECRET_NAME.test(n)||keyLikeIn(v).some(h=>h.sure),label:n,loc:'auth › '+n})}
  if(Array.isArray(s.args))s.args.forEach((a,i)=>{if(typeof a!=='string'||!a||isRef(a))return;
   const eq=/^(--?[A-Za-z][\w-]*)=(.+)$/.exec(a);
-  if(eq&&SECRET_FLAG.test(eq[1])&&!hasRefIn(eq[2])){add({path:['args',i],mode:'eq',val:eq[2],sure:true,label:eq[1].replace(/^-+/,''),loc:'args › '+eq[1]+'='});return}
+  if(eq&&SECRET_FLAG.test(eq[1])&&!hasRefIn(eq[2])&&!NONVAL.test(eq[2])){add({path:['args',i],mode:'eq',val:eq[2],sure:true,label:eq[1].replace(/^-+/,''),loc:'args › '+eq[1]+'='});return}
   const prev=s.args[i-1];
-  if(i>0&&typeof prev==='string'&&SECRET_FLAG.test(prev)&&!a.startsWith('-')){add({path:['args',i],mode:'whole',val:a,sure:true,label:prev.replace(/^-+/,''),loc:'args › '+prev});return}
+  if(i>0&&typeof prev==='string'&&REV_FLAG.test(prev)&&/^[0-9a-f]{7,64}$/i.test(a))return;
+  if(i>0&&typeof prev==='string'&&SECRET_FLAG.test(prev)&&!a.startsWith('-')&&!NONVAL.test(a)&&!/^(~|\.{0,2}\/|[A-Za-z]:\\)/.test(a)){add({path:['args',i],mode:'whole',val:a,sure:true,label:prev.replace(/^-+/,''),loc:'args › '+prev});return}
   parts(['args',i],a,'arg'+i,'args['+i+']')});
  if(typeof s.url==='string'&&s.url){
   const ui=/^[a-z][a-z0-9+.-]*:\/\/([^\/?#@]*)@/i.exec(s.url);
@@ -165,8 +202,11 @@ function scanServer(name,s){const F=[];if(!s||typeof s!=='object')return F;const
    if(typeof kn==='string'&&FIELD_SECRET.test(kn)&&!hasRefIn(o)){add({path,mode:'whole',val:o,sure:true,label:kn,loc:path.join(' › ')});return}
    parts(path,o,path.join('.'),path.join(' › '));return}
   if(o&&typeof o==='object')for(const [k,v] of Object.entries(o))walk(v,[...path,k])};
+ // v4.11 (P410-2): cùng máy chủ có AKIA… → chuỗi 40 ký tự kiểu secret AWS là "chắc chắn"
+ const akia=()=>/(?<![A-Z0-9])A[KS]IA[0-9A-Z]{12,}/.test(JSON.stringify(s));
  for(const [k,v] of Object.entries(s))if(!['env','headers','auth','args','url'].includes(k))walk(v,[k]);
  if(s.env&&typeof s.env==='object')for(const [k,v] of Object.entries(s.env))if(v&&typeof v==='object')walk(v,['env',k]);
+ if(F.some(f=>!f.sure&&/^[A-Za-z0-9+\/]{30,60}$/.test(f.val))&&akia())F.forEach(f=>{if(/^[A-Za-z0-9+\/]{30,60}$/.test(f.val)&&/[\/+]/.test(f.val))f.sure=true});
  return F}
 // chỗ giữ trong mcp.json: ${secret:<tên>} (một khoá) hoặc ${secret:<tên>:<nhãn>} (nhiều khoá)
 const refBase=k=>String(k).replace(/[{}:$\s]/g,'_');
@@ -189,12 +229,13 @@ const keyVarsOf=s=>['env','headers'].flatMap(f=>Object.entries(s[f]||{}).filter(
 const hasKey=v=>isRef(v)&&!!SEC[v];
 // che khoá: giá trị trong kho, khoá quen thuộc, tham số URL và cờ dòng lệnh không bao giờ hiện trong nhật ký, stderr, Chi tiết, diff hay thông báo
 function redactText(t){let x=String(t??'');for(const v of Object.values(SEC)){if(typeof v!=='string')continue;for(const p of [v,v.replace(/^Bearer\s+/i,'')])if(p.length>=4)x=x.split(p).join(maskVal(p))}
- x=x.replace(/([?&](?:api[-_]?key|apikey|key|token|access[-_]?token|auth|auth[-_]?token|secret|client[-_]?secret|password|passwd|pwd|appid|app[-_]?id|sig|signature)=)(?!\$\{secret)([^&#\s"'<]+)/gi,(m,a,v)=>a+(v.includes('••••')?v:maskVal(v)));
- x=x.replace(/((?:^|[\s"'\[,])--?[\w-]*(?:api[-_]?key|apikey|token|secret|password|passwd|pwd|appid|app-id|auth)(?:=|"?,?\s+"?)|(?:^|[\s"'\[,])(?:-k|--key)(?:=|"?,?\s+"?))(?!\$\{secret|-)([^\s"',\]]+)/gi,(m,a,v)=>a+(v.includes('••••')?v:maskVal(v)));
- x=x.replace(/("[\w-]*(?:TOKEN|KEY|SECRET|PASSWORD|PASSWD|CREDENTIAL|AUTH|APPID)[\w-]*"\s*:\s*")(?!\$\{secret)([^"]+)"/gi,(m,a,v)=>a+(v.includes('••••')?v:maskVal(v))+'"');
+ // v4.11 (P410-2): cùng quy tắc tên với scanServer (tham số URL, cờ dòng lệnh, khoá JSON) — không còn danh sách cứng riêng
+ x=x.replace(/([?&]([\w.-]+)=)(?!\$\{secret)([^&#\s"'<]+)/g,(m,a,n,v)=>!SECRET_PARAM.test(n)||NONVAL.test(v)||v.includes('••••')?m:a+maskVal(v));
+ x=x.replace(/((?:^|[\s"'\[,])(--?[A-Za-z][\w-]*)(?![\w-])(?:=|"?\s*,\s*"?|"?\s+"?))(?!\$\{secret|-)([^\s"',\]]+)/g,(m,a,f,v)=>!SECRET_FLAG.test(f)||NONVAL.test(v)||v.includes('••••')||/^(~|\.{0,2}\/|[A-Za-z]:\\)/.test(v)?m:a+maskVal(v));
+ x=x.replace(/("([\w-]+)"\s*:\s*")(?!\$\{secret)([^"]+)"/g,(m,a,n,v)=>!(nameSecret(n)||FIELD_SECRET.test(n))||NONVAL.test(v)||v.includes('••••')?m:a+maskVal(v)+'"');
  x=x.replace(/(:\/\/[^\/\s:@"']+:)([^@\s\/"']+)@/g,(m,a,v)=>a+(v.includes('••••')?v:'••••')+'@');
  x=x.replace(/(Bearer\s+)(?![^\s"']*••••)[^\s"']+/gi,(m,a,v)=>a+maskVal(m.slice(a.length)));
- for(const h of keyLikeIn(x).reverse())x=x.slice(0,h.a)+maskVal(h.text)+x.slice(h.b);
+ for(const h of keyLikeIn(x).sort((p,q)=>q.a-p.a))x=x.slice(0,h.a)+maskVal(h.text)+x.slice(h.b);
  return x}
 function maskServer(name,s){const c=JSON.parse(JSON.stringify(s||{}));for(const f of scanServer(name,c)){const cur=getAt(c,f.path);if(typeof cur!=='string')continue;
   if(f.mode==='query')setAt(c,f.path,urlSetParam(cur,f.param,maskVal(f.val)));else setAt(c,f.path,cur.split(f.val).join(maskVal(f.val)))}return c}
@@ -213,7 +254,7 @@ const runsBundled=(c,s)=>!!(c&&c.pkg&&!s.url&&(s.args||[]).includes(pinned(c)));
 const isDanger=s=>!inCatalog(s)||unpinned(s)||(isHttp(s.url)&&netKind(s.url)==='lan');
 const KEY_NOTE=()=>SECRETS_SECURE?tr('Khoá được mã hoá bằng kho khoá của hệ điều hành và không bao giờ hiện lại hay ghi vào nhật ký.'):tr('Máy này không có kho khoá an toàn của hệ điều hành: khoá chỉ giữ trong bộ nhớ đến khi thoát AIVN (không ghi ra đĩa).');
 const MCP_WARN=()=>tr('⚠ Máy chủ MCP là chương trình chạy trên máy bạn (stdio) hoặc dịch vụ bên ngoài (http/SSE) và có thể đọc/ghi dữ liệu. Chỉ thêm máy chủ bạn tin tưởng. AIVN luôn xin phép trước mỗi lần gọi công cụ MCP (trừ khi bạn chọn “Luôn cho phép”).');
-function validateServer(k,s){const kt=k.trim();if(kt.length<1||kt.length>64)return tr('Tên máy chủ phải từ 1 đến 64 ký tự.');
+function validateServer(k,s){{const ne=nameErr(k);if(ne)return ne}
  if(!s||typeof s!=='object'||Array.isArray(s))return tr('Máy chủ "{0}" không hợp lệ.',k);
  if(s.command&&s.url)return tr('Máy chủ "{0}" chỉ được có command hoặc url.',k);
  if(!(typeof s.command==='string'&&s.command)&&!s.url)return tr('Máy chủ "{0}" cần "command" (stdio) hoặc "url" (http/SSE).',k);
@@ -234,7 +275,7 @@ const sig=s=>JSON.stringify([s.command||null,s.args||[],s.url||null,Object.keys(
 function start(k){const s=servers()[k];if(!s)return;if(!DB.master){RT.state[k]='off';return render()}
  RT.state[k]='starting';delete RT.err[k];const m=DB.meta.servers[k]||{},c=m.catalogId&&ADVC(m.catalogId);
  log(k,runsBundled(c,s)?`start stdio (bundled ${pinned(c)}, no npx)`:`start ${kindOf(s)}: ${redact(s)}`);render();
- setTimeout(()=>{if(!servers()[k]||RT.state[k]!=='starting')return;const ef=()=>validateServer(k,s)||(s.auth?tr('AIVN chưa hỗ trợ đăng nhập OAuth (trường auth) của máy chủ "{0}".',k):null);const e=ef();
+ setTimeout(()=>{if(!servers()[k]||RT.state[k]!=='starting')return;const ef=()=>validateServer(k,s)||(s.auth?oauthMsg(k):null);const e=ef();
   const so=e?null:simTest(k,s);
   if(e){RT.state[k]='error';RT.err[k]=ef;const o=LANG;LANG='en';const le=ef();LANG=o;log(k,'error: '+le)}else if(!so.ok){RT.state[k]='error';RT.err[k]=()=>testMsg(so);log(k,'error: '+so.err)}else{RT.state[k]='on';RT.listed[k]=true;log(k,`listTools: ${toolsOf(k).length}`)}render()},window.FAST?150:1100)}
 // quyết định lượt 3 (3): chạy thử một lần khi nhập mcp.json hoặc thêm ở Nâng cao: mở → xem danh sách chức năng → tắt ngay, tối đa 15 giây.
@@ -425,10 +466,10 @@ function storeSpec(id){return()=>{const a=ST(id),n=tr(a.name);
 // ===== v4.10 (P49-2): thẻ xin phép chuyển khoá — liệt kê từng khoá (đã che) kèm vị trí, chọn từng mục; không bao giờ chuyển âm thầm =====
 let SCARD=null;
 function secretCardSpec(){return()=>{const S=SCARD;if(!S)return{title:'',lines:[]};const its=S.items,nSrv=new Set(its.map(f=>f.name)).size,sel=S.ch.filter(Boolean).length;
- const rows=its.map((f,i)=>{const on=S.ch[i];const note=on?'':f.sure?tr('Không chuyển → máy chủ “{0}” sẽ không được lưu.',f.name):tr('Không chuyển → giữ nguyên chuỗi này (bạn xác nhận đây không phải khoá).');
-  return `<label class="skrow ${on?'':'off'}" data-testid="secret-item-${i}"><input type="checkbox" id="sk${i}" ${on?'checked':''} onchange="skToggle(${i},this.checked)"><span class="skm"><code class="skv" data-testid="secret-masked">${esc(f.masked)}</code><span class="sktag ${f.sure?'sure':''}">${f.sure?tr('khoá'):tr('có thể là khoá')}</span><span class="skl">${esc(f.name)} › ${esc(f.loc)}</span>${note?`<span class="sknote">${esc(note)}</span>`:''}</span></label>`}).join('');
+ const rows=its.map((f,i)=>{const on=S.ch[i];const note=on?'':tr('Không chuyển → giữ nguyên chuỗi này (bạn xác nhận đây không phải khoá).');
+  return `<label class="skrow ${on?'':'off'}" data-testid="secret-item-${i}"><input type="checkbox" id="sk${i}" ${on?'checked':''} onchange="skToggle(${i},this.checked)"><span class="skm"><code class="skv" data-testid="secret-masked">${esc(f.masked)}</code><span class="sktag ${f.sure?'sure':''}">${f.sure?tr('khoá'):tr('có thể là khoá')}</span><span class="skl">${esc(f.name)} › ${esc(f.loc)}</span>${note?`<span class="sknote">${esc(note)}</span><span class="skwarn" role="note" data-testid="secret-plain-warn-${i}">⚠ ${esc(tr('Giá trị này sẽ được lưu trong mcp.json dưới dạng chữ thường (không che).'))}</span>`:''}</span></label>`}).join('');
  return{tool:'secret_move',logoHtml:emojiTile('🔑',30),title:tr('Chuyển {0} khoá vào kho khoá an toàn?',its.length),sub:S.ctx+' · '+tr('{0} máy chủ',nSrv)+' · '+tr('Bước {0}/{1}',1,2),
-  extraHtml:`<div class="sklist" data-testid="secret-card-list">${rows}</div><div class="small muted" style="margin:4px 0 6px">${tr('Đã chọn {0}/{1}. Bỏ chọn một mục nếu đó không phải khoá.',sel,its.length)}</div>`,
+  extraHtml:`<div class="sklist" data-testid="secret-card-list">${rows}</div><div class="small muted" style="margin:4px 0 6px">${tr('Đã chọn {0}/{1}. Bỏ chọn một mục nếu đó không phải khoá.',sel,its.length)} ${tr('Bỏ chọn chỉ ảnh hưởng dòng đó: các khoá và máy chủ khác vẫn được lưu.')}</div>`,
   lines:[tr('Cho phép: chuyển các khoá đã chọn vào kho khoá; mcp.json chỉ giữ {0}.','${secret:…}'),tr('Từ chối: máy chủ có khoá sẽ không được lưu. Không khoá nào được ghi dạng chữ.'),tr('Sau thẻ này là thẻ lưu (bước 2/2).')],
   warn:tr('Bản mẫu: kho khoá chỉ là mô phỏng (đã làm rối, không ghi dạng chữ). Ứng dụng thật dùng kho khoá của hệ điều hành.'),details:[],danger:false,alwaysLabel:null}}}
 function skToggle(i,v){if(!SCARD)return;SCARD.ch[i]=v;if(apCur)drawCard();const e=$('sk'+i);e&&e.focus()}
@@ -437,7 +478,8 @@ async function secretGate(map,ctx){const items=[];for(const [k,s] of Object.entr
  if(!items.length)return{ok:true,blocked:[],moves:[],count:0,items};
  SCARD={items,ch:items.map(()=>true),ctx};const a=await withCard(secretCardSpec());const ch=SCARD?SCARD.ch:items.map(()=>false);SCARD=null;
  const blocked=new Set();if(!a.ok){items.forEach(f=>blocked.add(f.name));return{ok:false,blocked:[...blocked],moves:[],count:0,items}}
- items.forEach((f,i)=>{if(!ch[i]&&f.sure)blocked.add(f.name)});
+ // v4.11 (P410-3): bỏ chọn một dòng = “không phải khoá” → giữ nguyên chuỗi đó, KHÔNG huỷ cả lần lưu; nhớ lựa chọn để lần sau không hỏi lại
+ items.forEach((f,i)=>{if(!ch[i])notKeyAdd(f.val)});
  const moves=[];for(const [k,s] of Object.entries(map)){if(blocked.has(k))continue;const L=items.filter((f,i)=>f.name===k&&ch[i]);if(!L.length)continue;
   const refs=assignRefs(k,s,L);L.forEach((f,i)=>{moves.push([refs[i],f.val]);applyFinding(s,f,refs[i])})}
  return{ok:true,blocked:[...blocked],moves,count:moves.length,items}}
@@ -571,7 +613,12 @@ function stateOf(i){return i.t==='store'?storeState(i.a):i.t==='cat'?(UI.setup[i
 const itemName=i=>i.t==='store'?tr(i.a.name):i.t==='cat'?tr(i.c.name):i.t==='srv'?displayName(i.k):i.t==='import'?tr('Nhập mcp.json'):i.t==='add'?tr('Thêm máy chủ'):'mcp.json';
 const emojiTile=(e,sz)=>`<span class="lt" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.42)}px">${e}</span>`;
 const itemLogo=(i,sz)=>i.t==='store'?storeLogo(i.a,sz):i.t==='cat'?catLogo(i.c,sz):i.t==='srv'?srvLogo(i.k,sz):emojiTile(i.t==='import'?'📂':i.t==='add'?'＋':'{ }',sz);
-function errShort(k){const t=(DB.meta.servers[k]||{}).test;if(t&&t.ok===false)return testMsg(t);const s=servers()[k];return s&&s.auth?tr('AIVN chưa hỗ trợ cách đăng nhập mà ứng dụng này cần.'):tr('Không kết nối được.')}
+// v4.11 (ý quản lý): nói rõ KIỂU đăng nhập chưa hỗ trợ và cách xử lý (gỡ máy chủ hoặc chờ bản sau)
+const AUTH_LBL={oauth:'OAuth',oauth2:'OAuth 2.0',oidc:'OpenID Connect',saml:'SAML',sso:'SSO',device:'OAuth (device code)'};
+function authLabel(s){const t=s&&s.auth&&typeof s.auth==='object'&&typeof s.auth.type==='string'?s.auth.type.trim():'';return t?AUTH_LBL[t.toLowerCase()]||t:'OAuth'}
+function oauthMsg(k,s0){const s=s0||servers()[k]||(UI.plan&&UI.plan.oauthSkipped||[]).map(x=>x.name===k&&x.server).find(Boolean);
+ return tr('Máy chủ “{0}” cần đăng nhập kiểu {1}. AIVN chưa hỗ trợ kiểu đăng nhập này. Cách xử lý: gỡ máy chủ này, hoặc chờ bản AIVN sau.',k,authLabel(s))}
+function errShort(k){const t=(DB.meta.servers[k]||{}).test;if(t&&t.ok===false)return testMsg(t);const s=servers()[k];return s&&s.auth?tr('AIVN chưa hỗ trợ đăng nhập kiểu {0}.',authLabel(s)):tr('Không kết nối được.')}
 const progText=p=>{const I=RT.inst[p];return I.phase==='dl'?tr('Đang tải {0}… {1}%',PROGS[p].name,I.pct):tr('Đang cài {0}… {1}%',PROGS[p].name,I.pct)};
 // v4.8: mô tả theo công dụng (mẫu: sampleDesc; khác: đoán theo lệnh/tên); mục tự thêm có nhãn nhỏ “Tự thêm”
 const GUESS_DESC={brave:'Tìm trên mạng bằng Brave.',sqlite:'Đọc tệp cơ sở dữ liệu SQLite.',github:'Xem và quản lý kho mã trên GitHub.',notion:'Đọc và ghi trang Notion.',slack:'Đọc và gửi tin trong Slack.',huggingface:'Tìm mô hình và bộ dữ liệu trên Hugging Face.',fetch:'Đọc nội dung trang web.',thinking:'Suy nghĩ từng bước (qua mạng).'};
@@ -589,18 +636,18 @@ function itemLine(i,s){ // [lớp, chữ ngắn, chữ đầy đủ cho title]
 const tidOf=(i,sel)=>i.t==='store'?'app-'+i.a.id:i.t==='cat'?'cat-'+i.c.id:i.t==='srv'?i.k:sel.replace(':','-');
 function rowSwitch(i,s){if(i.t==='import'||i.t==='json'||i.t==='add'||(i.t==='store'&&!i.a.ready))return null;
  const busy=['starting','testing','installing'].includes(s),on=busy||s==='on'||s==='waiting';
- if(i.t==='srv'&&servers()[i.k].auth)return{on:false,dis:true,title:tr('AIVN chưa hỗ trợ cách đăng nhập mà ứng dụng này cần.')};
+ if(i.t==='srv'&&servers()[i.k].auth)return{on:false,dis:true,auth:true,title:tr('Không bật được: AIVN chưa hỗ trợ đăng nhập kiểu {0}. Gỡ máy chủ này hoặc chờ bản sau.',authLabel(servers()[i.k]))};
  if(busy)return{on,dis:true,busy:true,title:tr(PILL[s])};
  if(i.t==='srv'&&s==='error')return DB.master?{on:true,err:true,dis:false,title:tr('Đang lỗi, bấm để thử lại')}:{on:true,err:true,dis:true,title:MASTER_HINT()}; // v4.10 (P49-7)
  if(!DB.master&&i.t!=='store'&&!on)return{on,dis:true,title:MASTER_HINT()};
  return{on,dis:false,title:on?tr('Đang bật. Bấm để ngắt kết nối.'):tr('Đang tắt. Bấm để kết nối.')}}
 function rowHtml(sel){const i=selInfo(sel);if(!i)return'';const s=stateOf(i),[c,l,full]=itemLine(i,s),cur=!!UI.sel&&selKey(UI.sel)===selKey(sel),tid=esc(tidOf(i,sel)),nm=itemName(i),es=esc(sel),ti=cur?0:-1;
  const sw=rowSwitch(i,s),mi=menuItems(sel,'row').length>1,mo=!!(UI.menu&&UI.menu.sel===sel&&UI.menu.where==='row');
- const swh=sw?`<button class="swt ${sw.on?'on':''} ${sw.busy?'busy':''} ${sw.err?'err':''}" role="switch" aria-checked="${sw.err?'mixed':sw.on}" aria-label="${esc(tr('Bật/tắt kết nối: {0}',nm))}" title="${esc(sw.title)}" data-testid="toggle-${tid}" tabindex="${ti}" ${sw.dis?'aria-disabled="true"':''} onclick="event.stopPropagation();toggleRow('${es}')"><i></i></button>`:`<span class="swt-ph"></span>`;
+ const swh=sw?`<button class="swt ${sw.on?'on':''} ${sw.busy?'busy':''} ${sw.err?'err':''}" role="switch" aria-checked="${sw.err?'mixed':sw.on}" aria-label="${esc(tr('Bật/tắt kết nối: {0}',nm))}" title="${esc(sw.title)}" data-testid="toggle-${tid}" tabindex="${ti}" ${sw.dis?'aria-disabled="true"':''} ${sw.auth?`aria-describedby="swd-${tid}"`:''} onclick="event.stopPropagation();toggleRow('${es}')"><i></i></button>${sw.auth?`<span id="swd-${tid}" class="sr-only">${esc(sw.title)}</span>`:''}`:`<span class="swt-ph"></span>`;
  const mh=mi?`<button class="kebab" aria-haspopup="menu" aria-expanded="${mo}" aria-label="${esc(tr('Thao tác khác: {0}',nm))}" title="${esc(tr('Thao tác khác'))}" data-testid="menu-btn-${tid}" tabindex="${ti}" onclick="event.stopPropagation();openMenu('${es}','row')">⋯</button>`:`<span class="kebab-ph"></span>`;
  return `<div class="li ${cur?'cur':''} ${UI.flash&&UI.flash===selKey(sel)?'flash':''}" role="listitem" data-testid="ca-row-${tid}" data-sel="${es}" onclick="selectItem(this.dataset.sel)">`+
   `<button class="li-main" data-testid="ca-open-${tid}" tabindex="${ti}" aria-current="${cur}" onclick="event.stopPropagation();selectItem('${es}',{kbd:event.detail===0})"><span class="lgw">${itemLogo(i,36)}${s?sdot(s):''}</span><span class="lm"><span class="ln" title="${esc(nm)}">${esc(nm)}${i.t==='srv'?selfTag(i.k):''}</span><span class="ls ${c}" title="${esc(full||l)}">${esc(l)}</span></span></button>${swh}${mh}</div>`}
-function toggleRow(sel){const i=selInfo(sel);if(!i)return;const sw=rowSwitch(i,stateOf(i));if(!sw||sw.dis)return;UI.menu=null;
+function toggleRow(sel){const i=selInfo(sel);if(!i)return;const sw=rowSwitch(i,stateOf(i));if(sw&&sw.dis&&sw.auth){toastT(()=>{const j=selInfo(sel);return j?rowSwitch(j,stateOf(j)).title:''});return}/* v4.11: chạm công tắc xám → hiện lời giải thích (thay cho tooltip trên màn chạm) */if(!sw||sw.dis)return;UI.menu=null;
  if(i.t==='store')return sw.on?disconnectStore(i.a.id):connectStore(i.a.id);
  if(i.t==='cat'){if(i.c.needs==='secret'){UI.sel=sel;UI.mpane='detail'}return connectCatalog(i.c.id)}
  if(i.t==='srv')return sw.err?connectKey(i.k,{retest:true}):sw.on?disconnectKey(i.k):connectKey(i.k)}
@@ -747,7 +794,7 @@ function srvPanel(k){const s=servers()[k],m=DB.meta.servers[k]||{},c=m.catalogId
  let stl='';
  if(p){const I=RT.inst[p];stl=`<div class="tst run" data-testid="install-progress-${tk}">⬇ ${progText(p)}<span class="bar"><i style="width:${I.pct}%"></i></span></div>`}
  else if(s0==='testing'){const n=RT.testT[k]||0;stl=`<div class="tst run" data-testid="test-${tk}">⏳ ${tr('Đang chạy thử… {0}/{1} giây',n,TEST_LIMIT)}<span class="bar"><i style="width:${Math.round(100*n/TEST_LIMIT)}%"></i></span></div>`}
- else if(s0==='error'){const fail=t&&t.ok===false;stl=`<div class="perr" data-testid="test-${tk}"><b>✕ ${esc(fail?testMsg(t):errShort(k))}</b><div class="fix">${esc(fail?testFix(t):s.auth?tr('Hỏi người cung cấp ứng dụng xem có cách kết nối bằng khoá truy cập không.'):tr('Bấm Thử lại. Nếu vẫn lỗi, mở Chi tiết để xem.'))}</div></div>`}
+ else if(s0==='error'){const fail=t&&t.ok===false;stl=`<div class="perr" data-testid="test-${tk}"><b>✕ ${esc(fail?testMsg(t):errShort(k))}</b><div class="fix">${esc(fail?testFix(t):s.auth?tr('Gỡ máy chủ này (nút Gỡ), hoặc chờ bản AIVN sau hỗ trợ {0}. Bạn cũng có thể hỏi người cung cấp xem có cách kết nối bằng khoá truy cập không.',authLabel(s)):tr('Bấm Thử lại. Nếu vẫn lỗi, mở Chi tiết để xem.'))}</div></div>`}
  else if(t&&t.ok){const pi=progOf(s.command),inst=pi&&DB.installed&&DB.installed[pi];stl=`<div class="tst ok" data-testid="test-${tk}">✓ ${tr('Chạy thử được · {0} chức năng',t.n)}</div>${inst?`<div class="tst ok small" data-testid="installed-${tk}">⬇ ${tr('Đã cài {0} cho AIVN',PROGS[pi].name)}</div>`:''}`}
  const kb=keyBox(k),ar=alwaysRow(k);
  const name=UI.rename&&UI.rename.k===k?nameOrEdit(k,'nm'):esc(displayName(k));
@@ -801,7 +848,17 @@ function edCheck(t0){const t=stripBom(t0),sh=t0.length-t.length,bad=(at,msg)=>{c
  return{ok:true,json,servers:r.servers,raw,diff:d,top,changes:d.add.length+d.chg.length+d.minor.length+d.rm.length+(top?1:0)+(raw?1:0)}}
 const edBase=()=>JSON.stringify(DB.mcp,null,2);
 const gutHtml=(t,r)=>{const n=t.split('\n').length,w=r.dup?[r.dup.line,r.dup.l0]:[];let h='';for(let x=1;x<=n;x++)h+=`<div${!r.ok&&r.line===x?' class="bad"':w.includes(x)?' class="warn"':''}>${x}</div>`;return h};
-function dupNewName(k,ms){const used=new Set([...Object.keys(servers()),...(ms||[]).map(m=>m.key)]);let i=2;while(used.has(k+'-'+i)||[...used].some(u=>u!==k&&safeName(u)===safeName(k+'-'+i)))i++;return k+'-'+i}
+// v4.11 (P410-1): MỘT hàm đặt tên mới cho “Giữ cả hai” (nhập, trình sửa, Thêm). Luôn dừng: tối đa 1000 lần thử rồi dùng tên dự phòng.
+// Tên chuẩn hoá (safeName) chỉ giữ 24 ký tự đầu, nên với tên dài phải rút gọn phần đầu để hậu tố -N còn nằm trong 24 ký tự — nếu không mọi -N đều trùng nhau (gốc của vòng lặp vô hạn ở 4.10).
+function uniqName(k,usedArr){k=String(k??'').trim()||'srv';const used=new Set(usedArr||[]);used.add(k);const sns=new Set([...used].map(safeName));
+ const ok=c=>!!c&&nlen(c)<=64&&!used.has(c)&&!sns.has(safeName(c));
+ const m=/^(.*\S)-(\d{1,2})$/.exec(k);const base0=cpSlice(m?m[1]:k,60);let i=m?Math.min(+m[2]+1,9000):2;
+ for(let n=0;n<1000;n++,i++){const suf='-'+i;let b=cpSlice(base0,64-suf.length);
+  for(let g=0;g<=base0.length;g++){const sn=safeName(b+suf);if(!sns.has(sn))break;b=[...b].slice(0,-1).join('').replace(/[\s\-_.]+$/,'')}
+  const c=(b||'srv')+suf;if(ok(c))return c}
+ for(let n=0;n<50;n++){const c='srv-'+Math.random().toString(36).slice(2,8);if(ok(c))return c}
+ return 'srv-'+Date.now().toString(36)}
+function dupNewName(k,ms){return uniqName(k,[...Object.keys(servers()),...(ms||[]).map(m=>m.key)])}
 function edStatus(r,dirty){if(!r.ok)return `<div class="perr ederr" data-testid="json-error"><b>✕ ${esc(tr('Dòng {0}, cột {1}: {2}',r.line,r.col,r.msg))}</b><div class="fix"><a href="#" data-testid="json-goto" onclick="edGo();return false">${tr('Đến chỗ lỗi')}</a> · ${tr('Chưa lưu được cho đến khi sửa xong.')}</div></div>`;
  if(r.dup){const d=r.dup;return `<div class="perr ederr dupbox" data-testid="json-dup"><b>⚠ ${esc(tr('Dòng {0}, cột {1}: {2}',d.line,d.col,tr('Tên “{0}” bị trùng (đã có ở dòng {1}).',d.key,d.l0)))}</b><div class="fix">${esc(tr('Chọn cách xử lý. AIVN không bao giờ ghi đè âm thầm.'))} <a href="#" data-testid="json-goto" onclick="edGo();return false">${tr('Đến chỗ trùng')}</a></div>
   <div class="duprow"><button class="btn sm" data-testid="dup-keep" onclick="edDup('keep')">${esc(tr('Giữ cả hai (đổi tên mới thành {0})',dupNewName(d.key,r.members)))}</button><button class="btn sm danger" data-testid="dup-replace" onclick="edDup('replace')">${tr('Thay thế')}</button><button class="btn sm ghost" data-testid="dup-skip" onclick="edDup('skip')">${tr('Bỏ qua')}</button></div></div>`}
@@ -809,9 +866,10 @@ function edStatus(r,dirty){if(!r.ok)return `<div class="perr ederr" data-testid=
  return `<div class="tst ok" data-testid="json-ok">✓ ${tr('JSON hợp lệ.')} ${esc(sum)}</div>${r.raw?`<div class="pnote" data-testid="json-raw-key">🔑 ${tr('Có {0} khoá viết thẳng trong tệp. Khi lưu, AIVN hỏi bạn trước khi chuyển từng khoá vào kho khoá và chỉ để lại {1}.',r.raw,'<code>${secret:…}</code>')}</div>`:''}`}
 // ===== v4.10: tô màu cú pháp (bộ tách từ riêng, lớp phủ dưới textarea trong suốt); khoá luôn bị che bằng • (giữ đúng số ký tự để thẳng hàng) =====
 function hlMaskRanges(body,ctxKey,prevStr){const R=[];if(!body||isRef(body))return R;
- if(ctxKey&&(SECRET_NAME.test(ctxKey)||/^(proxy-)?authorization$/i.test(ctxKey))&&!hasRefIn(body)){const b=/^(Bearer\s+|Basic\s+)/i.exec(body);R.push([b?b[0].length:0,body.length]);return R}
- if(prevStr&&SECRET_FLAG.test(prevStr)&&!body.startsWith('-')&&!hasRefIn(body)){R.push([0,body.length]);return R}
- const eq=/^(--?[A-Za-z][\w-]*)=(.+)$/.exec(body);if(eq&&SECRET_FLAG.test(eq[1])&&!hasRefIn(eq[2])){R.push([eq[1].length+1,body.length]);return R}
+ if(ctxKey&&(SECRET_NAME.test(ctxKey)||/^(proxy-)?authorization$/i.test(ctxKey))&&!hasRefIn(body)&&!NONVAL.test(body)){const b=/^(Bearer\s+|Basic\s+)/i.exec(body);R.push([b?b[0].length:0,body.length]);return R}
+ if(prevStr&&SECRET_FLAG.test(prevStr)&&!body.startsWith('-')&&!hasRefIn(body)&&!NONVAL.test(body)&&!/^(~|\.{0,2}\/|[A-Za-z]:\\)/.test(body)){R.push([0,body.length]);return R}
+ if(prevStr&&REV_FLAG.test(prevStr)&&/^[0-9a-f]{7,64}$/i.test(body))return R;
+ const eq=/^(--?[A-Za-z][\w-]*)=(.+)$/.exec(body);if(eq&&SECRET_FLAG.test(eq[1])&&!hasRefIn(eq[2])&&!NONVAL.test(eq[2])){R.push([eq[1].length+1,body.length]);return R}
  const ui=/^[a-z][a-z0-9+.-]*:\/\/[^\/?#@:]*:([^\/?#@]+)@/i.exec(body);if(ui&&!hasRefIn(ui[1])){const a=body.indexOf(ui[1]);R.push([a,a+ui[1].length])}
  const re=/[?&]([^=&#]+)=([^&#]*)/g;let m;while((m=re.exec(body))){if(m[2]&&!m[2].startsWith('${secret')&&(SECRET_PARAM.test(m[1])||keyLikeIn(m[2]).length)){const a=m.index+m[0].length-m[2].length;R.push([a,a+m[2].length])}}
  for(const h of keyLikeIn(body))R.push([h.a,h.b]);{const bre=/\b(?:Bearer|Basic)\s+([A-Za-z0-9._~+\/\-=]{8,})/gi;let bm;while((bm=bre.exec(body)))if(!hasRefIn(bm[1])){const a=bm.index+bm[0].length-bm[1].length;R.push([a,a+bm[1].length])}}return R}
@@ -836,7 +894,7 @@ function edHlUpd(){const ta=$('edTxt'),h=$('edHl');if(!ta||!h)return;h.innerHTML
 function jsonPanel(){const base=edBase();if(!UI.ed)UI.ed={text:base};const t=UI.ed.text,r=edCheck(t),dirty=t!==base;
  return `<div class="detail" data-testid="ca-json">${phead(emojiTile('{ }',56),'mcp.json',null,`<div class="small muted" style="margin-top:4px">${tr('Sửa tay tệp cấu hình.')}</div>`)}
  <div class="pact">${BIG('pri',`id="edSave" data-act="save" ${r.ok&&!r.dup&&dirty&&r.changes?'':'disabled'} onclick="edSave()"`,tr('Lưu…'))}<button class="btn sm ghost" id="edRev" data-testid="json-revert" ${dirty?'':'disabled'} onclick="edRevert()">${tr('Bỏ thay đổi')}</button><span style="flex:1"></span><span class="small muted" id="edPos"></span></div>
- <div class="edbox ${r.ok?'':'bad'}"><div class="edgut" id="edGut" aria-hidden="true">${gutHtml(t,r)}</div><div class="edwrap"><pre class="edhl" id="edHl" aria-hidden="true">${hlJson(t)}</pre><textarea class="edta" id="edTxt" data-testid="connect-apps-json" spellcheck="false" wrap="off" autocomplete="off" aria-label="mcp.json" aria-describedby="edErr" aria-invalid="${!r.ok}" oninput="edInput(this)" onscroll="edScrollSync(this)" onkeyup="edPosUpd()" onclick="edPosUpd()"></textarea></div></div>
+ <div class="edbox ${r.ok?'':'bad'}"><div class="edgut" id="edGut" aria-hidden="true">${gutHtml(t,r)}</div><div class="edwrap"><pre class="edhl" id="edHl" aria-hidden="true">${hlJson(t)}</pre><textarea class="edta" id="edTxt" data-testid="connect-apps-json" spellcheck="false" wrap="off" autocomplete="off" aria-label="mcp.json" aria-describedby="edErr" aria-invalid="${!r.ok}" onbeforeinput="edHistBefore(event)" onkeydown="edHistKey(event)" oninput="edInput(this)" onscroll="edScrollSync(this)" onkeyup="edPosUpd()" onclick="edPosUpd()"></textarea></div></div>
  <div id="edErr" role="status" data-testid="json-status">${edStatus(r,dirty)}</div>
  <div id="advMsg" role="status">${UI.advMsg||''}</div>
  <div class="small muted" style="margin:6px 0" data-testid="json-secret-note">🔑 ${tr('Chỗ giữ như {0} trỏ tới khoá đã lưu an toàn trên máy. Khoá thật không bao giờ ghi vào mcp.json.','<code>${secret:tim-kiem}</code>')}</div>
@@ -851,14 +909,29 @@ function edPosUpd(){const ta=$('edTxt'),p=$('edPos');if(!ta||!p)return;const[l,c
 function edGo(){const ta=$('edTxt');if(!ta)return;const r=edCheck(ta.value);if(r.ok&&!r.dup)return;ta.focus();ta.setSelectionRange(r.at,Math.min(ta.value.length,r.at+1));
  const lh=parseFloat(getComputedStyle(ta).lineHeight)||18;ta.scrollTop=Math.max(0,(r.line-4)*lh);edScrollSync(ta);edPosUpd()}
 // v4.10 (P49-4): thay cả nội dung bằng execCommand('insertText') để Ctrl+Z vẫn lùi lại được; dự phòng gán value
-function edApply(text,caret=0){const ta=$('edTxt');if(!ta){UI.ed={text};return renderCA()}ta.focus();ta.setSelectionRange(0,ta.value.length);let ok=false;
+function edApply(text,caret=0){const ta=$('edTxt');if(!ta){UI.ed={text};return renderCA()}if(ta.value!==text)edSnap(ta);EDH.kind='';EDH.mute=true;ta.focus();ta.setSelectionRange(0,ta.value.length);let ok=false;
  try{ok=document.execCommand('insertText',false,text)}catch(e){}if(!ok||ta.value!==text)ta.value=text;
- try{ta.setSelectionRange(caret,caret)}catch(e){}edInput(ta);edRefresh()}
+ EDH.mute=false;try{ta.setSelectionRange(caret,caret)}catch(e){}edInput(ta);edRefresh()}
+// v4.11 (P410-9): Ctrl+Z / Ctrl+Y (Ctrl+Shift+Z, ⌘Z) theo THAO TÁC chứ không theo từng ký tự: gõ liền một từ (kèm dấu cách sau nó) là một bước,
+// mỗi lần dán / cắt / xoá theo đoạn / Bỏ thay đổi / thay cả nội dung là một bước; dừng gõ > 1 giây cũng tách bước. Lịch sử giữ trong bộ nhớ (không ghi xuống).
+const EDH={u:[],r:[],last:0,kind:'',mute:false};
+function edSnap(ta){const v=ta.value;if(EDH.u.length&&EDH.u[EDH.u.length-1].v===v)return;EDH.u.push({v,a:ta.selectionStart,b:ta.selectionEnd});if(EDH.u.length>200)EDH.u.shift();EDH.r=[]}
+function edHistBefore(e){if(EDH.mute)return;const ta=e.target,it=e.inputType||'',now=Date.now();
+ if(it==='historyUndo'||it==='historyRedo'){e.preventDefault();return it==='historyUndo'?edUndo():edRedo()}
+ const kind=it==='insertText'?(/^\s+$/.test(e.data||'')?'space':'type'):it==='deleteContentBackward'||it==='deleteContentForward'?'del':'other';
+ const sel=ta.selectionStart!==ta.selectionEnd,brk=kind==='other'||sel||now-EDH.last>1000||(kind!==EDH.kind&&!(EDH.kind==='type'&&kind==='space'));
+ if(brk)edSnap(ta);else EDH.r=[];EDH.kind=kind==='other'||sel?'':kind;EDH.last=now}
+function edHistSet(ta,x){ta.value=x.v;try{ta.setSelectionRange(x.a,x.b)}catch(e){}EDH.kind='';edInput(ta)}
+function edUndo(){const ta=$('edTxt');if(!ta||!EDH.u.length)return;const x=EDH.u.pop();EDH.r.push({v:ta.value,a:ta.selectionStart,b:ta.selectionEnd});edHistSet(ta,x)}
+function edRedo(){const ta=$('edTxt');if(!ta||!EDH.r.length)return;const x=EDH.r.pop();EDH.u.push({v:ta.value,a:ta.selectionStart,b:ta.selectionEnd});edHistSet(ta,x)}
+function edHistKey(e){if(!(e.ctrlKey||e.metaKey)||e.altKey)return;const k=e.key.toLowerCase();
+ if(k==='z'&&!e.shiftKey){e.preventDefault();edUndo()}else if((k==='z'&&e.shiftKey)||k==='y'){e.preventDefault();edRedo()}}
+// v4.11 (P410-7): toast nhận câu dạng hàm → vẽ lại đúng ngôn ngữ khi đổi ngôn ngữ (setLang gọi t._draw)
 function undoToast(msg,fn){let t=$('uToast');if(!t){t=document.createElement('div');t.id='uToast';t.className='utoast';t.setAttribute('role','status');document.body.appendChild(t)}
- t.innerHTML=`<span>${esc(msg)}</span><button class="btn sm" id="uUndo" data-testid="undo-btn">${tr('Hoàn tác')}</button>`;t.classList.add('show');
- $('uUndo').onclick=()=>{t.classList.remove('show');fn()};clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),window.FAST?60000:8000)}
+ const mf=typeof msg==='function'?msg:()=>msg;
+ t._draw=()=>{t.innerHTML=`<span>${esc(mf())}</span><button class="btn sm" id="uUndo" data-testid="undo-btn">${tr('Hoàn tác')}</button>`;$('uUndo').onclick=()=>{t.classList.remove('show');fn()}};t._draw();t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),window.FAST?60000:8000)}
 function edRevert(){const ta=$('edTxt'),prev=ta?ta.value:(UI.ed&&UI.ed.text);UI.advMsg=null;edApply(edBase(),0);
- undoToast(tr('Đã bỏ thay đổi'),()=>{if(typeof prev==='string')edApply(prev,0)})}
+ undoToast(()=>tr('Đã bỏ thay đổi'),()=>{if(typeof prev==='string')edApply(prev,0)})}
 function cutMember(t,ms,m){const ix=ms.indexOf(m);if(ix<ms.length-1)return t.slice(0,m.ks)+t.slice(ms[ix+1].ks);if(ix>0)return t.slice(0,ms[ix-1].ve)+t.slice(m.ve);return t.slice(0,m.ks)+t.slice(m.ve)}
 async function edDup(kind){const cur=()=>{const ta=$('edTxt');return ta?ta.value:UI.ed.text};const scan=t=>{const rec={members:[],dups:[]};const t1=stripBom(t);if(jsonScan(t1,rec)||!rec.dups.length)return null;
   const d=rec.dups[0],ms=rec.members;return{t:t1,d,ms,first:ms.find(m=>m.ks===d.first),later:ms.find(m=>m.ks===d.at)}};
@@ -890,7 +963,7 @@ async function edSave(){const text=$('edTxt')?$('edTxt').value:UI.ed.text;UI.ed=
  DB.mcp=newJson;
  const taken=new Set(Object.keys(ns).filter(k=>old[k]).map(k=>(DB.meta.servers[k]||{}).catalogId).filter(Boolean));
  for(const k of d.add){const s=ns[k],c=importSlot(k,s,taken);if(c)taken.add(c);DB.meta.servers[k]={catalogId:c,approvedAt:s.auth?null:now(),alwaysOn:false};RT.state[k]='off';
-  if(s.auth){RT.state[k]='error';RT.err[k]=()=>tr('AIVN chưa hỗ trợ đăng nhập OAuth (trường auth) của máy chủ "{0}".',k)}}
+  if(s.auth){RT.state[k]='error';RT.err[k]=()=>oauthMsg(k)}}
  for(const k of d.chg){stop(k);const m=metaOf(k),c=catalogMatch(ns[k]);m.approvedAt=now();m.alwaysOn=false;delete m.test;if(m.catalogId&&!(c&&c.id===m.catalogId))m.catalogId=null}
  for(const k of d.minor)if(ns[k].disabled||wasOn[k])stop(k);
  saveSec();save();UI.ed=null;UI.edScroll=0;
@@ -911,7 +984,7 @@ function renderCA(){const M=$('caModal'),ae=document.activeElement,inM=ae&&M.con
  M.innerHTML=`<div class="mh"><h2 id="caTitle">${tr('Kết nối ứng dụng')}</h2><button class="badge ${n?'on':''} ${UI.tab==='connected'?'act':''}" data-testid="connect-apps-count" aria-pressed="${UI.tab==='connected'}" title="${esc(UI.tab==='connected'?tr('Bỏ lọc'):tr('Chỉ hiện ứng dụng đã kết nối'))}" onclick="setTab(UI.tab==='connected'?'all':'connected')"><span aria-live="polite">${n?tr('{0} đã kết nối',n):tr('Chưa kết nối')}</span></button><span style="flex:1"></span><button class="x" data-testid="ca-close" onclick="closeCAAsk()" aria-label="${esc(tr('Đóng'))}" title="${esc(tr('Đóng'))}">✕</button></div>
   <div class="ca-top"><div class="search">${ICONS.search}<input class="inp" id="caQ" data-testid="connect-apps-q" aria-label="${esc(tr('Tìm ứng dụng…'))}" placeholder="${tr('Tìm ứng dụng…')}" value="${esc(UI.q)}"></div>
    <div class="chips" role="group" aria-label="${esc(tr('Lọc'))}">${FILTERS.map(([id,l])=>chip(id,l)).join('')}</div>
-   <span style="flex:1"></span><button class="btn sm" data-testid="connect-apps-import-top" title="${esc(tr('Nhập mcp.json'))}" onclick="selectItem('x:import',{kbd:true})">📂<span class="imptxt"> ${tr('Nhập mcp.json')}</span></button><button class="btn sm" data-testid="connect-apps-json-top" title="${esc(tr('Sửa mcp.json'))}" onclick="selectItem('x:json',{kbd:true})">{ }<span class="imptxt jtxt"> mcp.json</span></button></div>
+   <span style="flex:1"></span><button class="btn sm" data-testid="connect-apps-import-top" title="${esc(tr('Nhập mcp.json'))}" aria-label="${esc(tr('Nhập mcp.json'))}" onclick="selectItem('x:import',{kbd:true})">📂<span class="imptxt"> ${tr('Nhập mcp.json')}</span></button><button class="btn sm" data-testid="connect-apps-json-top" title="${esc(tr('Sửa mcp.json'))}" aria-label="${esc(tr('Sửa mcp.json'))}" onclick="selectItem('x:json',{kbd:true})">{ }<span class="imptxt jtxt"> mcp.json</span></button></div>
   <div class="ca-body"><div class="ca-left">${note?`<div class="fnote" data-testid="ca-filter-note">ⓘ ${esc(note)}</div>`:''}<div class="scroll" id="caList" role="list" aria-label="${esc(tr('Danh sách ứng dụng'))}">${listHtml(secs)}</div>${legend()}</div>
    <div class="scroll" id="caPanel" data-testid="ca-panel" tabindex="-1" aria-label="${esc(tr('Chi tiết'))}">${panelHtml()}</div></div>${menuHtml()}`;
  $('caQ').oninput=e=>{UI.q=e.target.value;UI.mpane='list';UI.menu=null;renderCA()};
@@ -950,30 +1023,49 @@ const SAMPLE=JSON.stringify({mcpServers:{
  'lich-cong-ty':{url:'https://calendar.example.com/mcp',auth:{type:'oauth',CLIENT_SECRET:'abc123'}}}},null,2);
 // v4.7: mô tả một dòng cho các mục của tệp ví dụ (bản mẫu); lich-cong-ty cố ý là mẫu lỗi (cần OAuth)
 const SAMPLE_DESC={'brave-search':'Tìm trên mạng bằng Brave.','nas-nha':'Xem và tìm tệp trên ổ mạng trong nhà.','thoi-tiet':'Xem thời tiết theo thành phố.','may-ngoai':'Dùng các chức năng trên một máy ngoài mạng nội bộ.','nas-ten':'Xem tệp trên ổ mạng (gọi theo tên máy).','sqlite':'Đọc tệp cơ sở dữ liệu SQLite.','thinking':'Suy nghĩ từng bước (qua mạng).','tim-kiem':'Tìm kiếm trên mạng (cần khoá).','bao-cao':'Tạo báo cáo (mẫu chạy quá giờ).','lich-cong-ty':'Xem lịch công ty (mẫu lỗi).'};
+// v4.11 (ý quản lý — dòng trùng tên): dòng trùng tên cho thấy KHÁC NHAU Ở ĐÂU theo từng trường — khoá luôn che “•••”, biến môi trường ${X} hiện nguyên
+const DIFF_SEC_HDR=/^(authorization|proxy-authorization|cookie)$/i;
+function srvDiff(a0,b0){const a=a0||{},b=b0||{},out=[];
+ const res=v=>typeof v==='string'?v.replace(/\$\{secret:[^}]+\}/g,r=>typeof SEC[r]==='string'?SEC[r]:r):Array.isArray(v)?v.map(res):v;
+ const full=x=>String(x).replace(/[^\s"'=:,\[\]]*••••[^\s"',\]]*/g,'•••');
+ const sh=(n,v)=>{if(v===undefined||v===null)return'∅';if(typeof v!=='string')return full(redactText(JSON.stringify(v).replace(/\$\{secret:[^}]+\}/g,'•••')));
+  if(/^\$\{(?!secret:)[^}]+\}$/.test(v))return v;
+  if(isRef(v)||(n&&(SECRET_NAME.test(n)||DIFF_SEC_HDR.test(n))&&!NONVAL.test(v)&&!/^\$\{(?!secret:)[^}]+\}$/.test(v)))return'•••';
+  const t=v.replace(/\$\{secret:[^}]+\}/g,'•••');return keyLikeIn(t).length&&!/^[a-z]+:\/\//i.test(t)?'•••':full(redactText(t))};
+ const same=(x,y)=>JSON.stringify(x===undefined?null:x)===JSON.stringify(y===undefined?null:y);
+ for(const f of ['type','command','url','cwd'])if(!same(res(a[f]),res(b[f])))out.push(`${f}: ${sh(null,a[f])} → ${sh(null,b[f])}`);
+ if(!same(res(a.args),res(b.args)))out.push(`args: ${sh(null,a.args||[])} → ${sh(null,b.args||[])}`);
+ for(const o of ['env','headers','auth']){const x=a[o]&&typeof a[o]==='object'?a[o]:{},y=b[o]&&typeof b[o]==='object'?b[o]:{};
+  for(const n of [...new Set([...Object.keys(x),...Object.keys(y)])]){if(same(res(x[n]),res(y[n])))continue;
+   out.push(`${o==='headers'?'header':o} ${n}: ${sh(n,x[n])} → ${sh(n,y[n])}`)}}
+ for(const f of new Set([...Object.keys(a),...Object.keys(b)]))if(!['type','command','url','cwd','args','env','headers','auth'].includes(f)&&!same(a[f],b[f]))out.push(`${f}: ${tr('khác')}`);
+ return out}
 // v4.10 (P49-3): tên trùng — trong cùng tệp (bản sau) hoặc trùng với máy chủ đã có — không bao giờ ghi đè âm thầm: Giữ cả hai (-2) / Thay thế (qua thẻ) / Bỏ qua
 function makePlan(text0,file){const text=stripBom(text0),r=parseFile(text);if(r.fatal)return{file,fatal:r.fatal};
- const plan={file,add:[],skip:[],dup:[],rejected:[],oauthSkipped:[],secretCount:0};const seen={},taken=new Set();
+ const plan={file,add:[],skip:[],dup:[],rejected:[],oauthSkipped:[],renamed:[],secretCount:0};const seen={},taken=new Set(),shortOf={};
  const rec={members:[],dups:[]};let entries=Object.entries(r.servers);
  if(!jsonScan(text,rec)&&rec.dups.length){try{entries=rec.members.map(m=>[m.key,JSON.parse(text.slice(m.vs,m.ve))])}catch(e){}}
  const firstOf={};
- for(const [k0,s0] of entries){const k=k0.trim(),s=JSON.parse(JSON.stringify(s0));
+ for(const [k0,s0] of entries){let k=k0.trim();const s=JSON.parse(JSON.stringify(s0));
+  // v4.11 (quyết định 23/10): tên > 64 ký tự → rút gọn khi nhập (không từ chối, không treo) và báo trong kế hoạch
+  if(nlen(k)>64){if(shortOf[k])k=shortOf[k];else{let c=cpSlice(k,64).replace(/[\s\-_.]+$/,'')||'srv';const used=[...Object.keys(seen),...Object.values(shortOf)]; /* chỉ tránh trùng với tên KHÁC trong cùng tệp; trùng với máy chủ đã có thì thành dòng “Trùng tên” để người dùng chọn */
+   if(used.includes(c)||used.some(x=>safeName(x)===safeName(c)))c=uniqName(c,used);shortOf[k]=c;plan.renamed.push({from:k,to:c});k=c}}
   if(firstOf[k]){const e=validateServer(k,s);if(e){plan.rejected.push({name:k,error:e});continue}
-   plan.dup.push({name:k,src:'file',server:s,kind:kindOf(s),cmd:redact(s),old:redact(firstOf[k]),danger:isDanger(s)});continue}
+   plan.dup.push({name:k,src:'file',server:s,kind:kindOf(s),cmd:redact(s),old:redact(firstOf[k]),diff:srvDiff(firstOf[k],s),danger:isDanger(s)});continue}
   const sn=safeName(k);const clash=Object.keys(servers()).concat(Object.keys(seen)).find(x=>x!==k&&safeName(x)===sn);
   if(clash){plan.rejected.push({name:k,error:tr('Tên "{0}" và "{1}" trùng nhau sau khi chuẩn hoá.',clash,k)});continue}seen[k]=1;
   const e=validateServer(k,s);if(e){plan.rejected.push({name:k,error:e});continue}firstOf[k]=s;
-  if(s.auth){plan.oauthSkipped.push({name:k,server:s,error:tr('AIVN chưa hỗ trợ đăng nhập OAuth (trường auth) của máy chủ "{0}".',k)});continue}
-  const cur=servers()[k];if(cur&&sig(cur)===sig(s)&&!scanServer(k,s).length){plan.skip.push({name:k,error:tr('Đã có "{0}".',k)});continue}
+  if(s.auth){plan.oauthSkipped.push({name:k,server:s,error:oauthMsg(k)});continue}
+  const cur=servers()[k];if(cur&&!srvDiff(cur,s).length&&!scanServer(k,s).length) /* v4.11 (ý quản lý — dòng trùng tên): so cả GIÁ TRỊ env/header (khoá so sau khi giải chỗ giữ), không chỉ tên */{plan.skip.push({name:k,error:tr('Đã có "{0}".',k)});continue}
   const slot=cur?null:importSlot(k,s,taken);if(slot)taken.add(slot);
   const x={name:k,slot,kind:kindOf(s),cmd:redact(s),server:s,danger:isDanger(s),why:s.url&&netKind(s.url)==='lan'?'lan':unpinned(s)?'pin':!inCatalog(s)?'cat':null};
-  if(cur)plan.dup.push({...x,src:'app',old:redact(cur)});else plan.add.push(x)}
+  if(cur)plan.dup.push({...x,src:'app',old:redact(cur),diff:srvDiff(cur,s)});else plan.add.push(x)}
  planCount(plan);return plan}
 function planCount(p){p.secretCount=[...p.add,...p.oauthSkipped,...p.dup].reduce((n,x)=>n+scanServer(x.name,x.server).length,0)}
 const WHY={lan:'Địa chỉ http này nằm trong mạng nội bộ của bạn.',pin:'Lệnh này không ghim phiên bản. npx có thể tải mã mới.',cat:'Lệnh không thuộc danh mục Nâng cao.',catUrl:'Địa chỉ không thuộc danh mục Nâng cao.'};
 const whyOf=x=>tr(WHY[x.why==='cat'&&x.kind!=='stdio'?'catUrl':x.why]||WHY.cat);
 const secretLine=n=>tr('{0} khoá được chuyển vào kho khoá; mcp.json chỉ giữ {1}.',n,'${secret:…}');
-function uniqImport(k){const p=UI.plan,used=new Set([...Object.keys(servers()),...p.add.map(x=>x.name),...p.dup.map(x=>x.name),...p.oauthSkipped.map(x=>x.name)]);let i=2;
- while(used.has(k+'-'+i)||[...used].some(u=>safeName(u)===safeName(k+'-'+i)))i++;return k+'-'+i}
+function uniqImport(k){const p=UI.plan;return uniqName(k,[...Object.keys(servers()),...p.add.map(x=>x.name),...p.dup.map(x=>x.name),...p.oauthSkipped.map(x=>x.name),...(p.rejected||[]).map(x=>x.name)])}
 function dupKeep(i){const p=UI.plan,x=p.dup[i];if(!x)return;const nn=uniqImport(x.name),s=x.server,taken=new Set(p.add.map(a=>a.slot).filter(Boolean));const slot=importSlot(nn,s,taken);
  p.dup.splice(i,1);p.add.push({name:nn,slot,kind:kindOf(s),cmd:redact(s),server:s,danger:isDanger(s),renamedFrom:x.name,why:s.url&&netKind(s.url)==='lan'?'lan':unpinned(s)?'pin':!inCatalog(s)?'cat':null});planCount(p);render()}
 function dupSkip(i){const p=UI.plan,x=p.dup[i];if(!x)return;p.dup.splice(i,1);p.skip.push({name:x.name,error:tr('Bỏ qua “{0}” (trùng tên, bạn chọn bỏ qua).',x.name)});planCount(p);render()}
@@ -990,10 +1082,11 @@ function importPlan(){const p=UI.plan;if(!p)return'';const grp=(title,arr,f,tid)
  return `<div class="impbox" data-testid="connect-apps-import-plan"><div class="small muted">${tr('Tệp: {0}',esc(p.file))} · ${tr('Máy chủ khớp một mục Nâng cao còn trống sẽ vào mục đó. Các máy chủ khác vào Của tôi.')}</div>
   ${p.msg?`<div class="msg-bad small" data-testid="import-blocked" style="margin:8px 0">${esc(p.msg)}</div>`:''}
   ${grp('✚ '+tr('Sẽ thêm ({0})',p.add.length),p.add,a=>`<div class="r">${a.slot?catLogo(ADVC(a.slot),22):letterTile(a.name,22)}<b>${esc(a.name)}</b>${a.renamedFrom?`<span class="st">${esc(tr('đổi tên từ {0}',a.renamedFrom))}</span>`:''}<span class="st">${a.kind}</span><code>${esc(a.cmd)}</code><span class="small dest">→ ${a.slot?tr('Nâng cao: {0}',tr(ADVC(a.slot).name)):tr('Của tôi')}</span>${a.danger?`<span class="danger-tag">⚠ ${esc(whyOf(a))}</span>`:''}</div>`)}
-  ${grp('⇄ '+tr('Trùng tên ({0}) — chọn cách xử lý',p.dup.length),p.dup,(a,i)=>`<div class="r duprow2" data-testid="import-dup-${i}"><b>${esc(a.name)}</b><span class="st">${a.src==='file'?tr('trùng trong tệp'):tr('đã có trong AIVN')}</span><code>${esc(a.old)} → ${esc(a.cmd)}</code><span class="duprow"><button class="btn sm" data-testid="import-dup-keep-${i}" onclick="dupKeep(${i})">${esc(tr('Giữ cả hai (đổi tên mới thành {0})',uniqImport(a.name)))}</button><button class="btn sm danger" data-testid="import-dup-replace-${i}" onclick="dupReplace(${i})">${tr('Thay thế')}</button><button class="btn sm ghost" data-testid="import-dup-skip-${i}" onclick="dupSkip(${i})">${tr('Bỏ qua')}</button></span></div>`,'import-dup')}
+  ${grp('⇄ '+tr('Trùng tên ({0}) — chọn cách xử lý',p.dup.length),p.dup,(a,i)=>`<div class="r duprow2" data-testid="import-dup-${i}"><b>${esc(a.name)}</b><span class="st">${a.src==='file'?tr('trùng trong tệp'):tr('đã có trong AIVN')}</span>${a.diff?`<div class="ddiff" data-testid="import-dup-diff-${i}">${a.diff.length?`<span class="dd-h">${esc(tr('Khác nhau:'))}</span>`+a.diff.map(d=>`<code>${esc(d)}</code>`).join(''):`<span class="dd-h">${esc(tr('Giống hệt bản đang có — không có gì khác.'))}</span>`}</div>`:`<code>${esc(a.old)} → ${esc(a.cmd)}</code>`}<span class="duprow"><button class="btn sm" data-testid="import-dup-keep-${i}" onclick="dupKeep(${i})">${esc(tr('Giữ cả hai (đổi tên mới thành {0})',uniqImport(a.name)))}</button><button class="btn sm danger" data-testid="import-dup-replace-${i}" onclick="dupReplace(${i})">${tr('Thay thế')}</button><button class="btn sm ghost" data-testid="import-dup-skip-${i}" onclick="dupSkip(${i})">${tr('Bỏ qua')}</button></span></div>`,'import-dup')}
+  ${grp('✎ '+tr('Đã rút gọn tên dài hơn 64 ký tự ({0})',(p.renamed||[]).length),p.renamed||[],a=>`<div class="r"><b>${esc(a.to)}</b><span class="st" title="${esc(a.from)}">${esc(tr('tên gốc {0} ký tự',nlen(a.from)))}</span></div>`,'import-renamed')}
   ${grp('↷ '+tr('Bỏ qua ({0})',p.skip.length),p.skip,a=>`<div class="r"><span class="muted">${esc(a.error)}</span></div>`)}
   ${grp('🔒 '+tr('Chưa hỗ trợ OAuth ({0})',p.oauthSkipped.length),p.oauthSkipped,a=>`<div class="r"><b>${esc(a.name)}</b><span class="muted small">${esc(a.error)}</span></div>`)}
-  ${grp('✕ '+tr('Không nhập được ({0})',p.rejected.length),p.rejected,a=>`<div class="r"><b>${esc(a.name)}</b><span class="msg-bad">${esc(a.error)}</span></div>`)}
+  ${grp('✕ '+tr('Không nhập được ({0})',p.rejected.length),p.rejected,a=>`<div class="r"><b>${esc(a.name)}</b><span class="msg-bad">${esc(a.error)}</span></div>`,'import-rejected')}
   ${p.secretCount?`<div class="small" style="margin:6px 0" data-testid="import-secret-note">🔑 ${esc(tr('Tệp có {0} khoá viết thẳng. Trước khi nhập, AIVN hỏi bạn từng khoá có chuyển vào kho khoá không.',p.secretCount))}</div>`:''}
   ${p.dup.length?`<div class="small muted" style="margin:6px 0">${esc(tr('Mục trùng tên chưa chọn sẽ không được nhập.'))}</div>`:''}
   <div class="row" style="margin-top:8px"><span style="flex:1"></span>${p.add.length?`<button class="btn pri sm" data-testid="connect-apps-import-apply" onclick="applyImport()">${tr('Nhập các mục mới')} (${p.add.length})</button>`:`<span class="muted small">${tr('Không có mục mới để nhập.')}</span>`}</div></div>`}
@@ -1011,7 +1104,7 @@ async function applyImport(){const p=UI.plan;if(!p||!p.add.length)return;p.msg=n
  commitMoves(g.moves);
  const sd=n=>p.file===SAMPLE_NAME&&SAMPLE_DESC[n]?{sampleDesc:SAMPLE_DESC[n]}:{};
  for(const x of add){const s=map[x.name];placeholderEmpty(x.name,s);servers()[x.name]=s;DB.meta.servers[x.name]={catalogId:x.slot||null,approvedAt:now(),alwaysOn:false,...sd(x.renamedFrom||x.name)}}
- for(const x of oa){const s=map[x.name];placeholderEmpty(x.name,s);servers()[x.name]=s;DB.meta.servers[x.name]={catalogId:null,approvedAt:null,alwaysOn:false,...sd(x.name)};RT.state[x.name]='error';const nm=x.name;RT.err[nm]=()=>tr('AIVN chưa hỗ trợ đăng nhập OAuth (trường auth) của máy chủ "{0}".',nm)}
+ for(const x of oa){const s=map[x.name];placeholderEmpty(x.name,s);servers()[x.name]=s;DB.meta.servers[x.name]={catalogId:null,approvedAt:null,alwaysOn:false,...sd(x.name)};RT.state[x.name]='error';const nm=x.name;RT.err[nm]=()=>oauthMsg(nm)}
  const names=add.map(x=>x.name);saveSec();save();
  if(g.blocked.length||p.dup.length){UI.plan={file:p.file,add:[],skip:[],dup:p.dup,rejected:[],oauthSkipped:[],secretCount:0,msg:g.blocked.length?blockMsg(g.blocked):null};planCount(UI.plan);UI.sel='x:import';UI.mpane='detail'}
  else{UI.plan=null;UI.tab='installed';UI.mpane='list';UI.q='';UI.sel=names[0]||UI.sel}
@@ -1048,7 +1141,7 @@ function modalChoice(title,body,btns){const back=focusKeyOf(document.activeEleme
  btns.forEach(([id],i)=>{$(i===0?'askNo':'ask_'+id).onclick=()=>done(i===0?null:id)});$('askNo').focus()})}
 async function addSave(){const A=UI.add;if(!A)return;const err=m=>{A.err=m;render();setTimeout(()=>{const e=$('addLine');e&&e.focus()},0)};A.err=null;
  const name=(A.name||'').trim(),line=(A.line||'').trim();
- if(!/^[A-Za-z0-9][\w.\-]{0,63}$/.test(name))return err(tr('Tên chỉ gồm chữ không dấu, số, dấu chấm, _ hoặc -.'));
+ {const ne=nameErr(name);if(ne)return err(ne)} // v4.11: cùng quy tắc tên với nhập và trình sửa (Unicode, ≤ 64 ký tự)
  if(!line)return err(tr('Hãy nhập lệnh hoặc địa chỉ.'));
  let s;if(/^https?:\/\//i.test(line)){if(/\s/.test(line))return err(tr('Địa chỉ không được có khoảng trắng.'));s={url:line}}
  else{const p=splitCmd(line);if(!p||!p.length)return err(tr('Thiếu dấu ngoặc kép đóng.'));s={command:p[0],...(p.length>1?{args:p.slice(1)}:{})}}
@@ -1131,9 +1224,9 @@ function renderPage(){const n=countOn(),t=curTpl();
  document.documentElement.lang=LANG==='zh'?'zh-CN':LANG;
  // v4.9 (P48-8): nhãn thanh bên và tiêu đề trang theo ngôn ngữ giao diện
  document.querySelectorAll('.rail a').forEach(a=>{const t=a.querySelector('.tip');if(!t)return;t.dataset.vi=t.dataset.vi||t.textContent;t.textContent=tr(t.dataset.vi);a.setAttribute('aria-label',t.textContent)});
- document.title=tr('AIVN AGENT · Kết nối ứng dụng')+' v4.10 ('+tr('bản nháp')+')';
- $('o_draft').textContent='⚠ '+tr('Bản nháp 4.10 theo F-PLUGINS bản 2 + quyết định ngày 22/10 + báo cáo QA 4.9 (lượt 8)')+' · '+tr('Dữ liệu mẫu · lưu trong trình duyệt');$('o_draft').title=$('o_draft').textContent;
- $('o_v49').textContent=tr('Bản 4.9');$('o_v48').textContent=tr('Bản 4.8');$('o_v47').textContent=tr('Bản 4.7');$('o_v46').textContent=tr('Bản 4.6');$('o_v41').textContent=tr('Bản 4.1');$('o_v45').textContent=tr('Bản 4.5');$('o_v44').textContent=tr('Bản 4.4');$('o_v43').textContent=tr('Bản 4.3');$('o_v42').textContent=tr('Bản 4.2');$('o_restart').textContent='↻ '+tr('Mô phỏng mở lại AIVN');$('o_reset').textContent=tr('↺ Đặt lại');$('o_set').textContent='⚙ '+tr('Cài đặt (mô phỏng)');
+ document.title=tr('AIVN AGENT · Kết nối ứng dụng')+' v4.11 ('+tr('bản nháp')+')';
+ $('o_draft').textContent='⚠ '+tr('Bản nháp 4.11 theo F-PLUGINS bản 2 + quyết định ngày 22/10 + báo cáo QA 4.10 (lượt 9)')+' · '+tr('Dữ liệu mẫu · lưu trong trình duyệt');$('o_draft').title=$('o_draft').textContent;
+ $('o_v410').textContent=tr('Bản 4.10');$('o_v49').textContent=tr('Bản 4.9');$('o_v48').textContent=tr('Bản 4.8');$('o_v47').textContent=tr('Bản 4.7');$('o_v46').textContent=tr('Bản 4.6');$('o_v41').textContent=tr('Bản 4.1');$('o_v45').textContent=tr('Bản 4.5');$('o_v44').textContent=tr('Bản 4.4');$('o_v43').textContent=tr('Bản 4.3');$('o_v42').textContent=tr('Bản 4.2');$('o_restart').textContent='↻ '+tr('Mô phỏng mở lại AIVN');$('o_reset').textContent=tr('↺ Đặt lại');$('o_set').textContent='⚙ '+tr('Cài đặt (mô phỏng)');
  $('setPop').innerHTML=`<div class="small" style="font-weight:600;margin-bottom:6px">${tr('Cài đặt')} · ${tr('Giao diện')}</div><label class="small muted" for="uiLangSel">${tr('Ngôn ngữ giao diện')}</label>
   <select id="uiLangSel" class="inp" style="margin-top:4px"><option value="vi" ${LANG==='vi'?'selected':''}>Tiếng Việt</option><option value="en" ${LANG==='en'?'selected':''}>English</option><option value="zh" ${LANG==='zh'?'selected':''}>中文</option></select>
   <div class="small muted" style="margin-top:6px">${tr('Chỗ này đóng vai mục Cài đặt của ứng dụng. Hộp thoại Kết nối ứng dụng không có nút đổi ngôn ngữ.')}</div>`;
@@ -1162,10 +1255,10 @@ function renderPage(){const n=countOn(),t=curTpl();
    <div class="row" style="margin-top:6px;gap:6px"><button class="btn sm" data-testid="agent-folder-change" onclick="changeAgentFolder()">${tr('Đổi thư mục')}</button><button class="btn sm ghost">＋ ${tr('Thêm thư mục')}</button></div></div>
   <div class="sec"><div class="srow"><div class="sw"></div>${tr('Cho phép truy cập mạng')}</div><div class="srow"><div class="sw"></div>${tr('Tự làm không hỏi')}</div><div class="small muted">${tr('Không áp dụng cho các ứng dụng đã kết nối.')}</div></div>
   <div class="sec"><h4>✅ ${tr('Luôn cho phép')}</h4><div class="small muted">${tr('Chưa có mục nào.')}</div></div>`}
-function setLang(l){LANG=DB.lang=l;save();render();{const t=document.querySelector('.toast');if(t&&t._f)t.textContent=t._f()}if($('tplBack').classList.contains('open'))renderTpl();if(apCur)drawCard()}
+function setLang(l){LANG=DB.lang=l;save();render();{const t=document.querySelector('.toast');if(t&&t._f)t.textContent=t._f()}{const u=$('uToast');if(u&&u._draw)u._draw()}if($('tplBack').classList.contains('open'))renderTpl();if(apCur)drawCard()}
 function toggleMaster(){DB.master=!DB.master;save();if(!DB.master){Object.keys(servers()).forEach(stop);render()}else{render();startAll(true)}}
 function startAll(onlyMcp){ // quyết định 22/10 lượt 2 (c): mọi kết nối chỉ chạy khi dùng lần đầu; máy chủ có “Luôn chạy sẵn” thì chạy ngay
- Object.keys(servers()).forEach(k=>{const m=metaOf(k),s=servers()[k];if(s.auth){RT.state[k]='error';RT.err[k]=()=>tr('AIVN chưa hỗ trợ đăng nhập OAuth (trường auth) của máy chủ "{0}".',k);return}
+ Object.keys(servers()).forEach(k=>{const m=metaOf(k),s=servers()[k];if(s.auth){RT.state[k]='error';RT.err[k]=()=>oauthMsg(k);return}
   if(!m.approvedAt||s.disabled){RT.state[k]='off';return}if(!DB.master){RT.state[k]='off';return}if(m.test&&m.test.ok===false){RT.state[k]='error';RT.err[k]=()=>testMsg(m.test);return}if(m.alwaysOn)start(k);else{RT.state[k]='waiting';log(k,'lazy: waiting for first use')}});save();render()}
 function render(){renderPage();if(UI.open)renderCA()}
 $('modelSel').onchange=e=>{DB.model=e.target.value;save();renderPage()};
@@ -1198,6 +1291,6 @@ document.addEventListener('mousedown',e=>{if(UI.menu&&!e.target.closest('#caMenu
 addEventListener('resize',()=>{if(UI.menu)placeMenu()});
 ['caBack','tplBack','palBack'].forEach(id=>$(id).addEventListener('mousedown',e=>{if(e.target.id===id){if(id==='caBack')closeCAAsk();else $(id).classList.remove('open')}}));
 $('caBtn').onclick=()=>openCA({pane:'main'});$('tplBtn').onclick=openTpl;
-$('o_reset').onclick=()=>{localStorage.removeItem(KEY);localStorage.removeItem(VAULT);location.reload()};
+$('o_reset').onclick=()=>{localStorage.removeItem(KEY);localStorage.removeItem(VAULT);localStorage.removeItem(NK_KEY);location.reload()};
 $('o_restart').onclick=restartSim;
 RT.restarted=!!(DB.meta.connectors.biz||DB.meta.connectors.excel||Object.values(DB.meta.servers).some(m=>m.approvedAt));render();setTimeout(()=>startAll(false),window.FAST?0:400);
