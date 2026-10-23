@@ -1,5 +1,5 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AIVN AGENT · Kết nối ứng dụng v4.10 (bản nháp)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
+<title>AIVN AGENT · Kết nối ứng dụng v4.11 (bản nháp)</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/app.css">
 <style>
 /* Màu & hình theo F-PLUGINS mục 3.5 (accent #D7263D, nút bo 10, thẻ bo 14, hộp thoại bo 16 + cạnh trên 4px accent) */
 :root{--acc:#D7263D;--acc2:#b51d31;--accbg:rgba(215,38,61,.13);--card:#1a1e29}
@@ -157,6 +157,11 @@ button.badge{border:1px solid transparent;cursor:pointer;font-family:inherit}but
 /* ===== bố cục hai cột (có từ v4.7) — danh sách gọn bên trái, chi tiết bên phải ===== */
 .ca-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 18px 14px;border-bottom:1px solid var(--line);flex:none}
 .ca-top .search{width:200px}@media (max-width:1400px){.jtxt{display:none}}.ca-top .chips{display:flex;gap:6px;flex-wrap:wrap}
+/* v4.11 (ý quản lý — thanh công cụ): ≥1024 px thanh công cụ luôn MỘT hàng — { } chỉ còn biểu tượng (có tooltip), chữ “Nhập” ẩn khi chật; <1024 được xuống dòng */
+@media (min-width:1024px){.ca-top{flex-wrap:nowrap}.ca-top .search{flex:0 1 200px;min-width:120px}.ca-top .search .inp{width:100%}.ca-top .chips{flex-wrap:nowrap;min-width:0}.ca-top .chips>*{flex:none;white-space:nowrap}.ca-top .btn{flex:none;white-space:nowrap}.jtxt{display:none}}
+@media (min-width:1024px) and (max-width:1279px){.ca-top .imptxt{display:none}}
+@media (min-width:1024px){.ca-top{gap:8px}.ca-top .chips{gap:4px;overflow-x:auto;scrollbar-width:none;flex:0 1 auto}.ca-top .chips .chip{padding:5px 8px}.ca-top .search{flex:0 1 180px;min-width:110px}}
+@media (min-width:1024px) and (max-width:1279px){.ca-top .search{flex-basis:120px;min-width:100px}.ca-top .chips .chip{padding:5px 7px}.ca-top .chips{gap:3px}}
 .chip.adv{border-style:dashed}.chip.adv.on{border-style:solid}
 .ca-body{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:380px minmax(0,1fr)}
 .ca-left{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line);background:var(--bg2,transparent)}
@@ -255,7 +260,7 @@ button.badge{border:1px solid transparent;cursor:pointer;font-family:inherit}but
 .skrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 8px;border:1px solid var(--line2);border-radius:8px;cursor:pointer;font-size:12.5px}
 .skrow input{flex:none;width:18px;height:18px;margin:0;accent-color:var(--acc)}.skrow .skv{font-size:12px;background:var(--panel2);padding:1px 6px;border-radius:5px;word-break:break-all}
 .sktag{font-size:10.5px;font-weight:600;padding:0 6px;border-radius:10px;background:#3a2a0a;color:#fbbf24}.sktag.sure{background:#3a0a0a;color:#fca5a5}
-.skm{font-size:12px;color:var(--tx2);margin:2px 0 6px}.skrow.off{opacity:.75;border-style:dashed}.df.more{color:var(--tx3)}
+.skm{font-size:12px;color:var(--tx2);margin:2px 0 6px}.skwarn{display:block;color:var(--warn);font-size:12px;margin-top:2px}.skrow.off{opacity:.75;border-style:dashed}.df.more{color:var(--tx3)}
 .skl{color:var(--tx3);font-size:12px;min-width:0;overflow-wrap:anywhere}.sknote{flex-basis:100%;font-size:11.5px;color:var(--bad)}.skcount{font-size:12px;color:var(--tx2);margin:2px 0 6px}
 .dfbox{margin:8px 0;border:1px solid var(--line2);border-radius:8px;overflow:hidden;font:12px/17px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 .dfbox .dfh{padding:4px 8px;background:var(--panel2);font-family:inherit;color:var(--tx2)}.dfbox .df{padding:0 8px;white-space:pre-wrap;word-break:break-all}
@@ -278,8 +283,22 @@ button.badge{border:1px solid transparent;cursor:pointer;font-family:inherit}but
  .li .ls{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
  .selftag .stx{display:none}.selftag .sti{display:inline}.selftag{padding:0 5px}
 }
+/* v4.11 (P410-10): ở 280–399 px không cắt chữ ở header, tên máy chủ và banner nháp — cho xuống dòng thay vì “…” */
+@media (max-width:399px){
+ #caModal .mh{flex-wrap:wrap;row-gap:6px}#caModal .mh>h2{min-width:0}
+ #caModal .mh .badge,#caModal .mh .chip{white-space:nowrap;overflow:visible;text-overflow:clip;max-width:none;flex:none}
+ .li .ln{white-space:normal;overflow-wrap:anywhere;text-overflow:clip}
+}
+@media (max-width:767px){
+ .draft{flex-wrap:wrap;row-gap:4px;overflow-x:visible}.draft #o_draft{white-space:normal;flex:1 1 100%;overflow:visible;text-overflow:clip}
+}
+.ddiff{display:flex;flex-direction:column;gap:2px;min-width:0;flex-basis:100%}.ddiff code{white-space:pre-wrap;word-break:break-all}.dd-h{font-size:12px;color:var(--muted)}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* v4.11 (P410-8): nút Kết nối trên trang chính ≥ 44 px cả khi không phải màn chạm */
+#caBtn{min-height:44px;min-width:44px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center}
 /* P49-1: màn chạm — mọi đích bấm ≥ 44×44 px */
 @media (pointer:coarse){
+ .draft a[id^=o_v],.draft button[id^=o_]{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center} /* v4.11 (P410-8): thanh nháp của prototype cũng ≥ 44 px khi chạm */
  #caModal button,#caModal a,#caModal select,#caModal summary,#caModal input:not([type=checkbox]):not([type=radio]),#caModal [role=switch],#caModal [role=menuitem],#caModal [tabindex="0"],
  #approveCard button,#approveCard a,#approveCard summary,#askModal button,#osDlg button,.utoast button,#caModal label:has(>input[type=checkbox]),#approveCard label:has(>input[type=checkbox]),#caModal .chip
   {min-height:44px;min-width:44px;box-sizing:border-box}
@@ -293,11 +312,17 @@ button.badge{border:1px solid transparent;cursor:pointer;font-family:inherit}but
  .swt-ph{width:44px}.kebab-ph{width:44px}
  .skrow{min-height:44px}.skrow input{width:22px;height:22px}
  #caModal input[type=checkbox],#approveCard input[type=checkbox]{width:22px;height:22px}
+ /* v4.11 (P410-8): trang chính — lối vào Kết nối, công tắc MCP, huy hiệu, Cài đặt, liên kết Nâng cao */
+ .body button,.body a,.body select,.body summary,.body [role=switch],.body [role=button],.body [tabindex="0"],#agentSettings label:has(>input[type=checkbox])
+  {min-height:44px;min-width:44px;box-sizing:border-box}
+ .body a,.body summary{display:inline-flex;align-items:center}
+ .body .btn,.body button.badge,#mcpBadges button{padding-top:0;padding-bottom:0;display:inline-flex;align-items:center;justify-content:center}
+ #agentSettings input[type=checkbox]{width:22px;height:22px}
 }
 </style></head><body>
 <div class="app"><nav class="rail"></nav>
 <div class="main">
-  <div class="draft" style="position:relative"><span id="o_draft"></span><a href="connect-v4.9.html" id="o_v49" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.8.html" id="o_v48" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.7.html" id="o_v47" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.6.html" id="o_v46" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.5.html" id="o_v45" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.4.html" id="o_v44" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.3.html" id="o_v43" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.2.html" id="o_v42" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.1.html" id="o_v41" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><span style="flex:1"></span>
+  <div class="draft" style="position:relative"><span id="o_draft"></span><a href="connect-v4.10.html" id="o_v410" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.9.html" id="o_v49" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.8.html" id="o_v48" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.7.html" id="o_v47" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.6.html" id="o_v46" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.5.html" id="o_v45" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.4.html" id="o_v44" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.3.html" id="o_v43" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.2.html" id="o_v42" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><a href="connect-v4.1.html" id="o_v41" style="color:var(--warn);font-weight:400;text-decoration:underline"></a><span style="flex:1"></span>
     <span style="font-weight:400;color:var(--tx3)">Ctrl+K</span><button class="btn sm ghost" id="o_restart" data-testid="sim-restart"></button><button class="btn sm ghost" id="o_set" data-testid="mock-settings-btn"></button><button class="btn sm ghost" id="o_reset"></button>
     <div id="setPop" data-testid="mock-settings"></div></div>
   <div class="body">
